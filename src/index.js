@@ -1,3 +1,15 @@
+import { createStore } from 'redux';
+
+const initialState = {};
+
+const reducer = (state = initialState, action) => {
+    return state
+};
+
+const game = createStore(reducer, initialState);
+
+window.game = game;
+
 const LOG = (...msgs) => {
     const formatMsg = (msg) => {
         if (typeof msg === 'object') {
