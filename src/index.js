@@ -1,40 +1,12 @@
-import { createStore } from 'redux';
-
-const initialState = {};
-
-const reducer = (state = initialState, action) => {
-    return state
-};
-
-const game = createStore(reducer, initialState);
+import game from './gamestate';
 
 window.game = game;
 
-const LOG = (...msgs) => {
-    const formatMsg = (msg) => {
-        if (typeof msg === 'object') {
-            return JSON.stringify(msg, undefined, 2);
-        }
-        return msg;
-    };
-    const logEl = document.querySelector('.main__log');
-    const getRowEl = (msg) => {
-        const el = document.createElement('div');
-        el.classList.add('main__log-row');
-
-        const formattedMsg = formatMsg(msg);
-        el.innerHTML = formattedMsg;
-
-        return el;
-    };
-
-    const rows = msgs.map(getRowEl);
-
-    rows.forEach((row) => logEl.appendChild(row));
-};
-
 const setup = () => {
-    LOG('TEST LOG PLEASE IGNORE.');
+  game.dispatch({
+    type: 'LOG_MESSAGE',
+    message: 'TEST LOG PLEASE IGNORE.',
+  });
 };
 
 setup();
