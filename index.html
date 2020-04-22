@@ -3,12 +3,46 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>ES6 Boilerplate</title>
+    <title>JS RL</title>
+
+    <style>
+     body {
+       background: black;
+       color: white;
+     }
+     .main {
+       background: black;
+       display: flex;
+       justify-content: center;
+       padding: 32px;
+     }
+
+     .main > * + * {
+       margin-left: 32px;
+     }
+
+     .main__canvas {
+       outline: 1px solid white;
+       width: 320px;
+       height: 320px;
+     }
+
+     .main__log {
+       font-size: 12px;
+       line-height: 16px;
+       font-family: monospace;
+       width: 320px;
+       line-height: 16px;
+       max-height: 320px;
+       overflow: auto;
+     }
+    </style>
 </head>
 <body>
-    <h1>ES6 Boilerplate</h1>
-    <p>Check console for details</p>
-    <div id="main"></div>
+  <section class="main">
+    <canvas id="canvas" class="main__canvas" width="320" height="320"></canvas>
+    <div id="log" class="main__log"></div>
+  </section>
 
     <script type="text/javascript" src="dist/bundle.js"></script>
 </body>
