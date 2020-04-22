@@ -1,4 +1,4 @@
-export const getCanvas = () => {
+export const getCanvasContainer = () => {
   const canvasEl = document.querySelector('.main__canvas');
   return canvasEl;
 };

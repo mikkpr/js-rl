@@ -48,6 +48,8 @@ game.log = (...msgs) => {
   });
 };
 
+game.clearLog = () => game.dispatch({ type: 'CLEAR_LOG' });
+
 sagaMiddleware.run(logMessageSaga);
 
 export default game;
