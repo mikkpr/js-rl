@@ -30,7 +30,7 @@ const actionMap = {
 
 const reducer = (state = initialState, action) => {
   if (actionMap[action.type]) {
-    return actionMap[action.type];
+    return actionMap[action.type](state, action);
   }
 
   return state;
@@ -40,6 +40,13 @@ const game = createStore(
   reducer,
   applyMiddleware(...middlewares),
 );
+
+game.log = (...msgs) => {
+  game.dispatch({
+    type: 'LOG_MESSAGE',
+    message: msgs,
+  });
+};
 
 sagaMiddleware.run(logMessageSaga);
 

@@ -1,26 +1,34 @@
-const LOG = (...msgs) => {
-  const formatMsg = (msg) => {
-    if (typeof msg === 'object') {
-      return JSON.stringify(msg, undefined, 2);
-    }
-    return msg;
-  };
-  const logEl = document.querySelector('.main__log');
-  const getRowEl = (msg) => {
-    const el = document.createElement('div');
-    el.classList.add('main__log-row');
+import { getLog } from './dom';
 
-    const formattedMsg = formatMsg(msg);
-    el.innerHTML = formattedMsg;
+export const clearLog = () => {
+  const logEl = getLog();
+  logEl.innerHTML = '';
+};
 
-    return el;
-  };
+const formatMsg = (msg) => {
+  if (typeof msg === 'object') {
+    return JSON.stringify(msg, undefined, 2);
+  }
+  return msg;
+};
 
-  const rows = msgs.map(getRowEl);
+const createLogRow = (msg) => {
+  const el = document.createElement('div');
+  el.classList.add('main__log-row');
+
+  const formattedMsg = formatMsg(msg);
+  el.innerHTML = formattedMsg;
+
+  return el;
+};
+
+const log = (...msgs) => {
+  const logEl = getLog();
+  const rows = msgs.map(createLogRow);
 
   rows.forEach((row) => logEl.appendChild(row));
 
   logEl.scrollTop = logEl.scrollHeight;
 };
 
-export default LOG;
+export default log;
