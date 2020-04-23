@@ -4,9 +4,9 @@ export const setupPlayer = async () => {
       x: 10,
       y: 10,
       char: '@',
-      fg: '#fff',
+      fg: '#a56',
       bg: '#000',
-      draw(display) {
+      render(display) {
         display.draw(this.x, this.y, this.char, this.fg, this.bg);
       },
       move(dx, dy) {
