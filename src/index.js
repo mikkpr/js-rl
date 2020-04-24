@@ -34,6 +34,10 @@ game.dispatch({
   portals: initialPortals,
 });
 
+const floorCells = Object.values(game.getState().map).filter(cell => !cell.solid);
+const randomCell = ROT.RNG.getItem(floorCells);
+game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell.y] });
+
 game.dispatch({ type: 'CALCULATE_FOV' });
 
 const renderMap = display => {
@@ -58,7 +62,12 @@ const renderMap = display => {
 
     const color = ROT.Color.toHex(ROT.Color.interpolate(
       ROT.Color.fromString(bg),
-      ROT.Color.fromString(fg),
+      char === '.'
+        ? ROT.Color.multiply(
+            ROT.Color.fromString(fg),
+            [128, 128, 128],
+        )
+        : ROT.Color.fromString(fg),
       visibility,
     ));
     const [Xoffset, Yoffset] = mapOffset.map(d => -21 * d);
@@ -74,7 +83,7 @@ const renderPlayer = display => {
   display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
 };
 
-const redraw = (pulse = false) => {
+export const redraw = (pulse = true, pulseOptions) => {
   display.clear();
 
   renderMap(display);
@@ -84,7 +93,14 @@ const redraw = (pulse = false) => {
   if (pulse) {
     const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
     const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 5));
-    pulseAberration(display, randomIntensity, randomPhase, () => redraw(false));
+    const { intensity, phase, duration } = (pulseOptions || {});
+    pulseAberration(
+      display,
+      intensity || randomIntensity,
+      duration || 16,
+      phase || randomPhase,
+      () => redraw(false)
+    );
   }
 };
 
@@ -117,12 +133,8 @@ const setupInput = async () => {
 };
 
 const setup = async () => {
-  game.log('Setting up display...');
   await setupDisplay();
   setupInput();
-  game.log('Setting up player...');
-  game.log('Done.');
-  game.clearLog();
 
   requestAnimationFrame(redraw);
 };

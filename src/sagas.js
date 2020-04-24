@@ -1,6 +1,7 @@
 import * as ROT from 'rot-js';
 import { takeEvery, select, put } from 'redux-saga/effects';
 import log, { clearLog } from './utils/log';
+import { redraw } from './index';
 let FOV = undefined;
 
 export function* logMessage(action) {
@@ -48,4 +49,17 @@ export function* calculateFOV() {
 export function* FOVSaga() {
   yield takeEvery('MOVE_PLAYER', calculateFOV);
   yield takeEvery('CALCULATE_FOV', calculateFOV);
+}
+
+export function* pulse(action) {
+  const pulseOptions = action.options || {
+    phase: 1,
+    intensity: 1,
+    duration: 60
+  };
+  redraw(true, pulseOptions);
+}
+
+export function* pulseSaga() {
+  yield takeEvery('PULSE', pulse);
 }

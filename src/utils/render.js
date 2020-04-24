@@ -21,12 +21,12 @@ export const applyChromaticAberration = (display, intensity = 1, phase = 5) => {
   chromaticAberration(context, intensity, phase);
 };
 
-export const pulseAberration = (display, intensity, phase, callback = () => {}) => {
+export const pulseAberration = (display, intensity, phase, duration, callback = () => {}) => {
   let pulsing = true;
   const timeout = setTimeout(() => {
     pulsing = false;
     requestAnimationFrame(callback);
-  }, 16);
+  }, duration);
 
   function pulse() {
     applyChromaticAberration(display, intensity, phase);

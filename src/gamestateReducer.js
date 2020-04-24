@@ -115,7 +115,18 @@ const movePlayer = (state, action) => {
     [newX, newY] = portal[0].to;
     newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
     if (portal[0].type === 'PORTAL') {
-      requestAnimationFrame(() => game.log('You step through the portal.'));
+      requestAnimationFrame(() => {
+        game.dispatch({
+          type: 'PULSE',
+          options: {
+            intensity: 20,
+            phase: 50,
+            duration: 420,
+          },
+        });
+        game.log('You step through the portal.');
+      });
+
     }
   } else if (cell && cell.solid) {
     requestAnimationFrame(() => game.log('Alas! You cannot go that way.'));
@@ -140,6 +151,21 @@ const updateMapOffset = (state, action) => {
   };
 };
 
+const setPlayerPosition = (state, action) => {
+  const { position } = action;
+  const [newX, newY] = position;
+  const newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      x: action.position[0],
+      y: action.position[1],
+    },
+    mapOffset: newMapoffset,
+  };
+};
+
 const actionMap = {
   MOVE_PLAYER: movePlayer,
   UPDATE_CELL: updateCell,
@@ -148,6 +174,7 @@ const actionMap = {
   UPDATE_EXPLORATION_MAP: updateExplorationMap,
   UPDATE_MAP_OFFSET: updateMapOffset,
   UPDATE_PORTALS: updatePortals,
+  SET_PLAYER_POSITION: setPlayerPosition,
 };
 
 const reducer = (state = initialState, action) => {

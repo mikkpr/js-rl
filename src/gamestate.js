@@ -2,7 +2,7 @@ import { createStore, applyMiddleware } from 'redux';
 import { createLogger } from 'redux-logger';
 
 import createSagaMiddleware from 'redux-saga';
-import { logMessageSaga, FOVSaga } from './sagas';
+import { logMessageSaga, FOVSaga, pulseSaga } from './sagas';
 
 import reducer from './gamestateReducer';
 
@@ -31,5 +31,6 @@ game.clearLog = () => game.dispatch({ type: 'CLEAR_LOG' });
 
 sagaMiddleware.run(logMessageSaga);
 sagaMiddleware.run(FOVSaga);
+sagaMiddleware.run(pulseSaga);
 
 export default game;
