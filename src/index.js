@@ -3,6 +3,7 @@ import game from './gamestate';
 import { getCanvasContainer } from './utils/dom';
 import { CELL_PROPERTIES, CELL_TYPES, createMapFromRooms, level0, level0portals } from './map';
 import { redraw } from './utils/render';
+import keymage from 'keymage';
 
 export const [WIDTH, HEIGHT] = [21, 21];
 
@@ -57,63 +58,33 @@ game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell
 
 game.dispatch({ type: 'CALCULATE_FOV' });
 
-const handleKeyup = (e) => {
-  const code = e.keyCode;
+const moveUp = () => {
+  game.dispatch({ type: 'MOVE_PLAYER', dx: 0, dy: -1 });
+};
 
-  const wasd = [
-    ROT.KEYS.VK_W,
-    ROT.KEYS.VK_A,
-    ROT.KEYS.VK_S,
-    ROT.KEYS.VK_D,
-  ];
+const moveDown = () => {
+  game.dispatch({ type: 'MOVE_PLAYER', dx: 0, dy: 1 });
+};
 
-  const vim = [
-    ROT.KEYS.VK_K,
-    ROT.KEYS.VK_H,
-    ROT.KEYS.VK_J,
-    ROT.KEYS.VK_L,
-  ];
+const moveLeft = () => {
+  game.dispatch({ type: 'MOVE_PLAYER', dx: -1, dy: 0 });
+};
 
-  const arrows = [
-    ROT.KEYS.VK_UP,
-    ROT.KEYS.VK_LEFT,
-    ROT.KEYS.VK_DOWN,
-    ROT.KEYS.VK_RIGHT,
-  ];
-
-  const [INDEX_UP, INDEX_LEFT, INDEX_DOWN, INDEX_RIGHT] = [0, 1, 2, 3];
-
-  let dx = 0;
-  let dy = 0;
-
-  if ([wasd[INDEX_LEFT], vim[INDEX_LEFT], arrows[INDEX_LEFT]].includes(code)) {
-    dx -= 1;
-  }
-  if ([wasd[INDEX_DOWN], vim[INDEX_DOWN], arrows[INDEX_DOWN]].includes(code)) {
-    dy += 1;
-  }
-  if ([wasd[INDEX_RIGHT], vim[INDEX_RIGHT], arrows[INDEX_RIGHT]].includes(code)) {
-    dx += 1;
-  }
-  if ([wasd[INDEX_UP], vim[INDEX_UP], arrows[INDEX_UP]].includes(code)) {
-    dy -= 1;
-  }
-
-  if (dx !== 0 || dy !== 0) {
-    return game.dispatch({ type: 'MOVE_PLAYER', dx, dy });
-  }
-
-  if (code === ROT.KEYS.VK_O) {
-    return game.dispatch({ type: 'COMMAND_OPEN' });
-  }
-
-  if (code === ROT.KEYS.VK_C) {
-    return game.dispatch({ type: 'COMMAND_CLOSE' });
-  }
+const moveRight = () => {
+  game.dispatch({ type: 'MOVE_PLAYER', dx: 1, dy: 0 });
 };
 
 const setupInput = async () => {
-  document.body.addEventListener('keyup', handleKeyup);
+  keymage('o', () => game.dispatch({ type: 'COMMAND_OPEN' }));
+  keymage('c', () => game.dispatch({ type: 'COMMAND_CLOSE' }));
+  ['k', 'w', 'up'].forEach(key => keymage(key, moveUp));
+  ['j', 's', 'down'].forEach(key => keymage(key, moveDown));
+  ['h', 'a', 'left'].forEach(key => keymage(key, moveLeft));
+  ['l', 'd', 'right'].forEach(key => keymage(key, moveRight));
+  // keymage('space', () => { keymage.setScope('space'); game.log('SPC-'); });
+  // keymage('space i', () => { keymage.setScope('space.i'); game.log('SPC-i-'); });
+  // keymage('space i i', () => { keymage.setScope(''); game.log('show inventory'); });
+  // keymage('esc', () => { keymage.setScope(''); game.log('close UI'); });
 };
 
 const setup = async () => {
