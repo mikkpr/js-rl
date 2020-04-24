@@ -114,3 +114,71 @@ export const createMapFromRooms = (rooms) => {
     return cells.concat(roomCells);
   }, []);
 };
+
+export const level0 = [
+  {
+    x: 0,
+    y: 0,
+    width: 21,
+    height: 21,
+    doors: [[10, 20]],
+    char: '#',
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#aaa',
+  }, {
+    x: 4,
+    y: 4,
+    width: 13,
+    height: 13,
+    doors: [[4, 10]],
+    char: '#',
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#bbb',
+  }, {
+    x: 8,
+    y: 8,
+    width: 5,
+    height: 5,
+    doors: [[12, 10]],
+    char: '#',
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#ccc',
+  }, {
+    x: 4,
+    y: 25,
+    width: 13,
+    height: 13,
+    doors: [[10, 25]],
+    char: '#',
+    color: '#ffa',
+    backgroundColor: '#000',
+    floorColor: '#330',
+  },
+];
+
+export const level0portals = [
+  {
+    from: [10, 20],
+    to: [10, 25],
+    dir: [0, 1],
+    type: 'DOOR',
+  }, {
+    from: [10, 25],
+    to: [10, 20],
+    dir: [0, -1],
+    type: 'DOOR',
+  }, {
+    from: [19, 1],
+    to: [10, 10],
+    dir: [0, -1],
+    type: 'PORTAL',
+  }, {
+    from: [19, 1],
+    to: [10, 31],
+    dir: [1, 0],
+    type: 'PORTAL',
+  },
+];

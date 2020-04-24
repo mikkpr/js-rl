@@ -1,7 +1,7 @@
 import * as ROT from 'rot-js';
 import game from './gamestate';
 import { getCanvasContainer } from './utils/dom';
-import { createMapFromRooms } from './map';
+import { createMapFromRooms, level0, level0portals } from './map';
 import { pulseAberration } from './utils/render';
 
 
@@ -21,49 +21,23 @@ const setupDisplay = async () => {
   });
 };
 
-const initialCells = createMapFromRooms([
-  {
-    x: 0,
-    y: 0,
-    width: 21,
-    height: 21,
-    doors: [],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#aaa',
-  }, {
-    x: 4,
-    y: 4,
-    width: 13,
-    height: 13,
-    doors: [[4, 10]],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#bbb',
-  }, {
-    x: 8,
-    y: 8,
-    width: 5,
-    height: 5,
-    doors: [[12, 10]],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#ccc',
-  }
-]);
+const initialCells = createMapFromRooms(level0);
 
 game.dispatch({
   type: 'UPDATE_CELLS',
   cells: initialCells,
 });
 
+const initialPortals = level0portals;
+game.dispatch({
+  type: 'UPDATE_PORTALS',
+  portals: initialPortals,
+});
+
 game.dispatch({ type: 'CALCULATE_FOV' });
 
 const renderMap = display => {
-  const { map, lightingMap, explorationMap } = game.getState();
+  const { map, lightingMap, explorationMap, mapOffset } = game.getState();
 
   const cells = Object.values(map);
 
@@ -87,15 +61,17 @@ const renderMap = display => {
       ROT.Color.fromString(fg),
       visibility,
     ));
-    display.draw(x, y, char, color, bg);
+    const [Xoffset, Yoffset] = mapOffset.map(d => -21 * d);
+    display.draw(x + Xoffset, y + Yoffset, char, color, bg);
   });
 }
 
 const renderPlayer = display => {
-  const { player } = game.getState();
+  const { player, mapOffset } = game.getState();
   const { x, y } = player;
+  const [Xoffset, Yoffset] = mapOffset.map(d => -21 * d);
 
-  display.draw(x, y, '@', '#fff', '#000');
+  display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
 };
 
 const redraw = (pulse = false) => {
@@ -106,8 +82,8 @@ const redraw = (pulse = false) => {
   renderPlayer(display);
 
   if (pulse) {
-    const randomIntensity = Math.floor(Math.random() * 3);
-    const randomPhase = Math.floor(Math.random() * 5);
+    const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
+    const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 5));
     pulseAberration(display, randomIntensity, randomPhase, () => redraw(false));
   }
 };

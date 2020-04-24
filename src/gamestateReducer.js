@@ -1,15 +1,27 @@
+const dirToString = (dir) => {
+  const [x, y] = dir;
+  if (x === 0 && y === 1) {
+    return 'south';
+  } else if (x === 0 && y === -1) {
+    return 'north';
+  } else if (x === 1 && y === 0) {
+    return 'east';
+  } else if (x === -1 && y === 0) {
+    return 'west';
+  }
+
+  return '';
+}
 const initialState = {
   map: {},
   lightingMap: {},
   explorationMap: [],
-  cameraOffset: {
-    x: 0,
-    y: 0
-  },
+  mapOffset: [0, 0],
   player: {
     x: 10,
-    y: 10
+    y: 10,
   },
+  portals: []
 };
 
 const updateCell = (state, action) => {
@@ -35,6 +47,13 @@ const updateCells = (state, action) => {
     .reduce(updateCell, state);
 };
 
+const updatePortals = (state, action) => {
+  return {
+    ...state,
+    portals: action.portals,
+  };
+};
+
 const updateLightingMap = (state, action) => {
   const { map } = action;
   return {
@@ -53,23 +72,71 @@ const updateExplorationMap = (state, action) => {
 
 const movePlayer = (state, action) => {
   const { dx, dy } = action;
-  const { player, map } = state;
+  const { mapOffset, player, map, portals } = state;
   const { x, y } = player;
 
   const cellKey = `${x + dx}_${y + dy}`;
+  let newX = player.x + dx;
+  let newY = player.y + dy;
+
   const cell = map[cellKey];
-  if (cell && cell.char === '#') {
+
+  const currentPortals = portals.filter(portal => {
+    const isCurrent = (
+      portal.from[0] === player.x &&
+      portal.from[1] === player.y
+    );
+
+    return isCurrent;
+  });
+
+  const nextPortals = portals.forEach(portal => {
+    const isNext = (
+      portal.from[0] === newX &&
+      portal.from[1] === newY
+    );
+
+    if (isNext && portal.type === 'PORTAL') {
+      const dir = dirToString(portal.dir);
+      requestAnimationFrame(() => game.log(`There is something strange to the ${dir}.`));
+    }
+  });
+
+  const portal = currentPortals.filter(portal => {
+    return (
+      portal.from[0] === player.x &&
+      portal.from[1] === player.y &&
+      portal.dir[0] === dx &&
+      portal.dir[1] === dy
+    );
+  });
+  let newMapoffset = mapOffset;
+  if (portal && portal.length > 0) {
+    [newX, newY] = portal[0].to;
+    newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
+    if (portal[0].type === 'PORTAL') {
+      requestAnimationFrame(() => game.log('You step through the portal.'));
+    }
+  } else if (cell && cell.solid) {
     requestAnimationFrame(() => game.log('Alas! You cannot go that way.'));
-    return state;
+    [newX, newY] = [player.x, player.y];
   }
 
   return {
     ...state,
     player: {
-      ...state.player,
-      x: state.player.x + dx,
-      y: state.player.y + dy,
+      ...player,
+      x: newX,
+      y: newY,
     },
+    mapOffset: newMapoffset,
+  };
+};
+
+const updateMapOffset = (state, action) => {
+  return {
+    ...state,
+    mapOffset: [state.mapOffset[0] + dx, state.mapOffset[1] + dy]
   };
 };
 
@@ -79,6 +146,8 @@ const actionMap = {
   UPDATE_CELLS: updateCells,
   UPDATE_LIGHTING_MAP: updateLightingMap,
   UPDATE_EXPLORATION_MAP: updateExplorationMap,
+  UPDATE_MAP_OFFSET: updateMapOffset,
+  UPDATE_PORTALS: updatePortals,
 };
 
 const reducer = (state = initialState, action) => {
