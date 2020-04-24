@@ -1,6 +1,6 @@
+import * as ROT from 'rot-js';
 const isDoor = (x, y, doors = []) => {
   return doors.reduce((acc, door) => {
-    console.log(door)
     return acc || (door[0] === x && door[1] === y);
   }, false);
 };
@@ -22,7 +22,7 @@ const getChar = (room, x, y) => {
   }
 
   return '.';
-}
+};
 
 const createCellsFromRoom = room => {
   const cells = [];
@@ -32,9 +32,9 @@ const createCellsFromRoom = room => {
     width,
     height,
     doors,
-    char,
-    fg,
-    bg,
+    color,
+    backgroundColor,
+    floorColor,
   } = room;
   // create floor
   for (let _x = x + 1; _x <= x + width - 2; _x++) {
@@ -43,8 +43,9 @@ const createCellsFromRoom = room => {
         x: _x,
         y: _y,
         char: getChar(room, _x, _y),
-        fg,
-        bg,
+        fg: floorColor,
+        bg: backgroundColor,
+        solid: false
       });
     }
   }
@@ -55,8 +56,9 @@ const createCellsFromRoom = room => {
       x: _x,
       y: _y,
       char: getChar(room, _x, _y),
-      fg,
-      bg,
+      fg: color,
+      bg: backgroundColor,
+      solid: true,
     });
   }
   // bottom wall
@@ -65,8 +67,9 @@ const createCellsFromRoom = room => {
       x: _x,
       y: _y,
       char: getChar(room, _x, _y),
-      fg,
-      bg,
+      fg: color,
+      bg: backgroundColor,
+      solid: true,
     });
   }
   // left wall
@@ -75,8 +78,9 @@ const createCellsFromRoom = room => {
       x: _x,
       y: _y,
       char: getChar(room, _x, _y),
-      fg,
-      bg,
+      fg: color,
+      bg: backgroundColor,
+      solid: true,
     });
   }
   // right wall
@@ -85,17 +89,20 @@ const createCellsFromRoom = room => {
       x: _x,
       y: _y,
       char: getChar(room, _x, _y),
-      fg,
-      bg,
+      fg: color,
+      bg: backgroundColor,
+      solid: true,
     });
   }
+  // doors
   doors.forEach((door) => {
     cells.push({
       x: door[0],
       y: door[1],
       char: '.',
-      fg,
-      bg,
+      fg: floorColor,
+      bg: backgroundColor,
+      solid: false,
     });
   });
   return cells;
@@ -104,7 +111,6 @@ const createCellsFromRoom = room => {
 export const createMapFromRooms = (rooms) => {
   return rooms.reduce((cells, room) => {
     const roomCells = createCellsFromRoom(room);
-    console.log(roomCells);
     return cells.concat(roomCells);
   }, []);
 };

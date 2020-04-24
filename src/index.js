@@ -21,7 +21,7 @@ const setupDisplay = async () => {
   });
 };
 
-const cells = createMapFromRooms([
+const initialCells = createMapFromRooms([
   {
     x: 0,
     y: 0,
@@ -29,8 +29,9 @@ const cells = createMapFromRooms([
     height: 21,
     doors: [],
     char: '#',
-    fg: '#fff',
-    bg: '#000'
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#aaa',
   }, {
     x: 4,
     y: 4,
@@ -38,8 +39,9 @@ const cells = createMapFromRooms([
     height: 13,
     doors: [[4, 10]],
     char: '#',
-    fg: '#fff',
-    bg: '#000'
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#bbb',
   }, {
     x: 8,
     y: 8,
@@ -47,22 +49,21 @@ const cells = createMapFromRooms([
     height: 5,
     doors: [[12, 10]],
     char: '#',
-    fg: '#fff',
-    bg: '#000',
+    color: '#fff',
+    backgroundColor: '#000',
+    floorColor: '#ccc',
   }
 ]);
 
-cells.forEach(cell => {
-  game.dispatch({
-    type: 'UPDATE_CELL',
-    x: cell.x,
-    y: cell.y,
-    cell
-  });
-})
+game.dispatch({
+  type: 'UPDATE_CELLS',
+  cells: initialCells,
+});
+
+game.dispatch({ type: 'CALCULATE_FOV' });
 
 const renderMap = display => {
-  const { map } = game.getState();
+  const { map, lightingMap, explorationMap } = game.getState();
 
   const cells = Object.values(map);
 
@@ -72,10 +73,22 @@ const renderMap = display => {
       y,
       char,
       fg,
-      bg
+      bg,
     } = cell;
-    display.draw(x, y, char, fg, bg);
-  })
+    const key = `${x}_${y}`;
+    const visibility = key in lightingMap
+      ? lightingMap[key]
+      : explorationMap.includes(key)
+      ? 0.25
+      : 0;
+
+    const color = ROT.Color.toHex(ROT.Color.interpolate(
+      ROT.Color.fromString(bg),
+      ROT.Color.fromString(fg),
+      visibility,
+    ));
+    display.draw(x, y, char, color, bg);
+  });
 }
 
 const renderPlayer = display => {
@@ -85,7 +98,7 @@ const renderPlayer = display => {
   display.draw(x, y, '@', '#fff', '#000');
 };
 
-const redraw = (pulse = true) => {
+const redraw = (pulse = false) => {
   display.clear();
 
   renderMap(display);
@@ -93,8 +106,8 @@ const redraw = (pulse = true) => {
   renderPlayer(display);
 
   if (pulse) {
-    const randomIntensity = Math.floor(Math.random() * 5);
-    const randomPhase = Math.floor(Math.random() * 50);
+    const randomIntensity = Math.floor(Math.random() * 3);
+    const randomPhase = Math.floor(Math.random() * 5);
     pulseAberration(display, randomIntensity, randomPhase, () => redraw(false));
   }
 };
@@ -124,7 +137,7 @@ const handleKeyup = (e) => {
 };
 
 const setupInput = async () => {
-  document.body.addEventListener('keydown', handleKeyup);
+  document.body.addEventListener('keyup', handleKeyup);
 };
 
 const setup = async () => {
@@ -135,12 +148,12 @@ const setup = async () => {
   game.log('Done.');
   game.clearLog();
 
-  redraw();
+  requestAnimationFrame(redraw);
 };
 
 setup();
 
-game.subscribe(redraw);
+game.subscribe(() => requestAnimationFrame(redraw));
 
 window.game = game;
 window.ROT = ROT;

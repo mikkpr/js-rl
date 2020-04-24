@@ -12,7 +12,7 @@ export const setupPlayer = async () => {
       move(dx, dy) {
         this.x += dx;
         this.y += dy;
-      }
+      },
     };
     resolve(player);
   });
