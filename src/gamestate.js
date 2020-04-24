@@ -2,18 +2,22 @@ import { createStore, applyMiddleware } from 'redux';
 import { createLogger } from 'redux-logger';
 
 import createSagaMiddleware from 'redux-saga';
-import { logMessageSaga, FOVSaga, pulseSaga } from './sagas';
+import { commandSaga, logMessageSaga, FOVSaga, pulseSaga } from './sagas';
 
 import reducer from './gamestateReducer';
 
 const sagaMiddleware = createSagaMiddleware();
 
+const enableLogging = true;
 const middlewares = [
   sagaMiddleware,
-  createLogger({
-    collapsed: true,
-  }),
 ];
+
+if (enableLogging) {
+  middlewares.push(createLogger({
+    collapsed: true,
+  }));
+}
 
 const game = createStore(
   reducer,
@@ -32,5 +36,6 @@ game.clearLog = () => game.dispatch({ type: 'CLEAR_LOG' });
 sagaMiddleware.run(logMessageSaga);
 sagaMiddleware.run(FOVSaga);
 sagaMiddleware.run(pulseSaga);
+sagaMiddleware.run(commandSaga);
 
 export default game;

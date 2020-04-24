@@ -1,7 +1,8 @@
 import * as ROT from 'rot-js';
 import { takeEvery, select, put } from 'redux-saga/effects';
 import log, { clearLog } from './utils/log';
-import { redraw } from './index';
+import { redraw } from './utils/render';
+import { CELL_TYPES, CELL_PROPERTIES } from './map';
 let FOV = undefined;
 
 export function* logMessage(action) {
@@ -21,13 +22,17 @@ export function* logMessageSaga() {
   yield takeEvery('CLEAR_LOG', clearMessageLog);
 }
 
-export function* calculateFOV() {
+const lightPasses = (map) => (x, y) => {
+  const cell = map[`${x}_${y}`];
+  return cell && !CELL_PROPERTIES[cell.type].solid;
+}
+
+export function* calculateFOV(action) {
+  const recalculateFOV = ['UPDATE_CELL', 'UPDATE_CELLS'].includes(action.type);
   const { player, map } = yield select();
-  if (!FOV) {
-    FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
-      const cell = map[`${x}_${y}`];
-      return cell && !cell.solid;
-    });
+  if (!player) { return; }
+  if (!FOV || recalculateFOV) {
+    FOV = new ROT.FOV.RecursiveShadowcasting(lightPasses(map));
   }
   const lightingMap = {};
 
@@ -49,6 +54,8 @@ export function* calculateFOV() {
 export function* FOVSaga() {
   yield takeEvery('MOVE_PLAYER', calculateFOV);
   yield takeEvery('CALCULATE_FOV', calculateFOV);
+  yield takeEvery('UPDATE_CELL', calculateFOV);
+  yield takeEvery('UPDATE_CELLS', calculateFOV);
 }
 
 export function* pulse(action) {
@@ -57,9 +64,79 @@ export function* pulse(action) {
     intensity: 1,
     duration: 60
   };
-  redraw(true, pulseOptions);
+  yield redraw(true, pulseOptions);
 }
 
 export function* pulseSaga() {
   yield takeEvery('PULSE', pulse);
+}
+
+const getAdjacentCells = (state, type) => {
+  const { player, map } = state;
+  const { x, y } = player;
+  const adjacent = [
+    `${x + 1}_${y}`,
+    `${x - 1}_${y}`,
+    `${x}_${y + 1}`,
+    `${x}_${y - 1}`,
+  ].map(key => {
+    return map[key];
+  }).filter(c => !!c);
+
+  if (type) {
+    return adjacent.filter(cell => cell.type === type);
+  }
+
+  return adjacent;
+};
+
+function* comOpen() {
+  const state = yield select();
+  const adjacent = yield getAdjacentCells(state, CELL_TYPES.DOOR_CLOSED);
+
+  if (adjacent.length === 0) {
+    yield put({ type: 'LOG_MESSAGE', message: 'Nothing to open.'});
+  } else {
+    const updatedCells = adjacent.map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_OPEN }));
+    updatedCells.forEach(cell => {
+      const portals = state.portals;
+      const connectedPortals = portals
+        .filter(p => {
+          return (p.from[0] === cell.x && p.from[1] === cell.y);
+        })
+        .map(p => state.map[p.to.join('_')])
+        .map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_OPEN }));
+      updatedCells.push(...connectedPortals);
+    });
+    yield put({ type: 'LOG_MESSAGE', message: `You open the door${adjacent.length > 1 ? 's' : ''}.`});
+    yield put({ type: 'UPDATE_CELLS', cells: updatedCells });
+  }
+}
+
+function* comClose() {
+  const state = yield select();
+  const adjacent = yield getAdjacentCells(state, CELL_TYPES.DOOR_OPEN);
+
+  if (adjacent.length === 0) {
+    yield put({ type: 'LOG_MESSAGE', message: 'Nothing to close.'});
+  } else {
+    const updatedCells = adjacent.map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_CLOSED }));
+    updatedCells.forEach(cell => {
+      const portals = state.portals;
+      const connectedPortals = portals
+        .filter(p => {
+          return (p.from[0] === cell.x && p.from[1] === cell.y);
+        })
+        .map(p => state.map[p.to.join('_')])
+        .map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_CLOSED }));
+      updatedCells.push(...connectedPortals);
+    });
+    yield put({ type: 'LOG_MESSAGE', message: `You close the door${adjacent.length > 1 ? 's' : ''}.`});
+    yield put({ type: 'UPDATE_CELLS', cells: updatedCells });
+  }
+}
+
+export function* commandSaga() {
+  yield takeEvery('COMMAND_CLOSE', comClose);
+  yield takeEvery('COMMAND_OPEN', comOpen);
 }

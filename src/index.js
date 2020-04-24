@@ -1,11 +1,10 @@
 import * as ROT from 'rot-js';
 import game from './gamestate';
 import { getCanvasContainer } from './utils/dom';
-import { createMapFromRooms, level0, level0portals } from './map';
-import { pulseAberration } from './utils/render';
+import { CELL_PROPERTIES, CELL_TYPES, createMapFromRooms, level0, level0portals } from './map';
+import { redraw } from './utils/render';
 
-
-const [WIDTH, HEIGHT] = [21, 21];
+export const [WIDTH, HEIGHT] = [21, 21];
 
 export const display = new ROT.Display({
   width: WIDTH,
@@ -23,6 +22,24 @@ const setupDisplay = async () => {
 
 const initialCells = createMapFromRooms(level0);
 
+// const em = new ROT.Map.Cellular(WIDTH*4, HEIGHT*4);
+// em.randomize(0.5);
+// em.create();
+// em.create();
+// em.create();
+// em.create();
+// const initialCells = [];
+// em.create((x, y, solid) => {
+//   initialCells.push({
+//     x: x - 2*WIDTH,
+//     y: y - 2*HEIGHT,
+//     char: solid ? '#' : '.',
+//     fg: '#FFF',
+//     bg: '#000',
+//     solid: !!solid
+//   })
+// });
+
 game.dispatch({
   type: 'UPDATE_CELLS',
   cells: initialCells,
@@ -34,98 +51,65 @@ game.dispatch({
   portals: initialPortals,
 });
 
-const floorCells = Object.values(game.getState().map).filter(cell => !cell.solid);
+const floorCells = Object.values(game.getState().map).filter(cell => !CELL_PROPERTIES[cell.type].solid);
 const randomCell = ROT.RNG.getItem(floorCells);
 game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell.y] });
 
 game.dispatch({ type: 'CALCULATE_FOV' });
 
-const renderMap = display => {
-  const { map, lightingMap, explorationMap, mapOffset } = game.getState();
-
-  const cells = Object.values(map);
-
-  cells.forEach(cell => {
-    const {
-      x,
-      y,
-      char,
-      fg,
-      bg,
-    } = cell;
-    const key = `${x}_${y}`;
-    const visibility = key in lightingMap
-      ? lightingMap[key]
-      : explorationMap.includes(key)
-      ? 0.25
-      : 0;
-
-    const color = ROT.Color.toHex(ROT.Color.interpolate(
-      ROT.Color.fromString(bg),
-      char === '.'
-        ? ROT.Color.multiply(
-            ROT.Color.fromString(fg),
-            [128, 128, 128],
-        )
-        : ROT.Color.fromString(fg),
-      visibility,
-    ));
-    const [Xoffset, Yoffset] = mapOffset.map(d => -21 * d);
-    display.draw(x + Xoffset, y + Yoffset, char, color, bg);
-  });
-}
-
-const renderPlayer = display => {
-  const { player, mapOffset } = game.getState();
-  const { x, y } = player;
-  const [Xoffset, Yoffset] = mapOffset.map(d => -21 * d);
-
-  display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
-};
-
-export const redraw = (pulse = true, pulseOptions) => {
-  display.clear();
-
-  renderMap(display);
-
-  renderPlayer(display);
-
-  if (pulse) {
-    const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
-    const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 5));
-    const { intensity, phase, duration } = (pulseOptions || {});
-    pulseAberration(
-      display,
-      intensity || randomIntensity,
-      duration || 16,
-      phase || randomPhase,
-      () => redraw(false)
-    );
-  }
-};
-
 const handleKeyup = (e) => {
   const code = e.keyCode;
+
+  const wasd = [
+    ROT.KEYS.VK_W,
+    ROT.KEYS.VK_A,
+    ROT.KEYS.VK_S,
+    ROT.KEYS.VK_D,
+  ];
+
+  const vim = [
+    ROT.KEYS.VK_K,
+    ROT.KEYS.VK_H,
+    ROT.KEYS.VK_J,
+    ROT.KEYS.VK_L,
+  ];
+
+  const arrows = [
+    ROT.KEYS.VK_UP,
+    ROT.KEYS.VK_LEFT,
+    ROT.KEYS.VK_DOWN,
+    ROT.KEYS.VK_RIGHT,
+  ];
+
+  const [INDEX_UP, INDEX_LEFT, INDEX_DOWN, INDEX_RIGHT] = [0, 1, 2, 3];
 
   let dx = 0;
   let dy = 0;
 
-  if ([ROT.KEYS.VK_A, ROT.KEYS.VK_H, ROT.KEYS.VK_LEFT].includes(code)) {
+  if ([wasd[INDEX_LEFT], vim[INDEX_LEFT], arrows[INDEX_LEFT]].includes(code)) {
     dx -= 1;
   }
-  if ([ROT.KEYS.VK_S, ROT.KEYS.VK_J, ROT.KEYS.VK_DOWN].includes(code)) {
+  if ([wasd[INDEX_DOWN], vim[INDEX_DOWN], arrows[INDEX_DOWN]].includes(code)) {
     dy += 1;
   }
-  if ([ROT.KEYS.VK_D, ROT.KEYS.VK_L, ROT.KEYS.VK_RIGHT].includes(code)) {
+  if ([wasd[INDEX_RIGHT], vim[INDEX_RIGHT], arrows[INDEX_RIGHT]].includes(code)) {
     dx += 1;
   }
-  if ([ROT.KEYS.VK_W, ROT.KEYS.VK_K, ROT.KEYS.VK_UP].includes(code)) {
+  if ([wasd[INDEX_UP], vim[INDEX_UP], arrows[INDEX_UP]].includes(code)) {
     dy -= 1;
   }
 
-  if (dx === 0 && dy === 0) { return; }
+  if (dx !== 0 || dy !== 0) {
+    return game.dispatch({ type: 'MOVE_PLAYER', dx, dy });
+  }
 
-  game.dispatch({ type: 'MOVE_PLAYER', dx, dy });
+  if (code === ROT.KEYS.VK_O) {
+    return game.dispatch({ type: 'COMMAND_OPEN' });
+  }
+
+  if (code === ROT.KEYS.VK_C) {
+    return game.dispatch({ type: 'COMMAND_CLOSE' });
+  }
 };
 
 const setupInput = async () => {

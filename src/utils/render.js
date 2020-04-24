@@ -1,3 +1,8 @@
+import * as ROT from 'rot-js';
+import { WIDTH, HEIGHT } from '../index';
+import game from '../gamestate';
+import { CELL_PROPERTIES } from '../map';
+
 const chromaticAberration = (ctx, intensity, phase, width, height) => {
   const canvas = ctx.canvas;
   /* Use canvas to draw the original image, and load pixel data by calling getImageData
@@ -39,4 +44,73 @@ export const pulseAberration = (display, intensity, phase, duration, callback = 
   requestAnimationFrame(pulse);
 
   return timeout;
+};
+
+export const renderMap = display => {
+  const { map, lightingMap, explorationMap, mapOffset } = game.getState();
+
+  const cells = Object.values(map);
+
+  cells.forEach(cell => {
+    const {
+      x,
+      y,
+      type
+    } = cell;
+    const {
+      char,
+      fg,
+      bg,
+    } = CELL_PROPERTIES[type];
+    const key = `${x}_${y}`;
+    const visibility = key in lightingMap
+      ? lightingMap[key]
+      : explorationMap.includes(key)
+      ? 0.25
+      : 0;
+
+    const color = ROT.Color.toHex(ROT.Color.interpolate(
+      ROT.Color.fromString(bg),
+      char === '.'
+        ? ROT.Color.multiply(
+            ROT.Color.fromString(fg),
+            [128, 128, 128],
+        )
+        : ROT.Color.fromString(fg),
+      visibility,
+    ));
+    const Xoffset = mapOffset[0] * -WIDTH;
+    const Yoffset = mapOffset[1] * -HEIGHT;
+    display.draw(x + Xoffset, y + Yoffset, char, color, bg);
+  });
+}
+
+export const renderPlayer = display => {
+  const { player, mapOffset } = game.getState();
+  const { x, y } = player;
+  const Xoffset = mapOffset[0] * -WIDTH;
+  const Yoffset = mapOffset[1] * -HEIGHT;
+
+  display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
+};
+
+export const redraw = (pulse = false, pulseOptions) => {
+  display.clear();
+
+  renderMap(display);
+
+  renderPlayer(display);
+
+  if (pulse) {
+    const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
+    const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 5));
+    const { intensity, phase, duration } = (pulseOptions || {});
+    pulseAberration(
+      display,
+      intensity || randomIntensity,
+      duration || 16,
+      phase || randomPhase,
+      () => redraw(false)
+    );
+  }
 };

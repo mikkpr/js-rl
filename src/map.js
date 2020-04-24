@@ -1,4 +1,45 @@
 import * as ROT from 'rot-js';
+
+export const CELL_TYPES = {
+  FLOOR: 'FLOOR',
+  WALL: 'WALL',
+  DOOR_OPEN: 'DOOR_OPEN',
+  DOOR_CLOSED: 'DOOR_CLOSED',
+  PORTAL: 'PORTAL',
+};
+export const CELL_PROPERTIES = {
+  [CELL_TYPES.FLOOR]: {
+    char: '.',
+    fg: '#aaa',
+    bg: '#000',
+    solid: false,
+  },
+  [CELL_TYPES.WALL]: {
+    char: '#',
+    fg: '#fff',
+    bg: '#000',
+    solid: true,
+  },
+  [CELL_TYPES.DOOR_OPEN]: {
+    char: '\'',
+    fg: '#aaa',
+    bg: '#000',
+    solid: false,
+  },
+  [CELL_TYPES.DOOR_CLOSED]: {
+    char: '+',
+    fg: '#aaa',
+    bg: '#000',
+    solid: true,
+  },
+  [CELL_TYPES.PORTAL]: {
+    char: '~',
+    fg: '#faf',
+    bg: '#000',
+    solid: false,
+  },
+};
+
 const isDoor = (x, y, doors = []) => {
   return doors.reduce((acc, door) => {
     return acc || (door[0] === x && door[1] === y);
@@ -42,10 +83,7 @@ const createCellsFromRoom = room => {
       cells.push({
         x: _x,
         y: _y,
-        char: getChar(room, _x, _y),
-        fg: floorColor,
-        bg: backgroundColor,
-        solid: false
+        type: CELL_TYPES.FLOOR,
       });
     }
   }
@@ -55,10 +93,7 @@ const createCellsFromRoom = room => {
     cells.push({
       x: _x,
       y: _y,
-      char: getChar(room, _x, _y),
-      fg: color,
-      bg: backgroundColor,
-      solid: true,
+      type: CELL_TYPES.WALL,
     });
   }
   // bottom wall
@@ -66,10 +101,7 @@ const createCellsFromRoom = room => {
     cells.push({
       x: _x,
       y: _y,
-      char: getChar(room, _x, _y),
-      fg: color,
-      bg: backgroundColor,
-      solid: true,
+      type: CELL_TYPES.WALL,
     });
   }
   // left wall
@@ -77,10 +109,7 @@ const createCellsFromRoom = room => {
     cells.push({
       x: _x,
       y: _y,
-      char: getChar(room, _x, _y),
-      fg: color,
-      bg: backgroundColor,
-      solid: true,
+      type: CELL_TYPES.WALL,
     });
   }
   // right wall
@@ -88,10 +117,7 @@ const createCellsFromRoom = room => {
     cells.push({
       x: _x,
       y: _y,
-      char: getChar(room, _x, _y),
-      fg: color,
-      bg: backgroundColor,
-      solid: true,
+      type: CELL_TYPES.WALL,
     });
   }
   // doors
@@ -99,10 +125,7 @@ const createCellsFromRoom = room => {
     cells.push({
       x: door[0],
       y: door[1],
-      char: '.',
-      fg: floorColor,
-      bg: backgroundColor,
-      solid: false,
+      type: CELL_TYPES.DOOR_CLOSED,
     });
   });
   return cells;
@@ -122,40 +145,24 @@ export const level0 = [
     width: 21,
     height: 21,
     doors: [[10, 20]],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#aaa',
   }, {
     x: 4,
     y: 4,
     width: 13,
     height: 13,
     doors: [[4, 10]],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#bbb',
   }, {
     x: 8,
     y: 8,
     width: 5,
     height: 5,
     doors: [[12, 10]],
-    char: '#',
-    color: '#fff',
-    backgroundColor: '#000',
-    floorColor: '#ccc',
   }, {
     x: 4,
     y: 25,
     width: 13,
     height: 13,
     doors: [[10, 25]],
-    char: '#',
-    color: '#ffa',
-    backgroundColor: '#000',
-    floorColor: '#330',
   },
 ];
 

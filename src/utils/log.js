@@ -22,13 +22,13 @@ const createLogRow = (msg) => {
   return el;
 };
 
-const log = (...msgs) => {
+const log = (...msgs) => requestAnimationFrame(() => {
   const logEl = getLog();
   const rows = msgs.map(createLogRow);
 
   rows.forEach((row) => logEl.appendChild(row));
 
   logEl.scrollTop = logEl.scrollHeight;
-};
+});
 
 export default log;

@@ -1,3 +1,5 @@
+import { CELL_TYPES, CELL_PROPERTIES } from './map';
+
 const dirToString = (dir) => {
   const [x, y] = dir;
   if (x === 0 && y === 1) {
@@ -17,10 +19,7 @@ const initialState = {
   lightingMap: {},
   explorationMap: [],
   mapOffset: [0, 0],
-  player: {
-    x: 10,
-    y: 10,
-  },
+  player: undefined,
   portals: []
 };
 
@@ -110,10 +109,16 @@ const movePlayer = (state, action) => {
       portal.dir[1] === dy
     );
   });
-  let newMapoffset = mapOffset;
+
   if (portal && portal.length > 0) {
-    [newX, newY] = portal[0].to;
-    newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
+    const { to, dir, type } = portal[0];
+    [newX, newY] = to;
+
+    if (type === 'DOOR') {
+      newX += dir[0];
+      newY += dir[1];
+    }
+
     if (portal[0].type === 'PORTAL') {
       requestAnimationFrame(() => {
         game.dispatch({
@@ -128,10 +133,11 @@ const movePlayer = (state, action) => {
       });
 
     }
-  } else if (cell && cell.solid) {
+  } else if (cell && CELL_PROPERTIES[cell.type].solid) {
     requestAnimationFrame(() => game.log('Alas! You cannot go that way.'));
     [newX, newY] = [player.x, player.y];
   }
+  const newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
 
   return {
     ...state,
