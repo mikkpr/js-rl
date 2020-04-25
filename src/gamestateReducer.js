@@ -20,7 +20,9 @@ const initialState = {
   explorationMap: [],
   mapOffset: [0, 0],
   player: undefined,
-  portals: []
+  portals: [],
+  openUIPanel: undefined,
+  inventory: ['key', 'knife'],
 };
 
 const updateCell = (state, action) => {
@@ -172,6 +174,20 @@ const setPlayerPosition = (state, action) => {
   };
 };
 
+const openUIPanel = (state, action) => {
+  return {
+    ...state,
+    openUIPanel: action.panel
+  };
+};
+
+const closeUIPanel = (state, action) => {
+  return {
+    ...state,
+    openUIPanel: undefined
+  };
+};
+
 const actionMap = {
   MOVE_PLAYER: movePlayer,
   UPDATE_CELL: updateCell,
@@ -181,6 +197,8 @@ const actionMap = {
   UPDATE_MAP_OFFSET: updateMapOffset,
   UPDATE_PORTALS: updatePortals,
   SET_PLAYER_POSITION: setPlayerPosition,
+  OPEN_UI_PANEL: openUIPanel,
+  CLOSE_UI_PANEL: closeUIPanel,
 };
 
 const reducer = (state = initialState, action) => {

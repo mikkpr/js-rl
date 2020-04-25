@@ -12,6 +12,10 @@ export const display = new ROT.Display({
   height: HEIGHT,
   forceSquareRatio: true,
 });
+display.setOptions({
+  fontFamily: 'Major Mono Display',
+  fontStyle: 'bold'
+});
 
 const setupDisplay = async () => {
   return new Promise((resolve) => {
@@ -74,17 +78,28 @@ const moveRight = () => {
   game.dispatch({ type: 'MOVE_PLAYER', dx: 1, dy: 0 });
 };
 
+const openInventory = () => {
+  display.setOptions({forceSquareRatio: false});
+  game.dispatch({ type: 'OPEN_UI_PANEL', panel: 'INVENTORY' });
+};
+
+const closeUI = () => {
+  display.setOptions({forceSquareRatio: true});
+  game.dispatch({ type: 'CLOSE_UI_PANEL' });
+};
+
 const setupInput = async () => {
-  keymage('o', () => game.dispatch({ type: 'COMMAND_OPEN' }));
-  keymage('c', () => game.dispatch({ type: 'COMMAND_CLOSE' }));
-  ['k', 'w', 'up'].forEach(key => keymage(key, moveUp));
-  ['j', 's', 'down'].forEach(key => keymage(key, moveDown));
-  ['h', 'a', 'left'].forEach(key => keymage(key, moveLeft));
-  ['l', 'd', 'right'].forEach(key => keymage(key, moveRight));
-  // keymage('space', () => { keymage.setScope('space'); game.log('SPC-'); });
-  // keymage('space i', () => { keymage.setScope('space.i'); game.log('SPC-i-'); });
-  // keymage('space i i', () => { keymage.setScope(''); game.log('show inventory'); });
-  // keymage('esc', () => { keymage.setScope(''); game.log('close UI'); });
+  keymage('default', 'o', () => game.dispatch({ type: 'COMMAND_OPEN' }));
+  keymage('default', 'c', () => game.dispatch({ type: 'COMMAND_CLOSE' }));
+  ['k', 'w', 'up'].forEach(key => keymage('default', key, moveUp));
+  ['j', 's', 'down'].forEach(key => keymage('default', key, moveDown));
+  ['h', 'a', 'left'].forEach(key => keymage('default', key, moveLeft));
+  ['l', 'd', 'right'].forEach(key => keymage('default', key, moveRight));
+  // keymage('default', 'space', () => { keymage.setScope('space'); game.log('SPC-'); });
+  // keymage('space', 'space i', () => { keymage.setScope('space.i'); game.log('SPC-i-'); });
+  keymage('default', 'i', () => { keymage.setScope('inventory'); openInventory(); });
+  keymage('esc', () => { keymage.setScope('default'); closeUI(); });
+  keymage.setScope('default');
 };
 
 const setup = async () => {

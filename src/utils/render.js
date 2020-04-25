@@ -1,4 +1,5 @@
 import * as ROT from 'rot-js';
+import throttle from 'lodash/throttle';
 import { WIDTH, HEIGHT } from '../index';
 import game from '../gamestate';
 import { CELL_PROPERTIES } from '../map';
@@ -83,7 +84,7 @@ export const renderMap = display => {
     const Yoffset = mapOffset[1] * -HEIGHT;
     display.draw(x + Xoffset, y + Yoffset, char, color, bg);
   });
-}
+};
 
 export const renderPlayer = display => {
   const { player, mapOffset } = game.getState();
@@ -94,23 +95,45 @@ export const renderPlayer = display => {
   display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
 };
 
-export const redraw = (pulse = false, pulseOptions) => {
-  display.clear();
-
-  renderMap(display);
-
-  renderPlayer(display);
-
-  if (pulse) {
-    const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
-    const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 5));
-    const { intensity, phase, duration } = (pulseOptions || {});
-    pulseAberration(
-      display,
-      intensity || randomIntensity,
-      duration || 16,
-      phase || randomPhase,
-      () => redraw(false)
-    );
+export const renderUI = display => {
+  const { openUIPanel } = game.getState();
+  if (openUIPanel === 'INVENTORY') {
+    renderInventory(display);
   }
 };
+
+const renderInventory = (display) => {
+  const { inventory } = game.getState();
+  display.drawText(1, 1, "You are carrying:");
+  const itemsOffset = 3;
+  inventory.forEach((item, idx) => {
+    display.drawText(2, itemsOffset + idx, `- ${item}`);
+  });
+}
+
+export const redraw = throttle((pulse = false, pulseOptions) => {
+  display.clear();
+
+  const state = game.getState();
+
+  if (state.openUIPanel) {
+    renderUI(display);
+  } else {
+    renderMap(display);
+
+    renderPlayer(display);
+
+    if (pulse) {
+      const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 15));
+      const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 50));
+      const { intensity, phase, duration } = (pulseOptions || {});
+      requestAnimationFrame(() => pulseAberration(
+        display,
+        intensity || randomIntensity,
+        duration || 16,
+        phase || randomPhase,
+        () => redraw(false)
+      ));
+    }
+  }
+}, 16);
