@@ -91,19 +91,19 @@ const moveRight = () => {
   game.dispatch({ type: 'MOVE_PLAYER', dx: 1, dy: 0 });
 };
 
-const openInventory = () => {
-  display.setOptions({forceSquareRatio: false});
-  game.dispatch({ type: 'OPEN_UI_PANEL', panel: 'INVENTORY' });
+const openInventory = (drop = false) => {
+  game.dispatch({ type: 'OPEN_UI_PANEL', panel: drop ? 'INVENTORY.DROP' : 'INVENTORY' });
 };
 
 const closeUI = () => {
-  display.setOptions({forceSquareRatio: true});
   game.dispatch({ type: 'CLOSE_UI_PANEL' });
 };
 
 const setupInput = async () => {
+  keymage.setScope('default');
   keymage('default', 'o', () => game.dispatch({ type: 'COMMAND_OPEN' }));
   keymage('default', 'c', () => game.dispatch({ type: 'COMMAND_CLOSE' }));
+  keymage('default', 'g', () => game.dispatch({ type: 'COMMAND_GET' }));
   ['k', 'w', 'up'].forEach(key => keymage('default', key, moveUp));
   ['j', 's', 'down'].forEach(key => keymage('default', key, moveDown));
   ['h', 'a', 'left'].forEach(key => keymage('default', key, moveLeft));
@@ -112,7 +112,20 @@ const setupInput = async () => {
   // keymage('space', 'space i', () => { keymage.setScope('space.i'); game.log('SPC-i-'); });
   keymage('default', 'i', () => { keymage.setScope('inventory'); openInventory(); });
   keymage('esc', () => { keymage.setScope('default'); closeUI(); });
-  keymage.setScope('default');
+  keymage('inventory', 'd', () => {
+    if (game.getState().inventory.length > 0) {
+      openInventory(true);
+      keymage.setScope('inventory.drop');
+    }
+  });
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].forEach((key, idx) => {
+    keymage('inventory.drop', key, () => {
+      keymage.setScope('inventory');
+      openInventory();
+      game.dispatch({ type: 'COMMAND_DROP', idx });
+    });
+  });
+
 };
 
 const setup = async () => {

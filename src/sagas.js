@@ -136,7 +136,43 @@ function* comClose() {
   }
 }
 
+function* comGet() {
+  const state = yield select();
+  const { map, player, items } = state;
+  const currentCell = map[`${player.x}_${player.y}`];
+  if (!currentCell.contents || currentCell.contents.length === 0) {
+    yield put({ type: 'LOG_MESSAGE', message: 'There is nothing here to get.' })
+  } else {
+    const itemID = currentCell.contents[0];
+    const item = items[currentCell.contents[0]];
+    yield put({ type: 'UPDATE_CELL', cell: { ...currentCell, contents: currentCell.contents.filter(id => id !== itemID) } });
+    yield put({ type: 'PICK_UP_ITEM', item: itemID });
+    yield put({ type: 'LOG_MESSAGE', message: `You pick up ${item.name}.` });
+  }
+}
+
+function* comDrop(action) {
+  const state = yield select();
+  const { map, player, items, inventory } = state;
+  const droppedID = inventory[action.idx];
+  if (droppedID) {
+    const currentCell = map[`${player.x}_${player.y}`];
+    yield put({ type: 'DROP_ITEM', item: droppedID });
+    yield put({
+      type: 'UPDATE_CELL',
+      cell: {
+        ...currentCell,
+        contents: (currentCell.contents && currentCell.contents.length > 0)
+          ? [ ...currentCell.contents, droppedID ]
+          : [droppedID],
+      } });
+    yield put({ type: 'LOG_MESSAGE', message: `You drop ${items[droppedID].name}.` })
+  }
+}
+
 export function* commandSaga() {
   yield takeEvery('COMMAND_CLOSE', comClose);
   yield takeEvery('COMMAND_OPEN', comOpen);
+  yield takeEvery('COMMAND_GET', comGet);
+  yield takeEvery('COMMAND_DROP', comDrop);
 }

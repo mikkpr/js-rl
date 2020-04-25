@@ -24,7 +24,7 @@ const initialState = {
   player: undefined,
   portals: [],
   openUIPanel: undefined,
-  inventory: ['key', 'knife'],
+  inventory: [],
   items: {},
 };
 
@@ -213,6 +213,20 @@ const addItems = (state, action) => {
     .reduce(addItem, state);
 };
 
+const pickUpItem = (state, action) => {
+  return {
+    ...state,
+    inventory: state.inventory.concat([action.item]),
+  };
+};
+
+const dropItem = (state, action) => {
+  return {
+    ...state,
+    inventory: state.inventory.filter(id => id !== action.item),
+  };
+};
+
 const actionMap = {
   MOVE_PLAYER: movePlayer,
   UPDATE_CELL: updateCell,
@@ -226,6 +240,8 @@ const actionMap = {
   CLOSE_UI_PANEL: closeUIPanel,
   ADD_ITEMS: addItems,
   ADD_ITEM: addItem,
+  PICK_UP_ITEM: pickUpItem,
+  DROP_ITEM: dropItem,
 };
 
 const reducer = (state = initialState, action) => {

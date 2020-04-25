@@ -97,21 +97,37 @@ export const renderPlayer = display => {
   display.draw(x + Xoffset, y + Yoffset, '@', '#fff', '#000');
 };
 
+const renderInventory = (display) => {
+  const { inventory, items } = game.getState();
+  display.drawText(1, 1, 'you are carrying:');
+  const itemsOffset = 3;
+  if (inventory.length === 0) {
+    display.drawText(2, 3, '- nothing');
+  } else {
+    inventory.map(id => items[id]).forEach((item, idx) => {
+      display.drawText(2, itemsOffset + idx, `- ${item.name}`);
+    });
+  }
+};
+
+const renderDropMenu = (display) => {
+  const { inventory, items } = game.getState();
+  display.drawText(1, 1, 'drop what exactly?')
+  const itemsOffset = 3;
+  const homerow = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
+  inventory.map(id => items[id]).forEach((item, idx) => {
+    display.drawText(2, itemsOffset + idx, `${homerow[idx]}) ${item.name}`);
+  });
+};
+
 export const renderUI = display => {
   const { openUIPanel } = game.getState();
   if (openUIPanel === 'INVENTORY') {
     renderInventory(display);
+  } else if (openUIPanel === 'INVENTORY.DROP') {
+    renderDropMenu(display);
   }
 };
-
-const renderInventory = (display) => {
-  const { inventory } = game.getState();
-  display.drawText(1, 1, 'you are carrying:');
-  const itemsOffset = 3;
-  inventory.forEach((item, idx) => {
-    display.drawText(2, itemsOffset + idx, `- ${item}`);
-  });
-}
 
 export const redraw = throttle((pulse = false, pulseOptions) => {
   display.clear();
