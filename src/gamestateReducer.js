@@ -1,4 +1,5 @@
 import { CELL_TYPES, CELL_PROPERTIES } from './map';
+import { ID } from './utils/id';
 
 const dirToString = (dir) => {
   const [x, y] = dir;
@@ -14,6 +15,7 @@ const dirToString = (dir) => {
 
   return '';
 }
+
 const initialState = {
   map: {},
   lightingMap: {},
@@ -23,10 +25,15 @@ const initialState = {
   portals: [],
   openUIPanel: undefined,
   inventory: ['key', 'knife'],
+  items: {},
 };
 
 const updateCell = (state, action) => {
-  const { x, y, cell } = action;
+  const { cell } = action;
+
+  const x = action.x || cell.x;
+  const y = action.y || cell.y;
+
   const key = `${x}_${y}`;
 
   const { map } = state;
@@ -73,7 +80,7 @@ const updateExplorationMap = (state, action) => {
 
 const movePlayer = (state, action) => {
   const { dx, dy } = action;
-  const { mapOffset, player, map, portals } = state;
+  const { items, mapOffset, player, map, portals } = state;
   const { x, y } = player;
 
   const cellKey = `${x + dx}_${y + dy}`;
@@ -141,6 +148,11 @@ const movePlayer = (state, action) => {
   }
   const newMapoffset = [Math.floor(newX / 21), Math.floor(newY / 21)];
 
+  if (cell && cell.contents && cell.contents.length > 0) {
+    const contents = cell.contents.map(id => items[id]);
+    requestAnimationFrame(() => game.log(...contents.map(item => `There is ${item.name} here.`)));
+  }
+
   return {
     ...state,
     player: {
@@ -188,6 +200,19 @@ const closeUIPanel = (state, action) => {
   };
 };
 
+const addItem = (state, action) => {
+  return {
+    ...state,
+    items: { ...state.items, [action.item.id]: action.item },
+  };
+};
+
+const addItems = (state, action) => {
+  return action.items
+    .map(item => ({ item }))
+    .reduce(addItem, state);
+};
+
 const actionMap = {
   MOVE_PLAYER: movePlayer,
   UPDATE_CELL: updateCell,
@@ -199,6 +224,8 @@ const actionMap = {
   SET_PLAYER_POSITION: setPlayerPosition,
   OPEN_UI_PANEL: openUIPanel,
   CLOSE_UI_PANEL: closeUIPanel,
+  ADD_ITEMS: addItems,
+  ADD_ITEM: addItem,
 };
 
 const reducer = (state = initialState, action) => {

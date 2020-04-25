@@ -48,7 +48,7 @@ export const pulseAberration = (display, intensity, phase, duration, callback = 
 };
 
 export const renderMap = display => {
-  const { map, lightingMap, explorationMap, mapOffset } = game.getState();
+  const { items, map, lightingMap, explorationMap, mapOffset } = game.getState();
 
   const cells = Object.values(map);
 
@@ -56,7 +56,8 @@ export const renderMap = display => {
     const {
       x,
       y,
-      type
+      type,
+      contents,
     } = cell;
     const {
       char,
@@ -80,9 +81,10 @@ export const renderMap = display => {
         : ROT.Color.fromString(fg),
       visibility,
     ));
+    const character = contents && contents.length > 0 ? items[contents[0]].char : char;
     const Xoffset = mapOffset[0] * -WIDTH;
     const Yoffset = mapOffset[1] * -HEIGHT;
-    display.draw(x + Xoffset, y + Yoffset, char, color, bg);
+    display.draw(x + Xoffset, y + Yoffset, character, color, bg);
   });
 };
 

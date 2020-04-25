@@ -1,9 +1,10 @@
 import * as ROT from 'rot-js';
 import game from './gamestate';
-import { getCanvasContainer } from './utils/dom';
-import { CELL_PROPERTIES, CELL_TYPES, createMapFromRooms, level0, level0portals } from './map';
-import { redraw } from './utils/render';
 import keymage from 'keymage';
+import { CELL_PROPERTIES, CELL_TYPES, createMapFromRooms, level0, level0portals } from './map';
+import { generateItems } from './items';
+import { getCanvasContainer } from './utils/dom';
+import { redraw } from './utils/render';
 
 export const [WIDTH, HEIGHT] = [21, 21];
 
@@ -59,6 +60,18 @@ game.dispatch({
 const floorCells = Object.values(game.getState().map).filter(cell => !CELL_PROPERTIES[cell.type].solid);
 const randomCell = ROT.RNG.getItem(floorCells);
 game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell.y] });
+
+const items = generateItems();
+game.dispatch({ type: 'ADD_ITEMS', items });
+
+const keyCell = ROT.RNG.getItem(floorCells);
+game.dispatch({
+  type: 'UPDATE_CELL',
+  cell: {
+    ...keyCell,
+    contents: [items[0].id],
+  },
+});
 
 game.dispatch({ type: 'CALCULATE_FOV' });
 
