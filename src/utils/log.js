@@ -16,19 +16,53 @@ const createLogRow = (msg) => {
   const el = document.createElement('div');
   el.classList.add('main__log-row');
 
+  const msgEl = document.createElement('span');
+  msgEl.classList.add('main__log-row-msg');
   const formattedMsg = formatMsg(msg);
-  el.innerHTML = formattedMsg;
+  msgEl.innerHTML = formattedMsg;
+
+  el.appendChild(msgEl);
 
   return el;
 };
 
-const log = (...msgs) => requestAnimationFrame(() => {
+const addLogRow = msg => {
   const logEl = getLog();
-  const rows = msgs.map(createLogRow);
+  const row = createLogRow(msg);
 
-  rows.forEach((row) => logEl.appendChild(row));
+  logEl.appendChild(row);
 
   logEl.scrollTop = logEl.scrollHeight;
+};
+
+const appendLastLogRow = msg => {
+  const logEl = getLog();
+  const lastRow = logEl.children[logEl.childElementCount - 1];
+
+  let countEl = lastRow.children[1];
+  if (!countEl) {
+    countEl = document.createElement('span');
+    countEl.innerHTML = ' (2x)';
+    lastRow.appendChild(countEl);
+  } else {
+    const lastCount = parseInt(countEl.textContent.match(/\s\((\d+)x\)/)[1], 10);
+    countEl.innerHTML = ` (${lastCount + 1}x)`;
+  }
+
+  logEl.scrollTop = logEl.scrollHeight;
+};
+
+const log = (...msgs) => requestAnimationFrame(() => {
+  const logEl = getLog();
+
+  msgs.forEach(msg => {
+    const lastRow = logEl.children[logEl.childElementCount - 1];
+    if (!lastRow || msg !== lastRow.children[0].textContent) {
+      addLogRow(msg);
+    } else {
+      appendLastLogRow(msg);
+    }
+  });
 });
 
 export default log;
