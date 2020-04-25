@@ -104,7 +104,7 @@ export const renderUI = display => {
 
 const renderInventory = (display) => {
   const { inventory } = game.getState();
-  display.drawText(1, 1, "You are carrying:");
+  display.drawText(1, 1, 'you are carrying:');
   const itemsOffset = 3;
   inventory.forEach((item, idx) => {
     display.drawText(2, itemsOffset + idx, `- ${item}`);

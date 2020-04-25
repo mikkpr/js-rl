@@ -9,7 +9,7 @@ const formatMsg = (msg) => {
   if (typeof msg === 'object') {
     return JSON.stringify(msg, undefined, 2);
   }
-  return msg;
+  return msg.toLowerCase();
 };
 
 const createLogRow = (msg) => {
@@ -18,8 +18,7 @@ const createLogRow = (msg) => {
 
   const msgEl = document.createElement('span');
   msgEl.classList.add('main__log-row-msg');
-  const formattedMsg = formatMsg(msg);
-  msgEl.innerHTML = formattedMsg;
+  msgEl.innerHTML = msg;
 
   el.appendChild(msgEl);
 
@@ -55,9 +54,11 @@ const appendLastLogRow = msg => {
 const log = (...msgs) => requestAnimationFrame(() => {
   const logEl = getLog();
 
-  msgs.forEach(msg => {
+  msgs
+    .map(formatMsg)
+    .forEach(msg => {
     const lastRow = logEl.children[logEl.childElementCount - 1];
-    if (!lastRow || msg !== lastRow.children[0].textContent) {
+    if (!lastRow || msg.toLowerCase() !== lastRow.children[0].textContent) {
       addLogRow(msg);
     } else {
       appendLastLogRow(msg);
