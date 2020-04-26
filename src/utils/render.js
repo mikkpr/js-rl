@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import throttle from 'lodash/throttle';
 import { WIDTH, HEIGHT } from '../index';
 import game from '../gamestate';
-import { CELL_PROPERTIES } from '../map';
+import { PORTAL_PROPERTIES, CELL_PROPERTIES } from '../map';
 
 const chromaticAberration = (ctx, intensity, phase, width, height) => {
   const canvas = ctx.canvas;
@@ -48,7 +48,8 @@ export const pulseAberration = (display, intensity, phase, duration, callback = 
 };
 
 export const renderMap = display => {
-  const { items, map, lightingMap, explorationMap, mapOffset } = game.getState();
+  const state = game.getState();
+  const { items, map, lightingMap, explorationMap, mapOffset } = state;
 
   const cells = Object.values(map);
 
@@ -68,11 +69,18 @@ export const renderMap = display => {
     const visibility = key in lightingMap
       ? lightingMap[key]
       : explorationMap.includes(key)
-      ? 0.25
-      : 0;
+        ? 0.25
+        : 0;
 
-    const character = contents && contents.length > 0 ? items[contents[0]].char : char;
-    const foregroundColor = contents && contents.length > 0 ? items[contents[0]].fg : fg;
+    const portals = state.portals.filter(p => {
+      return p.type === 'PORTAL' && p.from[0] === x && p.from[1] === y;
+    });
+
+    const topItem = contents && contents.length > 0 && items[contents[0]];
+    const topPortal = portals && portals.length > 0 && PORTAL_PROPERTIES[portals[0].type];
+    const source = key in lightingMap ? topItem || topPortal || CELL_PROPERTIES[type] : CELL_PROPERTIES[type];
+    const character = source.char;
+    const foregroundColor = source.fg;
     const color = ROT.Color.toHex(ROT.Color.interpolate(
       ROT.Color.fromString(bg),
       character === '.'
@@ -143,8 +151,8 @@ export const redraw = throttle((pulse = false, pulseOptions) => {
     renderPlayer(display);
 
     if (pulse) {
-      const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 15));
-      const randomPhase = Math.max(0, 1 - Math.floor(Math.random() * 50));
+      const randomIntensity = Math.max(0, 1 - Math.floor(Math.random() * 5));
+      const randomPhase = Math.max(0, 1- Math.floor(Math.random() * 5));
       const { intensity, phase, duration } = (pulseOptions || {});
       requestAnimationFrame(() => pulseAberration(
         display,

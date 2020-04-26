@@ -8,6 +8,19 @@ export const CELL_TYPES = {
   DOOR_CLOSED: 'DOOR_CLOSED',
   PORTAL: 'PORTAL',
 };
+
+export const PORTAL_TYPES = {
+  PORTAL: 'PORTAL',
+  DOOR: 'DOOR'
+}
+
+export const PORTAL_PROPERTIES = {
+  PORTAL: {
+    char: '~',
+    fg: '#a0a',
+  },
+};
+
 export const CELL_PROPERTIES = {
   [CELL_TYPES.FLOOR]: {
     char: '.',
@@ -168,43 +181,53 @@ export const level0portals = [
     from: [12, 10],
     to: [12, 10],
     dir: [-1, 0],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [12, 10],
     to: [12, 10],
     dir: [0, 1],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [4, 10],
     to: [4, 10],
     dir: [1, 0],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [4, 10],
     to: [4, 10],
     dir: [-1, 0],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [10, 20],
     to: [10, 25],
     dir: [0, 1],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [10, 25],
     to: [10, 20],
     dir: [0, -1],
-    type: 'DOOR',
+    type: PORTAL_TYPES.DOOR,
   }, {
     from: [19, 1],
     to: [10, 10],
     dir: [0, -1],
-    type: 'PORTAL',
+    type: PORTAL_TYPES.PORTAL,
   }, {
     from: [19, 1],
     to: [10, 31],
     dir: [1, 0],
-    type: 'PORTAL',
-  },
+    type: PORTAL_TYPES.PORTAL,
+  }, {
+    from: [5, 36],
+    to: [15, 36],
+    dir: [-1, 0],
+    type: PORTAL_TYPES.PORTAL,
+  }, {
+    from: [15, 36],
+    to: [5, 36],
+    dir: [1, 0],
+    type: PORTAL_TYPES.PORTAL,
+  }
 ];
 
 // const intersects = (room1, room2) => {
