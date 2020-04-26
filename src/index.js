@@ -26,7 +26,6 @@ const setupDisplay = async () => {
   });
 };
 
-const initialCells = createMapFromRooms(level0);
 
 // const em = new ROT.Map.Cellular(WIDTH*4, HEIGHT*4);
 // em.randomize(0.5);
@@ -45,33 +44,44 @@ const initialCells = createMapFromRooms(level0);
 //     solid: !!solid
 //   })
 // });
+const items = generateItems();
+game.dispatch({ type: 'ADD_ITEMS', items });
 
+const key = items[0].id;
+const initialPortals = level0portals.map((portal, idx) => {
+  if (idx > 1) {
+    return portal;
+  }
+
+  return {
+    ...portal,
+    key,
+    locked: true
+  };
+});
+const initialCells = createMapFromRooms(level0, initialPortals);
 game.dispatch({
   type: 'UPDATE_CELLS',
   cells: initialCells,
 });
-
-const initialPortals = level0portals;
-game.dispatch({
-  type: 'UPDATE_PORTALS',
-  portals: initialPortals,
-});
-
 const floorCells = Object.values(game.getState().map).filter(cell => !CELL_PROPERTIES[cell.type].solid);
-const randomCell = ROT.RNG.getItem(floorCells);
-game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell.y] });
-
-const items = generateItems();
-game.dispatch({ type: 'ADD_ITEMS', items });
 
 const keyCell = ROT.RNG.getItem(floorCells);
 game.dispatch({
   type: 'UPDATE_CELL',
   cell: {
     ...keyCell,
-    contents: [items[0].id],
+    contents: [key],
   },
 });
+
+game.dispatch({
+  type: 'UPDATE_PORTALS',
+  portals: initialPortals,
+});
+
+const randomCell = ROT.RNG.getItem(floorCells);
+game.dispatch({ type: 'SET_PLAYER_POSITION', position: [randomCell.x, randomCell.y] });
 
 game.dispatch({ type: 'CALCULATE_FOV' });
 
@@ -103,6 +113,7 @@ const setupInput = async () => {
   keymage.setScope('default');
   keymage('default', 'o', () => game.dispatch({ type: 'COMMAND_OPEN' }));
   keymage('default', 'c', () => game.dispatch({ type: 'COMMAND_CLOSE' }));
+  keymage('default', 'u', () => game.dispatch({ type: 'COMMAND_UNLOCK' }));
   keymage('default', 'g', () => game.dispatch({ type: 'COMMAND_GET' }));
   ['k', 'w', 'up'].forEach(key => keymage('default', key, moveUp));
   ['j', 's', 'down'].forEach(key => keymage('default', key, moveDown));

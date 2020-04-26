@@ -92,12 +92,23 @@ const getAdjacentCells = (state, type) => {
 
 function* comOpen() {
   const state = yield select();
-  const adjacent = yield getAdjacentCells(state, CELL_TYPES.DOOR_CLOSED);
-
-  if (adjacent.length === 0) {
+  const { portals } = state;
+  const adjacentClosedDoors = yield getAdjacentCells(state, CELL_TYPES.DOOR_CLOSED);
+  const adjacentLockedDoors = adjacentClosedDoors.filter(door => {
+    return portals
+      .filter((p) => (
+        p.from[0] === door.x
+        && p.from[1] === door.y
+        && typeof p.locked !== 'undefined'
+        && !!p.locked
+      )).length > 0;
+  });
+  if (adjacentClosedDoors.length === 0) {
     yield put({ type: 'LOG_MESSAGE', message: 'Nothing to open.'});
+  } else if (adjacentLockedDoors.length > 0) {
+    yield put({ type: 'LOG_MESSAGE', message: 'The door is locked.'});
   } else {
-    const updatedCells = adjacent.map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_OPEN }));
+    const updatedCells = adjacentClosedDoors.map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_OPEN }));
     updatedCells.forEach(cell => {
       const portals = state.portals;
       const connectedPortals = portals
@@ -108,7 +119,7 @@ function* comOpen() {
         .map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_OPEN }));
       updatedCells.push(...connectedPortals);
     });
-    yield put({ type: 'LOG_MESSAGE', message: `You open the door${adjacent.length > 1 ? 's' : ''}.`});
+    yield put({ type: 'LOG_MESSAGE', message: `You open the door${adjacentClosedDoors.length > 1 ? 's' : ''}.`});
     yield put({ type: 'UPDATE_CELLS', cells: updatedCells });
   }
 }
@@ -118,7 +129,7 @@ function* comClose() {
   const adjacent = yield getAdjacentCells(state, CELL_TYPES.DOOR_OPEN);
 
   if (adjacent.length === 0) {
-    yield put({ type: 'LOG_MESSAGE', message: 'Nothing to close.'});
+    yield put({ type: 'LOG_MESSAGE', message: 'Nothing to close.' });
   } else {
     const updatedCells = adjacent.map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_CLOSED }));
     updatedCells.forEach(cell => {
@@ -131,8 +142,51 @@ function* comClose() {
         .map((cell) => ({ ...cell, type: CELL_TYPES.DOOR_CLOSED }));
       updatedCells.push(...connectedPortals);
     });
-    yield put({ type: 'LOG_MESSAGE', message: `You close the door${adjacent.length > 1 ? 's' : ''}.`});
+    yield put({ type: 'LOG_MESSAGE', message: `You close the door${adjacent.length > 1 ? 's' : ''}.` });
     yield put({ type: 'UPDATE_CELLS', cells: updatedCells });
+  }
+}
+
+function* comUnlock() {
+  const state = yield select();
+  const { items, inventory, portals } = state;
+  const adjacentClosedDoors = yield getAdjacentCells(state, CELL_TYPES.DOOR_CLOSED);
+  const adjacentLockedDoors = adjacentClosedDoors.filter(door => {
+    const adjacentPortals = portals.filter(p => {
+      return p.from[0] === door.x && p.from[1] === door.y;
+    });
+    return adjacentPortals
+      .filter(p =>
+        (typeof p.locked !== 'undefined' && !!p.locked)
+      ).length > 0;
+  });
+  const adjacentWithKey = adjacentLockedDoors.map(cell => {
+    const adjacentPortals = portals.filter(p => {
+      return p.from[0] === cell.x && p.from[1] === cell.y;
+    });
+    return {
+      ...cell,
+      key: adjacentPortals[0].key
+    };
+  }).filter(door => inventory.includes(door.key));
+  if (adjacentWithKey.length > 0) {
+    const updatedPortals = portals.map(portal => {
+      if (typeof portal.key !== 'undefined' && portal.key === adjacentWithKey[0].key) {
+        return {
+          ...portal,
+          locked: false
+        };
+      } else {
+        return portal;
+      }
+    });
+    const keyName = items[adjacentWithKey[0].key].name;
+    yield put({ type: 'UPDATE_PORTALS', portals: updatedPortals });
+    yield put({ type: 'LOG_MESSAGE', message: `You unlock the door with ${keyName}.` });
+  } else if (adjacentLockedDoors.length > 0) {
+    yield put({ type: 'LOG_MESSAGE', message: 'You don\'t have the key.' });
+  } else {
+    yield put({ type: 'LOG_MESSAGE', message: 'Nothing here to unlock.' });
   }
 }
 
@@ -173,6 +227,7 @@ function* comDrop(action) {
 export function* commandSaga() {
   yield takeEvery('COMMAND_CLOSE', comClose);
   yield takeEvery('COMMAND_OPEN', comOpen);
+  yield takeEvery('COMMAND_UNLOCK', comUnlock);
   yield takeEvery('COMMAND_GET', comGet);
   yield takeEvery('COMMAND_DROP', comDrop);
 }

@@ -66,7 +66,7 @@ const updateLightingMap = (state, action) => {
   const { map } = action;
   return {
     ...state,
-    lightingMap: map
+    lightingMap: map,
   };
 };
 
@@ -120,7 +120,7 @@ const movePlayer = (state, action) => {
   });
 
   if (portal && portal.length > 0) {
-    const { to, dir, type } = portal[0];
+    const { to, from, dir, type } = portal[0];
     [newX, newY] = to;
 
     if (type === 'DOOR') {

@@ -71,17 +71,18 @@ export const renderMap = display => {
       ? 0.25
       : 0;
 
+    const character = contents && contents.length > 0 ? items[contents[0]].char : char;
+    const foregroundColor = contents && contents.length > 0 ? items[contents[0]].fg : fg;
     const color = ROT.Color.toHex(ROT.Color.interpolate(
       ROT.Color.fromString(bg),
-      char === '.'
+      character === '.'
         ? ROT.Color.multiply(
-            ROT.Color.fromString(fg),
+            ROT.Color.fromString(foregroundColor),
             [128, 128, 128],
         )
-        : ROT.Color.fromString(fg),
+        : ROT.Color.fromString(foregroundColor),
       visibility,
     ));
-    const character = contents && contents.length > 0 ? items[contents[0]].char : char;
     const Xoffset = mapOffset[0] * -WIDTH;
     const Yoffset = mapOffset[1] * -HEIGHT;
     display.draw(x + Xoffset, y + Yoffset, character, color, bg);

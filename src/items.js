@@ -10,6 +10,7 @@ const ITEM_PROPERTIES = {
     char: 'F',
     usable: true,
     unique: true,
+    fg: '#aa0'
   },
 };
 
@@ -23,7 +24,6 @@ const generateItem = (type) => {
 
 export const generateItems = () => {
   const key = generateItem(ITEM_TYPES.KEY);
-  console.log(key);
 
   return [
     key

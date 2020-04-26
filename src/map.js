@@ -1,4 +1,5 @@
 import * as ROT from 'rot-js';
+import ID from './utils/id';
 
 export const CELL_TYPES = {
   FLOOR: 'FLOOR',
@@ -40,9 +41,9 @@ export const CELL_PROPERTIES = {
   },
 };
 
-const isDoor = (x, y, doors = []) => {
-  return doors.reduce((acc, door) => {
-    return acc || (door[0] === x && door[1] === y);
+const isDoor = (x, y, portals = []) => {
+  return portals.filter(p => p.type === 'DOOR').reduce((acc, door) => {
+    return acc || (door.from[0] === x && door.from[1] === y);
   }, false);
 };
 
@@ -65,7 +66,7 @@ const getChar = (room, x, y) => {
   return '.';
 };
 
-const createCellsFromRoom = room => {
+const createCellsFromRoom = (room, portals) => {
   const cells = [];
   const {
     x,
@@ -121,19 +122,19 @@ const createCellsFromRoom = room => {
     });
   }
   // doors
-  doors.forEach((door) => {
+  portals.filter(p => p.type === 'DOOR').forEach((portal) => {
     cells.push({
-      x: door[0],
-      y: door[1],
+      x: portal.from[0],
+      y: portal.from[1],
       type: CELL_TYPES.DOOR_CLOSED,
     });
   });
   return cells;
 };
 
-export const createMapFromRooms = (rooms) => {
+export const createMapFromRooms = (rooms, portals) => {
   return rooms.reduce((cells, room) => {
-    const roomCells = createCellsFromRoom(room);
+    const roomCells = createCellsFromRoom(room, portals);
     return cells.concat(roomCells);
   }, []);
 };
@@ -144,30 +145,46 @@ export const level0 = [
     y: 0,
     width: 21,
     height: 21,
-    doors: [[10, 20]],
   }, {
     x: 4,
     y: 4,
     width: 13,
     height: 13,
-    doors: [[4, 10]],
   }, {
     x: 8,
     y: 8,
     width: 5,
     height: 5,
-    doors: [[12, 10]],
   }, {
     x: 4,
     y: 25,
     width: 13,
     height: 13,
-    doors: [[10, 25]],
   },
 ];
 
 export const level0portals = [
   {
+    from: [12, 10],
+    to: [12, 10],
+    dir: [-1, 0],
+    type: 'DOOR',
+  }, {
+    from: [12, 10],
+    to: [12, 10],
+    dir: [0, 1],
+    type: 'DOOR',
+  }, {
+    from: [4, 10],
+    to: [4, 10],
+    dir: [1, 0],
+    type: 'DOOR',
+  }, {
+    from: [4, 10],
+    to: [4, 10],
+    dir: [-1, 0],
+    type: 'DOOR',
+  }, {
     from: [10, 20],
     to: [10, 25],
     dir: [0, 1],
@@ -189,3 +206,27 @@ export const level0portals = [
     type: 'PORTAL',
   },
 ];
+
+// const intersects = (room1, room2) => {
+
+// }
+
+// const generateDungeonSkeleton = (branches) => {
+//   const rooms = [];
+//   const initialRoom = {
+//     type: 'ROOM',
+//     doors: ['N', 'S', 'E', 'W'],
+
+//   }
+// }
+
+
+// {
+//   id: '_1000',
+//   type:' ROOM',
+//   dungeonCoords: [0, 0],
+//   connections: {
+//     E: '_1001'
+//   },
+
+// }
