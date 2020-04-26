@@ -66,7 +66,7 @@ game.dispatch({
 });
 const floorCells = Object.values(game.getState().map).filter(cell => !CELL_PROPERTIES[cell.type].solid);
 
-const keyCell = ROT.RNG.getItem(floorCells);
+const keyCell = ROT.RNG.getItem(floorCells.filter(cell => cell.x < 5 && cell.y < 0));
 game.dispatch({
   type: 'UPDATE_CELL',
   cell: {
@@ -105,6 +105,10 @@ const openInventory = (drop = false) => {
   game.dispatch({ type: 'OPEN_UI_PANEL', panel: drop ? 'INVENTORY.DROP' : 'INVENTORY' });
 };
 
+const showHelp = () => {
+  game.dispatch({ type: 'OPEN_UI_PANEL', panel: 'HELP' });
+}
+
 const closeUI = () => {
   game.dispatch({ type: 'CLOSE_UI_PANEL' });
 };
@@ -128,6 +132,10 @@ const setupInput = async () => {
       openInventory(true);
       keymage.setScope('inventory.drop');
     }
+  });
+  keymage('f1', () => {
+    keymage.setScope('help');
+    showHelp();
   });
   ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].forEach((key, idx) => {
     keymage('inventory.drop', key, () => {

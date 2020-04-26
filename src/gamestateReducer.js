@@ -55,10 +55,26 @@ const updateCells = (state, action) => {
     .reduce(updateCell, state);
 };
 
+const updatePortal = (state, action) => {
+  return {
+    ...state,
+    portals: state.portals.map(p => p.id === action.portal.id ? action.portal : p)
+  };
+}
+
 const updatePortals = (state, action) => {
   return {
     ...state,
-    portals: action.portals,
+    portals: action.portals.map(p => {
+      if (!p.id) {
+        return {
+          ...p,
+          id: ID()
+        }
+      }
+
+      return p;
+    }),
   };
 };
 
@@ -104,7 +120,7 @@ const movePlayer = (state, action) => {
       portal.from[1] === newY
     );
 
-    if (isNext && portal.type === 'PORTAL') {
+    if (isNext && portal.type === 'PORTAL' && portal.hidden !== true) {
       const dir = dirToString(portal.dir);
       requestAnimationFrame(() => game.log(`There is something strange to the ${dir}.`));
     }
@@ -122,8 +138,7 @@ const movePlayer = (state, action) => {
   if (portal && portal.length > 0) {
     const { to, from, dir, type } = portal[0];
     [newX, newY] = to;
-
-    if (type === 'DOOR') {
+    if (['DOOR', 'DOORWAY'].includes(type)) {
       newX += dir[0];
       newY += dir[1];
     }
@@ -139,8 +154,17 @@ const movePlayer = (state, action) => {
           },
         });
         game.log('You step through the portal.');
+        if (portal[0].triggerMsg && !portal[0].triggered) {
+          game.log(portal[0].triggerMsg);
+          requestAnimationFrame(() => game.dispatch({
+            type: 'UPDATE_PORTAL',
+            portal: {
+              ...portal[0],
+              triggered: true,
+            },
+          }));
+        }
       });
-
     }
   } else if (cell && CELL_PROPERTIES[cell.type].solid) {
     requestAnimationFrame(() => game.log('Alas! You cannot go that way.'));
@@ -235,6 +259,7 @@ const actionMap = {
   UPDATE_EXPLORATION_MAP: updateExplorationMap,
   UPDATE_MAP_OFFSET: updateMapOffset,
   UPDATE_PORTALS: updatePortals,
+  UPDATE_PORTAL: updatePortal,
   SET_PLAYER_POSITION: setPlayerPosition,
   OPEN_UI_PANEL: openUIPanel,
   CLOSE_UI_PANEL: closeUIPanel,

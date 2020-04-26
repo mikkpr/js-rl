@@ -7,11 +7,13 @@ export const CELL_TYPES = {
   DOOR_OPEN: 'DOOR_OPEN',
   DOOR_CLOSED: 'DOOR_CLOSED',
   PORTAL: 'PORTAL',
+  DOORWAY: 'DOORWAY'
 };
 
 export const PORTAL_TYPES = {
   PORTAL: 'PORTAL',
-  DOOR: 'DOOR'
+  DOOR: 'DOOR',
+  DOORWAY: 'DOORWAY'
 }
 
 export const PORTAL_PROPERTIES = {
@@ -19,6 +21,10 @@ export const PORTAL_PROPERTIES = {
     char: '~',
     fg: '#a0a',
   },
+  DOORWAY: {
+    char: '.',
+    fg: '#aaa',
+  }
 };
 
 export const CELL_PROPERTIES = {
@@ -52,6 +58,12 @@ export const CELL_PROPERTIES = {
     bg: '#000',
     solid: false,
   },
+  [CELL_TYPES.DOORWAY]: {
+    char: '.',
+    fg: '#aaa',
+    bg: '#000',
+    solid: false
+  }
 };
 
 const isDoor = (x, y, portals = []) => {
@@ -139,9 +151,16 @@ const createCellsFromRoom = (room, portals) => {
     cells.push({
       x: portal.from[0],
       y: portal.from[1],
-      type: CELL_TYPES.DOOR_CLOSED,
+      type: portal.closed === false ? CELL_TYPES.DOOR_OPEN : CELL_TYPES.DOOR_CLOSED,
     });
   });
+  portals.filter(p => p.type === 'DOORWAY').forEach((portal) => {
+    cells.push({
+      x: portal.from[0],
+      y: portal.from[1],
+      type: CELL_TYPES.DOORWAY
+    });
+  })
   return cells;
 };
 
@@ -173,7 +192,12 @@ export const level0 = [
     y: 25,
     width: 13,
     height: 13,
-  },
+  }, {
+    x: 0,
+    y: -5,
+    width: 5,
+    height: 5,
+  }
 ];
 
 export const level0portals = [
@@ -208,10 +232,19 @@ export const level0portals = [
     dir: [0, -1],
     type: PORTAL_TYPES.DOOR,
   }, {
-    from: [19, 1],
-    to: [10, 10],
+    from: [1, -1],
+    to: [1, -1],
+    dir: [0, 1],
+    type: PORTAL_TYPES.DOORWAY,
+  }, {
+    from: [1, 1],
+    to: [1, -1],
     dir: [0, -1],
     type: PORTAL_TYPES.PORTAL,
+    hidden: true,
+    char: '.',
+    fg: '#aaa',
+    triggerMsg: 'you found a secret area!'
   }, {
     from: [19, 1],
     to: [10, 31],
@@ -227,6 +260,12 @@ export const level0portals = [
     to: [5, 36],
     dir: [1, 0],
     type: PORTAL_TYPES.PORTAL,
+  }, {
+    from: [9, 10],
+    to: [100, 100],
+    dir: [-1, 0],
+    type: PORTAL_TYPES.PORTAL,
+    triggerMsg: 'you have returned to the void. game over!'
   }
 ];
 

@@ -77,7 +77,7 @@ export const renderMap = display => {
     });
 
     const topItem = contents && contents.length > 0 && items[contents[0]];
-    const topPortal = portals && portals.length > 0 && PORTAL_PROPERTIES[portals[0].type];
+    const topPortal = portals && portals.length > 0 && { ...PORTAL_PROPERTIES[portals[0].type], ...portals[0] };
     const source = key in lightingMap ? topItem || topPortal || CELL_PROPERTIES[type] : CELL_PROPERTIES[type];
     const character = source.char;
     const foregroundColor = source.fg;
@@ -129,12 +129,30 @@ const renderDropMenu = (display) => {
   });
 };
 
+const renderHelp = (display) => {
+  display.drawText(1, 1, 'keys:');
+
+  display.drawText(1, 3, 'move - wasd / hjkl / arrows');
+
+  display.drawText(1, 6, 'get - g');
+  display.drawText(1, 7, 'inventory - i');
+  display.drawText(3, 8, 'drop - d');
+
+  display.drawText(1, 10, 'open door - o');
+  display.drawText(1, 11, 'close door - c');
+  display.drawText(1, 12, 'unlock door - u');
+
+  display.drawText(1, 19, 'Find your way out!');
+}
+
 export const renderUI = display => {
   const { openUIPanel } = game.getState();
   if (openUIPanel === 'INVENTORY') {
     renderInventory(display);
   } else if (openUIPanel === 'INVENTORY.DROP') {
     renderDropMenu(display);
+  } else if (openUIPanel === 'HELP') {
+    renderHelp(display);
   }
 };
 
