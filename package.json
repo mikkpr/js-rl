@@ -17,6 +17,7 @@
   "author": "mikkpr",
   "license": "ISC",
   "devDependencies": {
+    "@types/redux-logger": "^3.0.7",
     "eslint": "^5.10.0",
     "eslint-watch": "^4.0.2",
     "npm-run-all": "^4.0.2",
@@ -26,8 +27,15 @@
     "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.150",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
+    "immer": "^6.0.3",
+    "keymage": "^1.1.3",
+    "lodash": "^4.17.15",
+    "redux": "^4.0.5",
+    "redux-logger": "^3.0.6",
+    "redux-saga": "^1.1.3",
     "rot-js": "^2.1.1",
     "typescript": "^3.8.3"
   }

@@ -1,23 +1,39 @@
 import * as ROT from 'rot-js';
+import keymage from 'keymage';
+import setupKeys from './keys';
+import game from './state';
+import { updatePlayerPosition } from './actions/player';
+import { setupDisplay } from './display';
 
-const WIDTH: number = 64;
-const HEIGHT: number = 32;
+const WIDTH = 64;
+const HEIGHT = 32;
 
 let display: ROT.Display;
 
-const setup = (): void => {
-  const options = {
-    width: WIDTH,
-    height: HEIGHT,
-    font: 'Fira Mono'
-  };
-  display = new ROT.Display(options)
+export const draw = (): void => {
+  const { player } = game.getState();
+  display.clear();
 
-  console.log(display.getContainer());
+  for (let i=0; i < HEIGHT; i++) {
+    display.drawText(0, i, '%c{#444}................................................................');
+  }
 
-  document.querySelector('.main').appendChild(display.getContainer());
-
-  display.draw(WIDTH / 2, HEIGHT / 2, '@', '#fff', '#000')
+  display.draw(player.x, player.y, '@', '#aa0', '#000');
 };
 
+const playerInitialPos = [WIDTH / 2, HEIGHT / 2];
+updatePlayerPosition(game)(playerInitialPos[0], playerInitialPos[1], false);
+
+const setup = (): void => {
+  display = setupDisplay({
+    width: WIDTH,
+    height: HEIGHT
+  });
+
+  setupKeys();
+
+  draw();
+};
 setup();
+
+game.subscribe(() => requestAnimationFrame(draw));
