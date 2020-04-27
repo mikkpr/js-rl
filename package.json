@@ -8,7 +8,7 @@
     "dev:server": "webpack-dev-server --hot --inline --host 0.0.0.0",
     "watch": "webpack -w -d",
     "build": "webpack -p",
-    "lint": "node_modules/.bin/esw webpack.config.* src --color",
+    "lint": "node_modules/.bin/esw ./src/* --color",
     "lint:watch": "npm run lint -- --watch"
   },
   "keywords": [
@@ -17,14 +17,18 @@
   "author": "mikkpr",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.2.0",
-    "@babel/preset-env": "^7.2.0",
-    "babel-loader": "^8.0.4",
     "eslint": "^5.10.0",
     "eslint-watch": "^4.0.2",
     "npm-run-all": "^4.0.2",
+    "ts-loader": "^7.0.1",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "rot-js": "^2.1.1",
+    "typescript": "^3.8.3"
   }
 }

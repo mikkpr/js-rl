@@ -3,47 +3,25 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <title>JS RL</title>
 
     <style>
      body {
+       font-family: 'Fira Mono', monospace;
        background: black;
        color: white;
-     }
-     .main {
-       background: black;
-       display: flex;
-       justify-content: center;
-       padding: 32px;
-     }
-
-     .main > * + * {
-       margin-left: 32px;
-     }
-
-     .main__canvas {
-       outline: 1px solid white;
-       width: 320px;
-       height: 320px;
-     }
-
-     .main__log {
-       font-size: 12px;
-       line-height: 16px;
        font-family: monospace;
-       width: 320px;
-       line-height: 16px;
-       max-height: 320px;
-       overflow: auto;
+       font-size: 12px;
+     }
+     canvas {
+       outline: 1px solid #666;
      }
     </style>
 </head>
 <body>
-  <section class="main">
-    <canvas id="canvas" class="main__canvas" width="320" height="320"></canvas>
-    <div id="log" class="main__log"></div>
-  </section>
+  <section class="main"></section>
 
-    <script type="text/javascript" src="dist/bundle.js"></script>
+  <script type="text/javascript" src="dist/bundle.js"></script>
 </body>
 </html>
