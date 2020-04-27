@@ -1,27 +1,28 @@
 import * as ROT from 'rot-js';
-import setupKeys from './keys';
 import game, { action } from './state';
-import { setupDisplay } from './display';
+import { setupKeys } from './keys';
+import { setupDisplay, drawMap, drawPlayer, drawUI } from './display';
+import { setupMap } from './map';
 
-const WIDTH = 64;
-const HEIGHT = 32;
+export const WIDTH = 64;
+export const HEIGHT = 32;
+export const BOTTOM_PANEL_HEIGHT = 6;
 
 let display: ROT.Display;
 
 export const draw = (): void => {
-  const { player } = game.getState();
   display.clear();
 
-  for (let i=0; i < HEIGHT; i++) {
-    display.drawText(0, i, '%c{#444}................................................................');
-  }
+  drawMap({ game, display });
 
-  display.draw(player.x, player.y, '@', '#aa0', '#000');
+  drawPlayer({ game, display });
+
+  drawUI({ game, display });
 };
 
 const playerInitialPos = {
-  x: WIDTH / 2,
-  y: HEIGHT / 2
+  x: Math.floor(WIDTH / 2),
+  y: Math.floor((HEIGHT - BOTTOM_PANEL_HEIGHT) / 2)
 };
 action('UPDATE_PLAYER_POSITION', { ...playerInitialPos, relative: false });
 
@@ -32,6 +33,8 @@ const setup = (): void => {
   });
 
   setupKeys();
+
+  setupMap();
 
   draw();
 };

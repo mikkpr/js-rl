@@ -1,25 +1,27 @@
-import produce from 'immer';
-import { defaultState, GameState, Action } from '../state';
 
-const updatePlayerPosition = (state: GameState, action: Action): GameState => {
-  const { x, y, relative } = action.payload;
-
-  const newX = relative ? state.player.x + x : x;
-  const newY = relative ? state.player.y + y : y;
-
-  return produce(state, state => {
-    state.player.x = newX;
-    state.player.y = newY;
-  });
-};
+import { GameState, Action } from '../types';
+import playerActions, { playerState } from './player';
+import mapActions, { mapState } from './map';
+import cameraActions, { cameraState } from './camera';
+import logActions, { logState } from './log';
 
 const actionMap = {
-  'UPDATE_PLAYER_POSITION': updatePlayerPosition
+  ...playerActions,
+  ...mapActions,
+  ...cameraActions,
+  ...logActions
 };
 
-const rootReducer = (state = defaultState, action: Action): GameState => {
+const initialState: GameState = {
+  ...playerState,
+  ...mapState,
+  ...cameraState,
+  ...logState
+};
+
+const rootReducer = (state = initialState, action: Action): GameState => {
   if (!actionMap[action.type]) { return state; }
   return actionMap[action.type](state, action);
-}
+};
 
 export default rootReducer;

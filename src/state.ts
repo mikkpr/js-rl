@@ -4,24 +4,8 @@ import { createLogger } from 'redux-logger';
 import rootReducer from './reducers/root';
 import { rootSaga } from './sagas/root';
 
-export interface GameState {
-  player: {
-    x: number;
-    y: number;
-  };
-}
+import { GameState, Action } from './types';
 
-export const defaultState: GameState = {
-  player: {
-    x: 0,
-    y: 0
-  }
-};
-
-export interface Action {
-  type: string;
-  payload: any;
-}
 const sagaMiddleware = createSagaMiddleware();
 const middlewares: Array<Middleware> = [
   sagaMiddleware

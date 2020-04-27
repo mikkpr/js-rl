@@ -15,11 +15,9 @@ const move = (dir: Direction) => (): void => {
   action('COMMAND_MOVE', { dx, dy });
 }
 
-const setupKeys = (): void => {
+export const setupKeys = (): void => {
   keymage('k', move('N'));
   keymage('l', move('E'));
   keymage('j', move('S'));
   keymage('h', move('W'));
-}
-
-export default setupKeys;
+};
