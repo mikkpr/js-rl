@@ -1,8 +1,6 @@
 import * as ROT from 'rot-js';
-import keymage from 'keymage';
 import setupKeys from './keys';
-import game from './state';
-import { updatePlayerPosition } from './actions/player';
+import game, { action } from './state';
 import { setupDisplay } from './display';
 
 const WIDTH = 64;
@@ -21,8 +19,11 @@ export const draw = (): void => {
   display.draw(player.x, player.y, '@', '#aa0', '#000');
 };
 
-const playerInitialPos = [WIDTH / 2, HEIGHT / 2];
-updatePlayerPosition(game)(playerInitialPos[0], playerInitialPos[1], false);
+const playerInitialPos = {
+  x: WIDTH / 2,
+  y: HEIGHT / 2
+};
+action('UPDATE_PLAYER_POSITION', { ...playerInitialPos, relative: false });
 
 const setup = (): void => {
   display = setupDisplay({
@@ -34,6 +35,7 @@ const setup = (): void => {
 
   draw();
 };
+
 setup();
 
 game.subscribe(() => requestAnimationFrame(draw));
