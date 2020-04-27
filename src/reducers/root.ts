@@ -1,19 +1,19 @@
 
 import { GameState, Action } from '../types';
-import playerActions, { playerState } from './player';
+import entityActions, { entitiesState } from './entities';
 import mapActions, { mapState } from './map';
 import cameraActions, { cameraState } from './camera';
 import logActions, { logState } from './log';
 
 const actionMap = {
-  ...playerActions,
+  ...entityActions,
   ...mapActions,
   ...cameraActions,
   ...logActions
 };
 
 const initialState: GameState = {
-  ...playerState,
+  ...entitiesState,
   ...mapState,
   ...cameraState,
   ...logState

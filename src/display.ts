@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import { CELL_PROPERTIES } from './map';
-import { Map, Cell } from './types';
+import { Map, Cell, Entity } from './types';
 
 import { HEIGHT, WIDTH, BOTTOM_PANEL_HEIGHT } from './index';
 
@@ -27,10 +27,13 @@ export const drawMap = ({ game, display }): void => {
 
 };
 
-export const drawPlayer = ({ game, display }): void => {
-  const { player, camera } = game.getState();
-  const { x, y, glyph, fg, bg } = player;
-  display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+export const drawEntities = ({ game, display }): void => {
+  const { entities, camera } = game.getState();
+  Object.values(entities).forEach(entity => {
+    const { x, y, glyph, fg, bg } = (entity as Entity);
+    display.draw(x + camera.x, y + camera.y, glyph, fg, bg);   
+  });
+
 };
 
 export const drawUI = ({ game, display }): void => {
@@ -48,4 +51,14 @@ export const drawUI = ({ game, display }): void => {
     const countStr = count > 1 ? ` (${count}x)` : '';
     display.drawText(1, HEIGHT - BOTTOM_PANEL_HEIGHT + y + 1, `${text}${countStr}`);
   }
-}
+};
+
+export const draw = ({ game, display }): void => {
+  display.clear();
+
+  drawMap({ game, display });
+
+  drawEntities({ game, display });
+
+  drawUI({ game, display });
+};
