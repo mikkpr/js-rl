@@ -78,7 +78,7 @@ export const setupMap = ({ playerID }) => {
         }]
       }, {
         type: 'EXIT',
-        flags: ['PREVENT_DEFAULT_MOVE'],
+        flags: ['PREVENT_DEFAULT_MOVE', 'BREAK_ON_MISMATCH'],
         actions: [{
           type: 'MOVE_ENTITY',
           payload: { dx: 7, dy: 0, relative: true, id: playerID },
@@ -87,6 +87,9 @@ export const setupMap = ({ playerID }) => {
             [ 'dx', [ 'eq', 1 ]],
             [ 'dy', [ 'eq', 0 ]]
           ]
+        }, {
+          type: 'LOG_MESSAGE',
+          payload: { 'message': 'You step through the portal.' }
         }]
       }],
       glyph: GLYPH_TYPES.PORTAL
@@ -105,6 +108,18 @@ export const setupMap = ({ playerID }) => {
         actions: [{
           type: 'MOVE_ENTITY',
           payload: { dx: -7, dy: 0, relative: true, id: playerID },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
+            [ 'dx', [ 'eq', -1 ]],
+            [ 'dy', [ 'eq', 0 ]]
+          ]
+        }]
+      }, {
+        type: 'EXIT',
+        flags: ['PREVENT_DEFAULT_MOVE'],
+        actions: [{
+          type: 'LOG_MESSAGE',
+          payload: { 'message': 'You step through the portal.' },
           conditions: [
             [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
             [ 'dx', [ 'eq', -1 ]],

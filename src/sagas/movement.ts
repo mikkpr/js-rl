@@ -63,6 +63,18 @@ export function* movePlayer(action): Generator {
   }
 }
 
+const matchTriggerType = (type, currentInZone, nextInZone) => {
+  if (type === TRIGGER_TYPES.ENTER) {
+    return !currentInZone && nextInZone;
+  } else if (type === TRIGGER_TYPES.EXIT) {
+    return currentInZone && !nextInZone;
+  } else if (type === TRIGGER_TYPES.WITHIN) {
+    return currentInZone && nextInZone;
+  }
+
+  return false;
+}
+
 export function* entityMoved(action): Generator {
   const state = yield select();
   const { zones, entities } = (state as GameState);
@@ -73,78 +85,32 @@ export function* entityMoved(action): Generator {
   const checkCurrentCellInZone = isWithinZone(src.x, src.y);
   const checkNextCellInZone = isWithinZone(dest.x, dest.y);
   const conditionChecker = isConditionTrue(entities[id], src, dest, dx, dy);
-  const triggers = Object.values(skipZones ? [] : zones).reduce((acc, zone) => {
-    const enterTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.ENTER);
-    const exitTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.EXIT);
-    const withinTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.WITHIN);
-
+  let preventMove = false;
+  for (const zone of Object.values(skipZones ? [] : zones)) {
     const currentInZone = checkCurrentCellInZone(zone);
     const nextInZone = checkNextCellInZone(zone);
+    for (const trigger of zone.triggers) {
+      for (const action of (trigger as Trigger).actions) {
+        const { conditions } = (action as ConditionalAction);
+        if (!matchTriggerType(trigger.type, currentInZone, nextInZone)) { break; }
+        const noConditions = !conditions || conditions.length === 0;
+        const conditionsMatch = !noConditions && conditions.reduce(
+          (isTrue, condition) => isTrue && conditionChecker(condition),
+          true
+        );
 
-    if (!currentInZone && nextInZone) {
-      acc.enter.push(...enterTriggers);
-    }
-    if (!nextInZone && currentInZone) {
-      acc.exit.push(...exitTriggers);
-    }
-    if (currentInZone && nextInZone) {
-      acc.within.push(...withinTriggers);
-    }
-    return acc;
-  }, {enter: [], exit: [], within: []});
+        if (noConditions || conditionsMatch) {
+          if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
+            preventMove = true;
+          }
+          yield put((action as Action));
+        }
 
-  let preventMove = false;
-  for (const trigger of triggers.enter) {
-    for (const action of (trigger as Trigger).actions) {
-      const { conditions } = (action as ConditionalAction);
-      if (
-        !conditions ||
-        conditions.length === 0 ||
-        conditions.reduce(
-          (isTrue, condition) => isTrue && conditionChecker(condition),
-          true
-        )
-      ) {
-        if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
-          preventMove = true;
+        if (!noConditions && !conditionsMatch){
+          if (trigger.flags && trigger.flags.includes('BREAK_ON_MISMATCH')) {
+            break;
+          }
         }
-        yield put((action as Action));
-      }
-    }
-  }
-  for (const trigger of triggers.exit) {
-    for (const action of (trigger as Trigger).actions) {
-      const { conditions } = (action as ConditionalAction);
-      if (
-        !conditions ||
-        conditions.length === 0 ||
-        conditions.reduce(
-          (isTrue, condition) => isTrue && conditionChecker(condition),
-          true
-        )
-      ) {
-        if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
-          preventMove = true;
-        }
-        yield put((action as Action));
-      }
-    }
-  }
-  for (const trigger of triggers.within) {
-    for (const action of (trigger as Trigger).actions) {
-      const { conditions } = (action as ConditionalAction);
-      if (
-        !conditions ||
-        conditions.length === 0 ||
-        conditions.reduce(
-          (isTrue, condition) => isTrue && conditionChecker(condition),
-          true
-        )
-      ) {
-        if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
-          preventMove = true;
-        }
-        yield put((action as Action));
       }
     }
   }
