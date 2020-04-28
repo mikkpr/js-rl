@@ -5,20 +5,31 @@ import { ENTITY_TYPES } from '../reducers/entities';
 import { cellKey } from '../utils/map';
 import { isWithinZone } from '../zones';
 
-import { Cell, Entity, GameState } from '../types';
+import { GameState } from '../types';
 export function* moveEntity(action): Generator {
   const state = yield select();
   const { dx, dy, id } = action.payload;
-  const { zones, map, entities } = (state as GameState);
-  const { x, y } = entities[id];
+  const { map, entities } = (state as GameState);
+  const entity = entities[id];
+  const { x, y } = entity;
   const currentKey = cellKey(x, y);
   const nextKey = cellKey(x + dx, y + dy);
   const currentCell = map[currentKey];
   const nextCell = map[nextKey];
 
   if (!CELL_PROPERTIES[nextCell.type].solid) {
+    if (entity.type === ENTITY_TYPES.PLAYER) {
+      yield put({
+        type: 'UPDATE_CAMERA_POSITION',
+        payload: {
+          x: -dx,
+          y: -dy,
+          relative: true
+        }
+      });
+    }
     yield put({
-      type: 'ENTITY_MOVE',
+      type: 'ENTITY_MOVED',
       payload: {
         id,
         src: currentCell,
@@ -32,6 +43,20 @@ export function* moveEntity(action): Generator {
         x: dx,
         y: dy,
         relative: true,
+        id
+      }
+    });
+  } else {
+    yield put({
+      type: 'MOVEMENT_FAILED',
+      payload: {
+        src: {
+          x, y
+        },
+        dest: {
+          x: x + dx,
+          y: y + dy
+        },
         id
       }
     });
@@ -39,50 +64,19 @@ export function* moveEntity(action): Generator {
 }
 
 export function* movePlayer(action): Generator {
-  const state = yield select();
   const { dx, dy } = action.payload;
-  const { zones, map, entities } = (state as GameState);
+  const state = yield select();
+  const { entities } = (state as GameState);
   const id = Object.keys(entities).find((id) => {
     return entities[id].type === ENTITY_TYPES.PLAYER;
   });
-  const { x, y } = entities[id];
-  const currentKey = cellKey(x, y);
-  const nextKey = cellKey(x + dx, y + dy);
-  const currentCell = map[currentKey];
-  const nextCell = map[nextKey];
-
-  if (CELL_PROPERTIES[nextCell.type].solid) {
-    yield put({ type: 'LOG_MESSAGE', payload: { message: 'Alas! You cannot go that way.' }});
-  } else {
-
-    yield put({
-      type: 'ENTITY_MOVE',
-      payload: {
-        id,
-        src: currentCell,
-        dest: nextCell
-      }
-    });
-
-    yield put({
-      type: 'UPDATE_ENTITY_POSITION',
-      payload: {
-        x: dx,
-        y: dy,
-        relative: true,
-        id
-      }
-    });
   
-    yield put({
-      type: 'UPDATE_CAMERA_POSITION',
-      payload: {
-        x: -dx,
-        y: -dy,
-        relative: true
-      }
-    });
-  }
+  yield put({
+    type: 'MOVE_ENTITY',
+    payload: {
+      dx, dy, id
+    }
+  });
 }
 
 export function* exitCell(action): Generator {
@@ -109,4 +103,13 @@ export function* enterCell(action): Generator {
       enterTriggers.forEach(t => t.callback(entities[id], src, dest));
     }
   });
+}
+
+export function* movementFailed(action): Generator {
+  const { id, src, dest } = action.payload;
+  const state = yield select();
+  const { entities } = (state as GameState);
+  if (entities[id].type === ENTITY_TYPES.PLAYER) {
+    yield put({ type: 'LOG_MESSAGE', payload: { message: 'Alas! You cannot go that way.' }});
+  }
 }
