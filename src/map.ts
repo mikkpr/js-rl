@@ -1,4 +1,6 @@
 import { action } from './state';
+import { Zones, Trigger } from './types';
+import { ID } from './utils/id';
 
 export const CELL_TYPES = {
   FLOOR: 'FLOOR',
@@ -60,5 +62,26 @@ export const setupMap = () => {
       cells.push({ x, y, type });
     }
   }
+
+  const zoneID = ID();
+  const zones: Zones = {
+    [zoneID]: {
+      cells: [[1, 1]],
+      triggers: [{
+        type: 'ENTER',
+        callback: (who, from, to) => {
+          action('LOG_MESSAGE', { message: `Entered zone ${zoneID}` });
+        }
+      }, {
+        type: 'EXIT',
+        callback: (who, from, to) => {
+          action('LOG_MESSAGE', { message: `Exited zone ${zoneID}` });
+        }
+      }],
+      id: zoneID
+    }
+  };
+  action('UPDATE_ZONES', { zones });
+
   action('UPDATE_CELLS', { cells });
-}
+};

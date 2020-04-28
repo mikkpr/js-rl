@@ -46,7 +46,7 @@ export const drawUI = ({ game, display }): void => {
     }
   }
   for (let y = BOTTOM_PANEL_HEIGHT - 1; y >= 0; y--) {
-    const { text, count, fg, bg } = log.reverse()[y] || {};
+    const { text, count, fg, bg } = log[log.length - y - 1] || {};
     if (!text) { continue; }
     const countStr = count > 1 ? ` (${count}x)` : '';
     display.drawText(1, HEIGHT - BOTTOM_PANEL_HEIGHT + y + 1, `${text}${countStr}`);

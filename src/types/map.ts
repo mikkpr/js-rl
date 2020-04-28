@@ -10,3 +10,6 @@ export type Cell = {
 export type Map = {
   [key: string]: Cell;
 }
+
+export type Coordinates = [number, number];
+export type Area = [number, number, number, number];
