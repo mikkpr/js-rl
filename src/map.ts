@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import game, { action } from './state';
-import { Zone, Zones, Trigger } from './types';
+import { Zone, Zones, Trigger, Area } from './types';
 import { ID } from './utils/id';
 import { ENTITY_TYPES } from './entities';
 import { GLYPH_TYPES } from './glyphs';
@@ -28,6 +28,33 @@ const defaultMap = [
   '#..............#....#..............#....#..............#..#',
   '###########################################################'
 ];
+
+export const createRandomWalkZone = ({
+  x, y, width, height
+}): Zone => {
+  const area = [x, y, width, height];
+  return {
+    cells: [(area as Area)],
+    triggers: [{
+      type: 'WITHIN',
+      flags: ['PREVENT_DEFAULT_MOVE'],
+      actions: [{
+        type: 'RANDOM_WALK',
+        payload: { },
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+        ]
+      }, {
+        type: 'LOG_MESSAGE',
+        payload: { message: 'The tall grass confuses you.' },
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+        ]
+      }]
+    }],
+    glyph: GLYPH_TYPES.FOLIAGE
+  };
+}
 
 export const createPortal = ({ playerID  }) => ({
   src, dest, direction, glyph = GLYPH_TYPES.PORTAL
@@ -102,29 +129,9 @@ export const setupZones = ({ playerID }) => {
   const portalID = ID();
   const portal2ID = ID();
   const zones: Zones = {
-    // random walk zone (top left 3x3 rect)
-    [grassID]: {
-      cells: [[1, 1, 15, 3]],
-      triggers: [{
-        type: 'WITHIN',
-        flags: ['PREVENT_DEFAULT_MOVE'],
-        actions: [{
-          type: 'RANDOM_WALK',
-          payload: { },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
-          ]
-        }, {
-          type: 'LOG_MESSAGE',
-          payload: { message: 'The tall grass confuses you.' },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
-          ]
-        }]
-      }],
-      glyph: GLYPH_TYPES.FOLIAGE,
-      id: grassID
-    },
+    [grassID]: createRandomWalkZone({
+      x: 1, y: 1, width: 15, height: 3
+    }),
     [portalID]: createPortal({ playerID })({
       src: { x: 39, y: 11 },
       dest: { x: 46, y: 11 },
