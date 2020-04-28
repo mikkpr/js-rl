@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import game from './state';
 import { setupKeys } from './keys';
 import { setupDisplay, draw } from './display';
-import { setupMap } from './map';
+import { setupMap, setupZones } from './map';
 import { setupEntities } from './entities';
 import { ID } from './utils/id';
 
@@ -23,6 +23,8 @@ const setup = (): void => {
   setupKeys();
 
   setupMap({ playerID });
+
+  setupZones({ playerID });
 
   setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT });
 

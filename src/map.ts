@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import game, { action } from './state';
-import { Zones, Trigger } from './types';
+import { Zone, Zones, Trigger } from './types';
 import { ID } from './utils/id';
 import { ENTITY_TYPES } from './entities';
 import { GLYPH_TYPES } from './glyphs';
@@ -29,6 +29,59 @@ const defaultMap = [
   '###########################################################'
 ];
 
+export const createPortal = ({ playerID  }) => ({
+  src, dest, direction, glyph = GLYPH_TYPES.PORTAL
+}): Zone => {
+  const dx = dest.x - src.x;
+  const dy = dest.y - dest.y;
+  let [dirX, dirY] = [0, 0];
+  if (direction === 'east') {
+    dirX = 1;
+  } else if (direction === 'west') {
+    dirX = -1;
+  } else if (direction === 'north') {
+    dirY = -1;
+  } else if (direction === 'south') {
+    dirY = 1;
+  }
+
+  return {
+    cells: [[src.x, src.y]],
+    triggers: [{
+      type: 'ENTER',
+      actions: [{
+        type: 'LOG_MESSAGE',
+        payload: { message: `You see something strange to the ${direction}.` }
+      }]
+    }, {
+      type: 'EXIT',
+      flags: ['PREVENT_DEFAULT_MOVE'],
+      actions: [{
+        type: 'MOVE_ENTITY',
+        payload: { dx, dy, id: playerID },
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
+          [ 'dx', [ 'eq', dirX ]],
+          [ 'dy', [ 'eq', dirY ]]
+        ]
+      }]
+    }, {
+      type: 'EXIT',
+      flags: ['PREVENT_DEFAULT_MOVE'],
+      actions: [{
+        type: 'LOG_MESSAGE',
+        payload: { 'message': 'You step through the portal.' },
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
+          [ 'dx', [ 'eq', dirX ]],
+          [ 'dy', [ 'eq', dirY ]]
+        ]
+      }]
+    }],
+    glyph
+  }
+}
+
 export const setupMap = ({ playerID }) => {
   const cells = [];
   for (const _y in defaultMap) {
@@ -41,6 +94,10 @@ export const setupMap = ({ playerID }) => {
     }
   }
 
+  action('UPDATE_CELLS', { cells });
+};
+
+export const setupZones = ({ playerID }) => {
   const grassID = ID();
   const portalID = ID();
   const portal2ID = ID();
@@ -68,74 +125,16 @@ export const setupMap = ({ playerID }) => {
       glyph: GLYPH_TYPES.FOLIAGE,
       id: grassID
     },
-    [portalID]: {
-      cells: [[39, 11]],
-      triggers: [{
-        type: 'ENTER',
-        actions: [{
-          type: 'LOG_MESSAGE',
-          payload: { message: 'You see something strange to the west.' }
-        }]
-      }, {
-        type: 'EXIT',
-        flags: ['PREVENT_DEFAULT_MOVE', 'BREAK_ON_MISMATCH'],
-        actions: [{
-          type: 'MOVE_ENTITY',
-          payload: { dx: 7, dy: 0, relative: true, id: playerID },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', -1 ]],
-            [ 'dy', [ 'eq', 0 ]]
-          ]
-        }, {
-          type: 'LOG_MESSAGE',
-          payload: { 'message': 'You step through the portal.' },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', -1 ]],
-            [ 'dy', [ 'eq', 0 ]]
-          ]
-        }]
-      }],
-      glyph: GLYPH_TYPES.PORTAL
-    },
-    [portal2ID]: {
-      cells: [[46, 11]],
-      triggers: [{
-        type: 'ENTER',
-        actions: [{
-          type: 'LOG_MESSAGE',
-          payload: { message: 'You see something strange to the east.' }
-        }]
-      }, {
-        type: 'EXIT',
-        flags: ['PREVENT_DEFAULT_MOVE'],
-        actions: [{
-          type: 'MOVE_ENTITY',
-          payload: { dx: -7, dy: 0, relative: true, id: playerID },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', 1 ]],
-            [ 'dy', [ 'eq', 0 ]]
-          ]
-        }]
-      }, {
-        type: 'EXIT',
-        flags: ['PREVENT_DEFAULT_MOVE'],
-        actions: [{
-          type: 'LOG_MESSAGE',
-          payload: { 'message': 'You step through the portal.' },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', 1 ]],
-            [ 'dy', [ 'eq', 0 ]]
-          ]
-        }]
-      }],
-      glyph: GLYPH_TYPES.PORTAL
-    }
+    [portalID]: createPortal({ playerID })({
+      src: { x: 39, y: 11 },
+      dest: { x: 46, y: 11 },
+      direction: 'west'
+    }),
+    [portal2ID]: createPortal({ playerID })({
+      src: { x: 46, y: 11 },
+      dest: { x: 39, y: 11 },
+      direction: 'east'
+    })
   };
   action('UPDATE_ZONES', { zones });
-
-  action('UPDATE_CELLS', { cells });
 };
