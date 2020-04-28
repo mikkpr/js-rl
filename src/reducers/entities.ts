@@ -2,15 +2,7 @@ import produce from 'immer';
 import { ID } from '../utils/id';
 import { GameState, Action, Entities } from '../types';
 
-export const ENTITY_TYPES = {
-  PLAYER: 'PLAYER'
-};
-
-export const ENTITY_PROPERTIES = {
-  [ENTITY_TYPES.PLAYER]: {
-    controllable: true
-  }
-};
+import { ENTITY_TYPES, ENTITY_PROPERTIES } from '../entities';
 
 export const entitiesState: { entities: Entities } = {
   entities: {

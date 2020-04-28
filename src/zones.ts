@@ -1,22 +1,20 @@
-import { Coordinates, Area, TriggerType, TriggerCallback, Trigger, Zone } from './types';
+import { Coordinates, Area, Action, TriggerType, Trigger, Zone } from './types';
 
 export const TRIGGER_TYPES = {
   ENTER: 'ENTER',
   EXIT: 'EXIT',
-}
+  WITHIN: 'WITHIN'
+};
 
 export const createTrigger = (
   type: TriggerType,
-  callback: TriggerCallback,
-  message?: string
+  actions: Action[],
 ): Trigger => {
   return {
     type,
-    callback,
-    triggerCount: 0,
-    triggerMessage: message
+    actions
   };
-}
+};
 
 export const createZone = (
   cells: Array<Coordinates | Area>,
@@ -37,8 +35,8 @@ export const isWithinZone = (x, y) => (zone) => {
     if (isArea(cellOrArea)) {
       const [x, y, w, h] = cellOrArea;
       const areaCells = [];
-      for (let _x = x; _x < x + w; _x++ ) {
-        for (let _y = y; _y < y + h; _y++) {
+      for (let _x = x; _x <= x + w; _x++ ) {
+        for (let _y = y; _y <= y + h; _y++) {
           cells.push([_x, _y]);
         }
       }
@@ -46,7 +44,6 @@ export const isWithinZone = (x, y) => (zone) => {
     } else if (isCell(cellOrArea)) {
       cells.push(cellOrArea);
     }
-
     return cells;
   }, []).forEach(cell => {
     if (cell[0] === x && cell[1] === y) {

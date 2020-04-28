@@ -1,10 +1,11 @@
 import * as Redux from 'redux';
 import * as ROT from 'rot-js';
+import throttle from 'lodash/throttle';
 import keymage from 'keymage';
 import { GameStore, action } from './state';
 
 type Direction = 'N' | 'E' | 'S' |'W';
-const move = (dir: Direction) => (): void => {
+const move = (dir: Direction) => throttle((): void => {
   const dirs = {
     N: [0, -1],
     E: [1, 0],
@@ -13,7 +14,7 @@ const move = (dir: Direction) => (): void => {
   };
   const [dx, dy] = dirs[dir];
   action('COMMAND_MOVE', { dx, dy });
-}
+}, 16)
 
 export const setupKeys = (): void => {
   keymage('k', move('N'));

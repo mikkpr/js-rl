@@ -1,11 +1,12 @@
 import { put, select } from 'redux-saga/effects';
 import { CELL_PROPERTIES } from '../map';
 import { TRIGGER_TYPES } from '../zones';
-import { ENTITY_TYPES } from '../reducers/entities';
+import { ENTITY_TYPES } from '../entities';
 import { cellKey } from '../utils/map';
+import { isConditionTrue } from '../utils/conditions';
 import { isWithinZone } from '../zones';
 
-import { GameState } from '../types';
+import { GameState, Trigger, Action, ConditionalAction } from '../types';
 export function* moveEntity(action): Generator {
   const state = yield select();
   const { dx, dy, id } = action.payload;
@@ -79,30 +80,62 @@ export function* movePlayer(action): Generator {
   });
 }
 
-export function* exitCell(action): Generator {
+function* handleTrigger(action, conditionChecker): Generator {
+  const { conditions } = (action as ConditionalAction);
+  if (
+    !conditions ||
+    conditions.length === 0 ||
+    conditions.reduce(
+      (isTrue, condition) => isTrue && conditionChecker(condition),
+      true
+    )
+  ) {
+    yield put((action as Action));
+  }
+}
+
+export function* entityMoved(action): Generator {
   const { id, src, dest } = action.payload;
   const state = yield select();
   const { zones, entities } = (state as GameState);
   const checkCurrentCellInZone = isWithinZone(src.x, src.y);
-  Object.values(zones).forEach(zone => {
-    const exitTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.EXIT);
-    if (checkCurrentCellInZone(zone)) {
-      exitTriggers.forEach(t => t.callback(entities[id], src, dest));
-    }
-  });
-}
-
-export function* enterCell(action): Generator {
-  const { id, src, dest } = action.payload;
-  const state = yield select();
-  const { zones, entities } = (state as GameState);
   const checkNextCellInZone = isWithinZone(dest.x, dest.y);
-  Object.values(zones).forEach(zone => {
+  const triggers = Object.values(zones).reduce((acc, zone) => {
     const enterTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.ENTER);
-    if (checkNextCellInZone(zone)) {
-      enterTriggers.forEach(t => t.callback(entities[id], src, dest));
+    const exitTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.EXIT);
+    const withinTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.WITHIN);
+
+    const currentInZone = checkCurrentCellInZone(zone);
+    const nextInZone = checkNextCellInZone(zone);
+
+    if (!currentInZone && nextInZone) {
+      acc.enter.push(...enterTriggers);
     }
-  });
+    if (!nextInZone && currentInZone) {
+      acc.exit.push(...exitTriggers);
+    }
+    if (currentInZone && nextInZone) {
+      acc.within.push(...withinTriggers);
+    }
+    return acc;
+  }, {enter: [], exit: [], within: []});
+
+  const conditionChecker = isConditionTrue(entities[id], src, dest);
+  for (const trigger of triggers.enter) {
+    for (const action of (trigger as Trigger).actions) {
+      yield handleTrigger(action, conditionChecker);
+    }
+  }
+  for (const trigger of triggers.exit) {
+    for (const action of (trigger as Trigger).actions) {
+      yield handleTrigger(action, conditionChecker);
+    }
+  }
+  for (const trigger of triggers.within) {
+    for (const action of (trigger as Trigger).actions) {
+      yield handleTrigger(action, conditionChecker);
+    }
+  }
 }
 
 export function* movementFailed(action): Generator {

@@ -1,20 +1,9 @@
-import { Coordinates, Area, Entity, Cell } from '.';
-export type TriggerType = 'ENTER' | 'EXIT';
-
-interface Item {};
-
-type EnterCallback = (who: Entity, from: Cell, to: Cell) => void;
-type ExitCallback = (who: Entity, from: Cell, to: Cell) => void;
-type DropItemCallback = (item: Item, who: Entity, cell: Cell) => void;
-type GetItemCallback = (item: Item, who: Entity, cell: Cell) => void;
-
-export type TriggerCallback = EnterCallback | ExitCallback | DropItemCallback | GetItemCallback;
+import { Action, Coordinates, Area, ConditionalAction } from '.';
+export type TriggerType = 'ENTER' | 'EXIT' | 'WITHIN';
 
 export type Trigger = {
   type: TriggerType;
-  callback: TriggerCallback;
-  triggerCount?: number;
-  triggerMessage?: string;
+  actions: (Action | ConditionalAction)[];
 }
 
 export type Zone = {

@@ -1,4 +1,4 @@
-import { Zones, Entities, Map, Camera, Log } from '.';
+import { Zones, Entities, Map, Camera, Log, Condition } from '.';
 export type GameState = {
   entities: Entities;
   map: Map;
@@ -7,7 +7,11 @@ export type GameState = {
   log: Log;
 }
 
-export interface Action {
+export type Action = {
   type: string;
   payload: any;
+}
+
+export type ConditionalAction = Action & {
+  conditions: Condition[];
 }

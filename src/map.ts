@@ -1,7 +1,7 @@
 import { action } from './state';
 import { Zones, Trigger } from './types';
 import { ID } from './utils/id';
-
+import { ENTITY_TYPES } from './entities';
 export const CELL_TYPES = {
   FLOOR: 'FLOOR',
   WALL: 'WALL'
@@ -66,17 +66,34 @@ export const setupMap = () => {
   const zoneID = ID();
   const zones: Zones = {
     [zoneID]: {
-      cells: [[1, 1]],
+      cells: [[1, 1, 3, 0]],
       triggers: [{
         type: 'ENTER',
-        callback: (who, from, to) => {
-          action('LOG_MESSAGE', { message: `Entered zone ${zoneID}` });
-        }
+        actions: [{
+          type: 'LOG_MESSAGE',
+          payload: { message: `Entered zone ${zoneID}` },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+          ]
+        }]
       }, {
         type: 'EXIT',
-        callback: (who, from, to) => {
-          action('LOG_MESSAGE', { message: `Exited zone ${zoneID}` });
-        }
+        actions: [{
+          type: 'LOG_MESSAGE',
+          payload: { message: `Exited zone ${zoneID}` },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+          ]
+        }]
+      }, {
+        type: 'WITHIN',
+        actions: [{
+          type: 'LOG_MESSAGE',
+          payload: { message: `Moved within zone ${zoneID}` },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+          ]
+        }]
       }],
       id: zoneID
     }
