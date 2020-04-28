@@ -1,5 +1,8 @@
+import * as ROT from 'rot-js';
 import { action } from './state';
 import { GLYPHS, GLYPH_TYPES } from './glyphs';
+import { CELL_TYPES } from './cells';
+import { GameState } from './types';
 
 export const ENTITY_TYPES = {
   PLAYER: 'PLAYER',
@@ -12,11 +15,12 @@ export const ENTITY_PROPERTIES = {
   }
 };
 
-export const setupEntities = ({ WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, playerID }): void => {
-  const playerInitialPos = {
-    x: Math.floor(WIDTH / 2),
-    y: Math.floor((HEIGHT - BOTTOM_PANEL_HEIGHT) / 2)
-  };
+export const setupEntities = ({ WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, playerID, game }): void => {
+  const state: GameState = game.getState();
+  const floorCells = Object.values(state.map).filter(c => c.type === CELL_TYPES.FLOOR);
+  const { x, y } = ROT.RNG.getItem(floorCells);
+  const playerInitialPos = { x, y };
+  const cameraInitialPos = { x: WIDTH / 2 - x, y: (HEIGHT - BOTTOM_PANEL_HEIGHT) / 2 - y }
   const entities = [];
   entities.push({
     ...playerInitialPos,
@@ -25,4 +29,5 @@ export const setupEntities = ({ WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, playerID }):
     id: playerID
   });
   action('UPDATE_ENTITIES', { entities });
+  action('UPDATE_CAMERA_POSITION', { x: cameraInitialPos.x, y: cameraInitialPos.y } )
 }

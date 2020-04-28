@@ -16,7 +16,7 @@ export function* calculateFOV(action) {
   const lightPasses = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return !CELL_PROPERTIES[cell.type].solid;
+    return cell && !CELL_PROPERTIES[cell.type].solid;
   }
   if (!fov) {
     fov = new ROT.FOV.RecursiveShadowcasting(lightPasses);
@@ -25,7 +25,7 @@ export function* calculateFOV(action) {
   const lightingMap = {};
   const explorationMap = [];
 
-  fov.compute(player.x, player.y, 6, (x, y, r, visibility) => {
+  fov.compute(player.x, player.y, 12, (x, y, r, visibility) => {
     lightingMap[cellKey(x, y)] = visibility;
     explorationMap.push(cellKey(x, y));
   });

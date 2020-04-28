@@ -24,11 +24,11 @@ const setup = (): void => {
 
   setupMap({ playerID });
 
-  setupZones({ playerID });
+  //setupZones({ playerID });
 
-  setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT });
+  setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, game });
 
-  game.dispatch({ type: 'CALCULATE_FOV', payload: {} })
+  game.dispatch({ type: 'CALCULATE_FOV', payload: {} });
 
   draw({ game, display });
 };
