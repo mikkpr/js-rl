@@ -10,6 +10,7 @@ export type Trigger = {
 export type Zone = {
   cells: Array<Coordinates | Area>;
   triggers: Trigger[];
+  glyph?: string;
   id?: string;
 }
 

@@ -22,7 +22,7 @@ const setup = (): void => {
 
   setupKeys();
 
-  setupMap();
+  setupMap({ playerID });
 
   setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT });
 

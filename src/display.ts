@@ -1,10 +1,11 @@
 import * as ROT from 'rot-js';
 import { CELL_PROPERTIES } from './cells';
-import { Cell, Entity, GameState } from './types';
+import { Cell, Entity, GameState, Zone } from './types';
 
 import { HEIGHT, WIDTH, BOTTOM_PANEL_HEIGHT } from './index';
 import { ENTITY_TYPES } from './entities';
-import { GLYPHS } from './glyphs';
+import { GLYPHS, GLYPH_TYPES } from './glyphs';
+import { getZoneCells } from './utils/zones';
 
 export const setupDisplay = (options: {width: number; height: number }): ROT.Display => {
   const display = new ROT.Display({
@@ -27,6 +28,23 @@ export const drawMap = ({ game, display }): void => {
     display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
   });
 
+};
+
+export const drawZones = ({ game, display }): void => {
+  const { zones, camera } = game.getState();
+
+  const zonesWithGlyphs = Object.values(zones).filter(zone => {
+    return (zone as Zone).glyph;
+  });
+
+  zonesWithGlyphs.forEach(zone => {
+    const cells = getZoneCells(zone);
+    cells.forEach(cell => {
+      const [ x, y ] = cell;
+      const { glyph, fg, bg } = GLYPHS[(zone as Zone).glyph];
+      display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+    });
+  });
 };
 
 export const drawEntities = ({ game, display }): void => {
@@ -67,6 +85,8 @@ export const draw = ({ game, display }): void => {
   display.clear();
 
   drawMap({ game, display });
+
+  drawZones({ game, display });
 
   drawEntities({ game, display });
 

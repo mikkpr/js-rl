@@ -72,7 +72,7 @@ export function* entityMoved(action): Generator {
   const entity = entities[id];
   const checkCurrentCellInZone = isWithinZone(src.x, src.y);
   const checkNextCellInZone = isWithinZone(dest.x, dest.y);
-  const conditionChecker = isConditionTrue(entities[id], src, dest);
+  const conditionChecker = isConditionTrue(entities[id], src, dest, dx, dy);
   const triggers = Object.values(skipZones ? [] : zones).reduce((acc, zone) => {
     const enterTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.ENTER);
     const exitTriggers = zone.triggers.filter(t => t.type === TRIGGER_TYPES.EXIT);

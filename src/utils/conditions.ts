@@ -11,12 +11,23 @@ const operations: {
   gte: (a, b) => a >= b
 };
 
-export const isConditionTrue = (entity: Entity, src: Cell, dest: Cell) => (condition: Condition): boolean => {
-  const inputs = { entity, src, dest };
+export const isConditionTrue = (entity: Entity, src: Cell, dest: Cell, dx: number, dy: number) => (condition: Condition): boolean => {
+  const inputs = { entity, src, dest, dx, dy };
   const [ parameter, comparison ] = condition;
-  const [ field, operator, value ] = comparison;
 
-  const [a, b] = [inputs[parameter][field], value];
+  let a, b, operator, value, field;
+
+  // value comparison
+  if (comparison.length === 2) {
+    [ operator, value ] = comparison;
+
+    [a, b] = [inputs[parameter], value];
+  // member comparison
+  } else {
+    [ field, operator, value ] = comparison;
+    [a, b] = [inputs[parameter][field], value];
+  }
+
   const operation = operations[operator];
 
   return !!(operation && operation(a, b));

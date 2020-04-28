@@ -2,7 +2,8 @@ export const GLYPH_TYPES = {
   FLOOR: 'FLOOR',
   WALL: 'WALL',
   PLAYER: 'PLAYER',
-  FOLIAGE: 'FOLIAGE'
+  FOLIAGE: 'FOLIAGE',
+  PORTAL: 'PORTAL'
 };
 
 export const GLYPHS = {
@@ -19,11 +20,16 @@ export const GLYPHS = {
   [GLYPH_TYPES.PLAYER]: {
     glyph: '@',
     fg: '#fff',
-    bg: '#000'
+    bg: null
   },
   [GLYPH_TYPES.FOLIAGE]: {
     glyph: '~',
     fg: '#6a6',
     bg: '#262'
+  },
+  [GLYPH_TYPES.PORTAL]: {
+    glyph: '~',
+    fg: '#646',
+    bg: '#000'
   }
 };

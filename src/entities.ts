@@ -24,12 +24,5 @@ export const setupEntities = ({ WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, playerID }):
     type: ENTITY_TYPES.PLAYER,
     id: playerID
   });
-  for (let x = 1; x <= 15; x++) {
-    for (let y = 1; y <= 3; y++) {
-      entities.push({
-        x, y, type: ENTITY_TYPES.FOLIAGE, glyph: GLYPH_TYPES.FOLIAGE
-      });
-    }
-  }
   action('UPDATE_ENTITIES', { entities });
 }
