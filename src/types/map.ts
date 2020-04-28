@@ -1,3 +1,11 @@
+export type LightingMap = {
+  [id: string]: number;
+}
+
+export type ExplorationMap = {
+  [id: string]: number;
+};
+
 export type CellType = 'FLOOR' | 'WALL';
 
 export type Cell = {

@@ -6,6 +6,7 @@ import { HEIGHT, WIDTH, BOTTOM_PANEL_HEIGHT } from './index';
 import { ENTITY_TYPES } from './entities';
 import { GLYPHS, GLYPH_TYPES } from './glyphs';
 import { getZoneCells } from './utils/zones';
+import { cellKey } from './utils/map'
 
 export const setupDisplay = (options: {width: number; height: number }): ROT.Display => {
   const display = new ROT.Display({
@@ -20,18 +21,23 @@ export const setupDisplay = (options: {width: number; height: number }): ROT.Dis
 };
 
 export const drawMap = ({ game, display }): void => {
-  const { map, camera } = game.getState();
+  const { explorationMap, lightingMap, map, camera } = game.getState();
 
   Object.values(map).forEach((cell: Cell) => {
     const { x, y, type } = cell;
+    const key = cellKey(x, y);
     const { glyph, fg, bg } = CELL_PROPERTIES[type].glyph;
-    display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+    if (key in lightingMap) {
+      display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+    } else if (key in explorationMap) {
+      display.draw(x + camera.x, y + camera.y, glyph, '#222', bg);
+    }
   });
 
 };
 
 export const drawZones = ({ game, display }): void => {
-  const { zones, camera } = game.getState();
+  const { zones, camera, lightingMap, explorationMap } = game.getState();
 
   const zonesWithGlyphs = Object.values(zones).filter(zone => {
     return (zone as Zone).glyph;
@@ -41,20 +47,28 @@ export const drawZones = ({ game, display }): void => {
     const cells = getZoneCells(zone);
     cells.forEach(cell => {
       const [ x, y ] = cell;
+      const key = cellKey(x, y);
       const { glyph, fg, bg } = GLYPHS[(zone as Zone).glyph];
-      display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+      if (key in lightingMap) {
+        display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+      } else if (key in explorationMap) {
+        display.draw(x + camera.x, y + camera.y, glyph, '#222', '#000');
+      }
     });
   });
 };
 
 export const drawEntities = ({ game, display }): void => {
   const state = game.getState();
-  const { entities, camera } = (state as GameState);
+  const { entities, camera, lightingMap } = (state as GameState);
   Object.values(entities).forEach(entity => {
     const { type, x , y } = entity;
+    const key = cellKey(x, y);
     if (entity.type === ENTITY_TYPES.PLAYER) { return; }
-    const { glyph, fg, bg } = GLYPHS[entity.glyph];
-    display.draw(x + camera.x, y + camera.y, glyph, fg, bg);   
+    if (key in lightingMap) {
+      const { glyph, fg, bg } = GLYPHS[entity.glyph];
+      display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+    }
   });
   Object.values(entities).forEach(entity => {
     const { type, x , y } = entity;

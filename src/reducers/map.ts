@@ -4,7 +4,9 @@ import { cellKey } from '../utils/map';
 
 export const mapState = {
   map: {},
-  zones: {}
+  zones: {},
+  lightingMap: {},
+  explorationMap: {}
 };
 
 const updateCell = (state: GameState, action: Action): GameState => {
@@ -36,11 +38,29 @@ const updateZones = (state: GameState, action: Action): GameState => {
   };
 };
 
+const updateLightingMap = (state, action) => {
+  const { lightingMap } = action.payload;
+  return produce(state, state => {
+    state.lightingMap = lightingMap;
+  });
+};
+
+const updateExplorationMap = (state, action) => {
+  const { explorationMap } = action.payload;
+  return produce(state, state => {
+    for (const id of explorationMap) {
+      state.explorationMap[id] = 1;
+    }
+  });
+};
+
 const actionMap = {
   'UPDATE_CELL': updateCell,
   'UPDATE_CELLS': updateCells,
   'UPDATE_ZONE': updateZone,
-  'UPDATE_ZONES': updateZones
+  'UPDATE_ZONES': updateZones,
+  'UPDATE_LIGHTING_MAP': updateLightingMap,
+  'UPDATE_EXPLORATION_MAP': updateExplorationMap
 };
 
 export default actionMap;

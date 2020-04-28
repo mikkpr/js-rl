@@ -6,7 +6,9 @@ export {
   Map,
   Cell,
   Coordinates,
-  Area
+  Area,
+  LightingMap,
+  ExplorationMap
 } from './map';
 
 export {

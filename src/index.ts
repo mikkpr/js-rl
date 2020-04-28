@@ -26,6 +26,8 @@ const setup = (): void => {
 
   setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT });
 
+  game.dispatch({ type: 'CALCULATE_FOV', payload: {} })
+
   draw({ game, display });
 };
 

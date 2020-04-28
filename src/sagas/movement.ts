@@ -60,6 +60,8 @@ export function* movePlayer(action): Generator {
         dx, dy, id
       }
     });
+
+    yield put({ type: 'CALCULATE_FOV' });
   }
 }
 
