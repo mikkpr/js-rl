@@ -18,7 +18,15 @@ const move = (dir: Direction) => throttle((): void => {
 
 export const setupKeys = (): void => {
   keymage('k', move('N'));
+  keymage('w', move('N'));
+  keymage('up', move('N'));
   keymage('l', move('E'));
+  keymage('d', move('E'));
+  keymage('right', move('E'));
   keymage('j', move('S'));
+  keymage('s', move('S'));
+  keymage('down', move('S'));
   keymage('h', move('W'));
+  keymage('a', move('W'));
+  keymage('left', move('W'));
 };

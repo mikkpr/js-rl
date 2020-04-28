@@ -52,7 +52,7 @@ export const drawZones = ({ game, display }): void => {
       if (key in lightingMap) {
         display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
       } else if (key in explorationMap) {
-        display.draw(x + camera.x, y + camera.y, glyph, '#222', '#000');
+        display.draw(x + camera.x, y + camera.y, glyph, '#010101', '#000');
       }
     });
   });

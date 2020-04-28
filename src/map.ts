@@ -27,10 +27,12 @@ export const setupMap = ({ playerID }) => {
   for (let i = 0; i <= 5; i++) {
     map.create();
   }
-  map.connect();
   map.create((x, y, value) => {
-    cells.push({ x, y, type: value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR });
+    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR });
   });
+  map.connect((x, y, value) => {
+    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR });
+  }, 1);
   for (let x = -1; x <= WORLD_WIDTH; x++) {
     cells.push({ x, y: -1, type: CELL_TYPES.WALL });
     cells.push({ x, y: WORLD_HEIGHT, type: CELL_TYPES.WALL });

@@ -13,8 +13,8 @@ export const GLYPHS = {
     bg: '#000'
   },
   [GLYPH_TYPES.WALL]: {
-    glyph: '#',
-    fg: '#aaa',
+    glyph: '█',
+    fg: '#666',
     bg: '#000'
   },
   [GLYPH_TYPES.PLAYER]: {
