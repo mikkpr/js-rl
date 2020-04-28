@@ -1,8 +1,10 @@
 import * as ROT from 'rot-js';
-import game, { action } from './state';
+import game from './state';
 import { setupKeys } from './keys';
 import { setupDisplay, draw } from './display';
 import { setupMap } from './map';
+import { setupEntities } from './entities';
+import { ID } from './utils/id';
 
 export const WIDTH = 64;
 export const HEIGHT = 32;
@@ -10,12 +12,7 @@ export const BOTTOM_PANEL_HEIGHT = 6;
 
 let display: ROT.Display;
 
-const playerInitialPos = {
-  x: Math.floor(WIDTH / 2),
-  y: Math.floor((HEIGHT - BOTTOM_PANEL_HEIGHT) / 2)
-};
-export const playerID = Object.keys(game.getState().entities)[0];
-action('UPDATE_ENTITY_POSITION', { ...playerInitialPos, relative: false, id: playerID });
+export const playerID = ID();
 
 const setup = (): void => {
   display = setupDisplay({
@@ -27,9 +24,11 @@ const setup = (): void => {
 
   setupMap();
 
+  setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT });
+
   draw({ game, display });
 };
 
-setup();
+window.addEventListener('DOMContentLoaded', setup);
 
 game.subscribe(() => requestAnimationFrame(() => draw({ game, display })));

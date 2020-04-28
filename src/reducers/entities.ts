@@ -2,19 +2,11 @@ import produce from 'immer';
 import { ID } from '../utils/id';
 import { GameState, Action, Entities } from '../types';
 
-import { ENTITY_TYPES, ENTITY_PROPERTIES } from '../entities';
+import { ENTITY_TYPES } from '../entities';
+import { GLYPHS } from '../glyphs';
 
 export const entitiesState: { entities: Entities } = {
-  entities: {
-    [ID()]: {
-      x: 0,
-      y: 0,
-      glyph: '@',
-      fg: '#fff',
-      bg: '#000',
-      type: ENTITY_TYPES.PLAYER
-    }
-  }
+  entities: {}
 };
 
 const updateEntityPosition = (state: GameState, action: Action): GameState => {
@@ -33,8 +25,27 @@ const updateEntityPosition = (state: GameState, action: Action): GameState => {
   });
 };
 
+const updateEntities = (state: GameState, action: Action): GameState => {
+  const { entities } = action.payload;
+  return produce(state, state => {
+    state.entities = {
+      ...state.entities,
+      ...(entities
+        .reduce((entities, entity) => {
+          const id = entity.id || ID();
+          return {
+            ...entities,
+            [id]: entity
+          };
+        }, {})
+      )
+    };
+  });
+};
+
 const actionMap = {
-  'UPDATE_ENTITY_POSITION': updateEntityPosition
+  'UPDATE_ENTITY_POSITION': updateEntityPosition,
+  'UPDATE_ENTITIES': updateEntities
 };
 
 export default actionMap;

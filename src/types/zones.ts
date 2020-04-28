@@ -4,6 +4,7 @@ export type TriggerType = 'ENTER' | 'EXIT' | 'WITHIN';
 export type Trigger = {
   type: TriggerType;
   actions: (Action | ConditionalAction)[];
+  flags?: string[];
 }
 
 export type Zone = {

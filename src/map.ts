@@ -1,31 +1,8 @@
+import * as ROT from 'rot-js';
 import { action } from './state';
 import { Zones, Trigger } from './types';
 import { ID } from './utils/id';
 import { ENTITY_TYPES } from './entities';
-export const CELL_TYPES = {
-  FLOOR: 'FLOOR',
-  WALL: 'WALL'
-};
-
-export const GLYPHS = {
-  [CELL_TYPES.FLOOR]: '.',
-  [CELL_TYPES.WALL]: '#'
-};
-
-export const CELL_PROPERTIES = {
-  [CELL_TYPES.FLOOR]: {
-    glyph: GLYPHS.FLOOR,
-    fg: '#444',
-    bg: '#000',
-    solid: false
-  },
-  [CELL_TYPES.WALL]: {
-    glyph: GLYPHS.WALL,
-    fg: '#aaa',
-    bg: '#000',
-    solid: true
-  }
-};
 
 const defaultMap = [
   '###########################################################',
@@ -59,37 +36,27 @@ export const setupMap = () => {
       const x = parseInt(_x, 10);
       const glyph = defaultMap[y][x];
       const type = glyph === '.' ? 'FLOOR' : 'WALL';
-      cells.push({ x, y, type });
+      cells.push({ x, y, type, glyph: glyph === '.' ? 'FLOOR' : 'WALL' });
     }
   }
 
   const zoneID = ID();
   const zones: Zones = {
+    // random walk zone (top left 3x3 rect)
     [zoneID]: {
-      cells: [[1, 1, 3, 0]],
+      cells: [[1, 1, 15, 3]],
       triggers: [{
-        type: 'ENTER',
-        actions: [{
-          type: 'LOG_MESSAGE',
-          payload: { message: `Entered zone ${zoneID}` },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
-          ]
-        }]
-      }, {
-        type: 'EXIT',
-        actions: [{
-          type: 'LOG_MESSAGE',
-          payload: { message: `Exited zone ${zoneID}` },
-          conditions: [
-            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
-          ]
-        }]
-      }, {
         type: 'WITHIN',
+        flags: ['PREVENT_DEFAULT_MOVE'],
         actions: [{
+          type: 'RANDOM_WALK',
+          payload: { },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+          ]
+        }, {
           type: 'LOG_MESSAGE',
-          payload: { message: `Moved within zone ${zoneID}` },
+          payload: { message: 'The tall grass confuses you.' },
           conditions: [
             [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
           ]

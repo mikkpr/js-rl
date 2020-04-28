@@ -1,8 +1,10 @@
 import * as ROT from 'rot-js';
-import { CELL_PROPERTIES } from './map';
-import { Map, Cell, Entity } from './types';
+import { CELL_PROPERTIES } from './cells';
+import { Cell, Entity, GameState } from './types';
 
 import { HEIGHT, WIDTH, BOTTOM_PANEL_HEIGHT } from './index';
+import { ENTITY_TYPES } from './entities';
+import { GLYPHS } from './glyphs';
 
 export const setupDisplay = (options: {width: number; height: number }): ROT.Display => {
   const display = new ROT.Display({
@@ -21,19 +23,27 @@ export const drawMap = ({ game, display }): void => {
 
   Object.values(map).forEach((cell: Cell) => {
     const { x, y, type } = cell;
-    const { glyph, fg, bg } = CELL_PROPERTIES[type];
+    const { glyph, fg, bg } = CELL_PROPERTIES[type].glyph;
     display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
   });
 
 };
 
 export const drawEntities = ({ game, display }): void => {
-  const { entities, camera } = game.getState();
+  const state = game.getState();
+  const { entities, camera } = (state as GameState);
   Object.values(entities).forEach(entity => {
-    const { x, y, glyph, fg, bg } = (entity as Entity);
+    const { type, x , y } = entity;
+    if (entity.type === ENTITY_TYPES.PLAYER) { return; }
+    const { glyph, fg, bg } = GLYPHS[entity.glyph];
     display.draw(x + camera.x, y + camera.y, glyph, fg, bg);   
   });
-
+  Object.values(entities).forEach(entity => {
+    const { type, x , y } = entity;
+    if (entity.type !== ENTITY_TYPES.PLAYER) { return; }
+    const { glyph, fg, bg } = GLYPHS[entity.glyph];
+    display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+  });
 };
 
 export const drawUI = ({ game, display }): void => {
