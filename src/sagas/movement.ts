@@ -19,31 +19,15 @@ export function* moveEntity(action): Generator {
   const currentCell = map[currentKey];
   const nextCell = map[nextKey];
 
-  if (!CELL_PROPERTIES[nextCell.type].solid) {
-    yield put({
-      type: 'ENTITY_MOVED',
-      payload: {
-        id,
-        src: currentCell,
-        dest: nextCell,
-        skipZones: !!skipZones
-      }
-    });
-  } else {
-    yield put({
-      type: 'MOVEMENT_FAILED',
-      payload: {
-        src: {
-          x, y
-        },
-        dest: {
-          x: x + dx,
-          y: y + dy
-        },
-        id
-      }
-    });
-  }
+  yield put({
+    type: 'ENTITY_MOVED',
+    payload: {
+      id,
+      src: currentCell,
+      dest: nextCell,
+      skipZones: !!skipZones
+    }
+  });
 }
 
 export function* movePlayer(action): Generator {
@@ -118,26 +102,37 @@ export function* entityMoved(action): Generator {
   }
 
   if (!preventMove) {
-    if (entity.type === ENTITY_TYPES.PLAYER) {
+    if (!CELL_PROPERTIES[dest.type].solid) {
+      if (entity.type === ENTITY_TYPES.PLAYER) {
+        yield put({
+          type: 'UPDATE_CAMERA_POSITION',
+          payload: {
+            x: -dx,
+            y: -dy,
+            relative: true
+          }
+        });
+      }
+
       yield put({
-        type: 'UPDATE_CAMERA_POSITION',
+        type: 'UPDATE_ENTITY_POSITION',
         payload: {
-          x: -dx,
-          y: -dy,
-          relative: true
+          x: dx,
+          y: dy,
+          relative: true,
+          id
+        }
+      });
+    } else {
+      yield put({
+        type: 'MOVEMENT_FAILED',
+        payload: {
+          src,
+          dest,
+          id
         }
       });
     }
-
-    yield put({
-      type: 'UPDATE_ENTITY_POSITION',
-      payload: {
-        x: dx,
-        y: dy,
-        relative: true,
-        id
-      }
-    });
   }
 }
 

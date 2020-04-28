@@ -74,7 +74,7 @@ export const setupMap = ({ playerID }) => {
         type: 'ENTER',
         actions: [{
           type: 'LOG_MESSAGE',
-          payload: { message: 'You see something strange to the east.' }
+          payload: { message: 'You see something strange to the west.' }
         }]
       }, {
         type: 'EXIT',
@@ -84,12 +84,17 @@ export const setupMap = ({ playerID }) => {
           payload: { dx: 7, dy: 0, relative: true, id: playerID },
           conditions: [
             [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', 1 ]],
+            [ 'dx', [ 'eq', -1 ]],
             [ 'dy', [ 'eq', 0 ]]
           ]
         }, {
           type: 'LOG_MESSAGE',
-          payload: { 'message': 'You step through the portal.' }
+          payload: { 'message': 'You step through the portal.' },
+          conditions: [
+            [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
+            [ 'dx', [ 'eq', -1 ]],
+            [ 'dy', [ 'eq', 0 ]]
+          ]
         }]
       }],
       glyph: GLYPH_TYPES.PORTAL
@@ -100,7 +105,7 @@ export const setupMap = ({ playerID }) => {
         type: 'ENTER',
         actions: [{
           type: 'LOG_MESSAGE',
-          payload: { message: 'You see something strange to the west.' }
+          payload: { message: 'You see something strange to the east.' }
         }]
       }, {
         type: 'EXIT',
@@ -110,7 +115,7 @@ export const setupMap = ({ playerID }) => {
           payload: { dx: -7, dy: 0, relative: true, id: playerID },
           conditions: [
             [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', -1 ]],
+            [ 'dx', [ 'eq', 1 ]],
             [ 'dy', [ 'eq', 0 ]]
           ]
         }]
@@ -122,7 +127,7 @@ export const setupMap = ({ playerID }) => {
           payload: { 'message': 'You step through the portal.' },
           conditions: [
             [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]],
-            [ 'dx', [ 'eq', -1 ]],
+            [ 'dx', [ 'eq', 1 ]],
             [ 'dy', [ 'eq', 0 ]]
           ]
         }]
