@@ -54,5 +54,12 @@ export {
 
 export {
   Item,
-  Items
+  Items,
+  ItemID
 } from './items';
+
+export {
+  Panel,
+  PanelID,
+  Panels
+} from './ui';

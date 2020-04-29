@@ -16,23 +16,53 @@ const move = (dir: Direction) => throttle((): void => {
   action('COMMAND_MOVE', { dx, dy });
 }, 16);
 
-const get = () => {
+const get = (): void => {
   action('COMMAND_GET', {});
-}
+};
 
-const drop = () => {
-  action('COMMAND_DROP', {});
-}
+const dropItem = (idx) => (): void => {
+  action('COMMAND_DROP', { idx });
+  action('CLOSE_UI', {});
+  keymage.setScope('default');
+};
+
+const drop = (): void => {
+  action('SHOW_DROP_PANEL', {});
+  keymage.setScope('inventory:drop');
+};
+
+const closeUI = (): void => {
+  action('CLOSE_UI', {});
+  keymage.setScope('default');
+};
+
+const showInventory = (): void => {
+  action('SHOW_INVENTORY_PANEL', {});
+  keymage.setScope('inventory');
+};
 
 export const setupKeys = (): void => {
-  keymage('k', move('N'));
-  keymage('up', move('N'));
-  keymage('l', move('E'));
-  keymage('right', move('E'));
-  keymage('j', move('S')); 
-  keymage('down', move('S'));
-  keymage('h', move('W'));
-  keymage('left', move('W'));
-  keymage('g', get);
-  keymage('d', drop);
+  keymage('default','h', move('W'));
+  keymage('default','j', move('S'));
+  keymage('default','k', move('N'));
+  keymage('default','l', move('E'));
+
+  keymage('default','left', move('W'));
+  keymage('default','down', move('S'));
+  keymage('default','up', move('N'));
+  keymage('default','right', move('E'));
+
+  keymage('default','a', move('W'));
+  keymage('default','s', move('S'));
+  keymage('default','w', move('N'));
+  keymage('default','d', move('E'));
+
+  keymage('default','g', get);
+  keymage('inventory', 'd', drop);
+  ['a','s','d','f','g','h','j','k','l'].forEach((key, idx) =>
+    keymage('inventory:drop', key, dropItem(idx)));
+  keymage('esc', closeUI);
+  keymage('default', 'i', showInventory);
+
+  keymage.setScope('default');
 };

@@ -1,10 +1,10 @@
-export const GLYPH_TYPES = {
-  FLOOR: 'FLOOR',
-  WALL: 'WALL',
-  PLAYER: 'PLAYER',
-  FOLIAGE: 'FOLIAGE',
-  PORTAL: 'PORTAL',
-  KEY: 'KEY'
+export enum GLYPH_TYPES {
+  FLOOR = 'FLOOR',
+  WALL = 'WALL',
+  PLAYER = 'PLAYER',
+  FOLIAGE = 'FOLIAGE',
+  PORTAL = 'PORTAL',
+  KEY = 'KEY'
 };
 
 export const GLYPHS = {

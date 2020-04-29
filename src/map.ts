@@ -13,7 +13,7 @@ const WORLD_HEIGHT = 32;
 const fillRect = (cells) => (x, y, w, h, type = CELL_TYPES.FLOOR): void => {
   for (let _y = y; _y <= y + h; _y++) {
     for (let _x = x; _x <= x + w; _x++) {
-      cells.push({ x: _x, y: _y, type });
+      cells.push({ x: _x, y: _y, type, contents: [] });
     }
   }
 };
@@ -28,18 +28,18 @@ export const setupMap = ({ playerID }) => {
     map.create();
   }
   map.create((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR });
+    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
   });
   map.connect((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR });
+    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
   }, 1);
   for (let x = -1; x <= WORLD_WIDTH; x++) {
-    cells.push({ x, y: -1, type: CELL_TYPES.WALL });
-    cells.push({ x, y: WORLD_HEIGHT, type: CELL_TYPES.WALL });
+    cells.push({ x, y: -1, type: CELL_TYPES.WALL, contents: [] });
+    cells.push({ x, y: WORLD_HEIGHT, type: CELL_TYPES.WALL, contents: [] });
   }
   for (let y = -1; y < WORLD_HEIGHT; y++) {
-    cells.push({ x: -1, y, type: CELL_TYPES.WALL });
-    cells.push({ x: WORLD_WIDTH, y, type: CELL_TYPES.WALL });
+    cells.push({ x: -1, y, type: CELL_TYPES.WALL, contents: [] });
+    cells.push({ x: WORLD_WIDTH, y, type: CELL_TYPES.WALL, contents: [] });
   }
 
   action('UPDATE_CELLS', { cells });

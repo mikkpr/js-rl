@@ -8,7 +8,8 @@ import {
   LightingMap,
   ExplorationMap,
   VisibilityMap,
-  Items
+  Items,
+  Panels
 } from '.';
 
 export type GameState = {
@@ -21,6 +22,7 @@ export type GameState = {
   camera: Camera;
   log: Log;
   items: Items;
+  activePanels: Panels;
 }
 
 export type Action = {

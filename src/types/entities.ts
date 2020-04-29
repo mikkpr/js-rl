@@ -1,3 +1,5 @@
+import { ItemID } from '.';
+
 export type Glyph = {
   glyph: string;
   fg: string;
@@ -13,7 +15,8 @@ export type Entity = {
   y: number;
   type: string;
   glyph: string;
-  inventory: string[];
+  inventory: ItemID[];
+  id?: string;
 }
 
 export type Color = [number, number, number];

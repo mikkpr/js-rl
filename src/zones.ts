@@ -1,10 +1,10 @@
 import { getZoneCells } from './utils/zones';
 
-export const TRIGGER_TYPES = {
-  ENTER: 'ENTER',
-  EXIT: 'EXIT',
-  WITHIN: 'WITHIN'
-};
+export enum TRIGGER_TYPES {
+  ENTER = 'ENTER',
+  EXIT = 'EXIT',
+  WITHIN = 'WITHIN'
+}
 
 export const isWithinZone = (x, y) => (zone) => {
   let isWithin = false;

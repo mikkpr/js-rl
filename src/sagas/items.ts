@@ -25,7 +25,7 @@ export function* pickUpItem(action): Generator {
 
 export function* pickUpTopmostItem(action): Generator {
   const state = yield select();
-  const { entities, map } = (state as GameState);
+  const { entities, map, items } = (state as GameState);
 
   const entityID = Object.keys(entities).filter(id => entities[id].type === ENTITY_TYPES.PLAYER)[0];
   const { x, y } = entities[entityID];
@@ -54,13 +54,15 @@ export function* pickUpTopmostItem(action): Generator {
         x, y, itemID, entityID
       }
     });
+    const name = items[itemID].name;
+    yield put({ type: 'LOG_MESSAGE', payload: { message: `You pick up ${name}.` } })
   }
 }
 
 export function* dropItem(action): Generator {
   const { entityID, itemID } = action.payload;
   const state = yield select();
-  const { entities, map } = (state as GameState);
+  const { entities, map, items } = (state as GameState);
 
   const entity = entities[entityID];
   if (!entity) { return; }
@@ -73,7 +75,33 @@ export function* dropItem(action): Generator {
 
   // if entity has the item
   if (entity.inventory.includes(itemID)) {
+    const name = items[itemID].name;
     yield put({ type: 'ADD_ITEM_TO_CELL', payload: { x, y, itemID }});
     yield put({ type: 'REMOVE_ITEM_FROM_ENTITY', payload: { itemID, entityID }});
+    yield put({ type: 'LOG_MESSAGE', payload: { message: `You drop ${name}.` } })
   }
+}
+
+export function* dropPlayerItem(action): Generator {
+  const { idx } = action.payload;
+  const state = yield select();
+  const { entities, map } = (state as GameState);
+
+  const entityID = Object.keys(entities).filter(id => entities[id].type === ENTITY_TYPES.PLAYER)[0];
+  const { x, y } = entities[entityID];
+  if (!entityID) { return; }
+
+  const key = cellKey(x, y);
+  const cell = map[key];
+  if (!cell) { return; }
+
+  const inventory = entities[entityID].inventory;
+  if (inventory.length === 0) { return; }
+  const itemID = entities[entityID].inventory[idx];
+  if (!itemID) { return; }
+
+  yield dropItem({
+    type: 'DROP_ITEM',
+    payload: { entityID, itemID }
+  });
 }

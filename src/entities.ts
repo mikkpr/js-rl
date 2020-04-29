@@ -4,10 +4,10 @@ import { GLYPHS, GLYPH_TYPES } from './glyphs';
 import { CELL_TYPES } from './cells';
 import { GameState } from './types';
 
-export const ENTITY_TYPES = {
-  PLAYER: 'PLAYER',
-  FOLIAGE: 'FOLIAGE'
-};
+export enum ENTITY_TYPES {
+  PLAYER = 'PLAYER',
+  FOLIAGE = 'FOLIAGE'
+}
 
 export const ENTITY_PROPERTIES = {
   [ENTITY_TYPES.PLAYER]: {
@@ -26,7 +26,8 @@ export const setupEntities = ({ WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, playerID, ga
     ...playerInitialPos,
     glyph: GLYPH_TYPES.PLAYER,
     type: ENTITY_TYPES.PLAYER,
-    id: playerID
+    id: playerID,
+    inventory: []
   });
   action('UPDATE_ENTITIES', { entities });
   action('UPDATE_CAMERA_POSITION', { x: cameraInitialPos.x, y: cameraInitialPos.y } )

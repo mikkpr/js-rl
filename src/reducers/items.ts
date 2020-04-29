@@ -1,4 +1,5 @@
 import produce from 'immer';
+import { cellKey } from '../utils/map';
 import { Items, GameState, Action } from '../types';
 
 export const itemsState: { items: Items } = {
@@ -13,19 +14,33 @@ const addItem = (state: GameState, action: Action): GameState => {
 };
 
 const addItemToEntity = (state: GameState, action: Action): GameState => {
-  return state;
+  const { entityID, itemID } = action.payload;
+  return produce(state, state => {
+    state.entities[entityID].inventory.push(itemID);
+  });
 };
 
 const addItemToCell = (state: GameState, action: Action): GameState => {
-  return state;
+  const { x, y, itemID } = action.payload;
+  const key = cellKey(x, y);
+  return produce(state, state => {
+    state.map[key].contents.push(itemID);
+  });
 };
 
 const removeItemFromEntity = (state: GameState, action: Action): GameState => {
-  return state;
+  const { itemID, entityID } = action.payload;
+  return produce(state, state => {
+    state.entities[entityID].inventory = state.entities[entityID].inventory.filter(id => id !== itemID);
+  });
 };
 
 const removeItemFromCell = (state: GameState, action: Action): GameState => {
-  return state;
+  const { x, y, itemID } = action.payload;
+  const key = cellKey(x, y);
+  return produce(state, state => {
+    state.map[key].contents = state.map[key].contents.filter(id => id !== itemID);
+  });
 };
 
 const itemActions = {
