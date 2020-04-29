@@ -14,6 +14,10 @@ let display: ROT.Display;
 
 export const playerID = ID();
 
+const hideLoadingText = () => {
+  document.querySelector('.main .loading').remove();
+};
+
 const setup = (): void => {
   display = setupDisplay({
     width: WIDTH,
@@ -23,6 +27,8 @@ const setup = (): void => {
   setupKeys();
 
   setupMap({ playerID });
+
+  hideLoadingText();
 
   //setupZones({ playerID });
 

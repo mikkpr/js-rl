@@ -1,4 +1,10 @@
+import { Color } from '.';
+
 export type LightingMap = {
+  [id: string]: Color;
+}
+
+export type VisibilityMap = {
   [id: string]: number;
 }
 
@@ -20,4 +26,10 @@ export type Map = {
 }
 
 export type Coordinates = [number, number];
+export interface Position {
+  x: number;
+  y: number;
+}
 export type Area = [number, number, number, number];
+
+export type CardinalDirection = 'north' | 'south' | 'east' | 'west';

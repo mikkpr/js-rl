@@ -14,3 +14,5 @@ export type Entity = {
   type: string;
   glyph: string;
 }
+
+export type Color = [number, number, number];

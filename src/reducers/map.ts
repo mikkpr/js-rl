@@ -6,7 +6,8 @@ export const mapState = {
   map: {},
   zones: {},
   lightingMap: {},
-  explorationMap: {}
+  explorationMap: {},
+  visibilityMap: {}
 };
 
 const updateCell = (state: GameState, action: Action): GameState => {
@@ -38,6 +39,13 @@ const updateZones = (state: GameState, action: Action): GameState => {
   };
 };
 
+const updateVisibilityMap = (state, action) => {
+  const { visibilityMap } = action.payload;
+  return produce(state, state => {
+    state.visibilityMap = visibilityMap;
+  });
+};
+
 const updateLightingMap = (state, action) => {
   const { lightingMap } = action.payload;
   return produce(state, state => {
@@ -60,7 +68,8 @@ const actionMap = {
   'UPDATE_ZONE': updateZone,
   'UPDATE_ZONES': updateZones,
   'UPDATE_LIGHTING_MAP': updateLightingMap,
-  'UPDATE_EXPLORATION_MAP': updateExplorationMap
+  'UPDATE_EXPLORATION_MAP': updateExplorationMap,
+  'UPDATE_VISIBILITY_MAP': updateVisibilityMap
 };
 
 export default actionMap;

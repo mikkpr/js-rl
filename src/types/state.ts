@@ -1,8 +1,9 @@
-import { Zones, Entities, Map, Camera, Log, Condition, LightingMap, ExplorationMap } from '.';
+import { Zones, Entities, Map, Camera, Log, Condition, LightingMap, ExplorationMap, VisibilityMap } from '.';
 export type GameState = {
   entities: Entities;
   map: Map;
   lightingMap: LightingMap;
+  visibilityMap: VisibilityMap;
   explorationMap: ExplorationMap;
   zones: Zones;
   camera: Camera;

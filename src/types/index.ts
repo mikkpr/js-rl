@@ -8,7 +8,10 @@ export {
   Coordinates,
   Area,
   LightingMap,
-  ExplorationMap
+  ExplorationMap,
+  VisibilityMap,
+  Position,
+  CardinalDirection
 } from './map';
 
 export {
@@ -25,7 +28,8 @@ export {
 export {
   Glyph,
   Entity,
-  Entities
+  Entities,
+  Color
 } from './entities';
 
 export {

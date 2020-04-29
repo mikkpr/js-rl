@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import game, { action } from './state';
-import { Zone, Zones, Trigger, Area } from './types';
+import { Zone, Zones, Trigger, Area, Position, CardinalDirection } from './types';
 import { ID } from './utils/id';
 import { cellKey } from './utils/map';
 import { CELL_TYPES } from './cells';
@@ -13,10 +13,10 @@ const WORLD_HEIGHT = 32;
 const fillRect = (cells) => (x, y, w, h, type = CELL_TYPES.FLOOR): void => {
   for (let _y = y; _y <= y + h; _y++) {
     for (let _x = x; _x <= x + w; _x++) {
-      cells.push({ x: _x, y: _y, type })
+      cells.push({ x: _x, y: _y, type });
     }
   }
-}
+};
 
 export const setupMap = ({ playerID }) => {
   const cells = [];
@@ -48,6 +48,11 @@ export const setupMap = ({ playerID }) => {
 
 export const createRandomWalkZone = ({
   x, y, width, height
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }): Zone => {
   const area = [x, y, width, height];
   return {
@@ -75,6 +80,11 @@ export const createRandomWalkZone = ({
 
 export const createPortal = ({ playerID  }) => ({
   src, dest, direction, glyph = GLYPH_TYPES.PORTAL
+}: {
+  src: Position;
+  dest: Position;
+  direction: CardinalDirection;
+  glyph?: string;
 }): Zone => {
   const dx = dest.x - src.x;
   const dy = dest.y - dest.y;

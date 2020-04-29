@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import { CELL_PROPERTIES } from './cells';
-import { Cell, Entity, GameState, Zone } from './types';
+import { Cell, Entity, GameState, Zone, Color } from './types';
 
 import { HEIGHT, WIDTH, BOTTOM_PANEL_HEIGHT } from './index';
 import { ENTITY_TYPES } from './entities';
@@ -12,23 +12,34 @@ export const setupDisplay = (options: {width: number; height: number }): ROT.Dis
   const display = new ROT.Display({
     width: options.width,
     height: options.height,
-    fontFamily: 'Fira Mono'
+    fontFamily: 'Fira Mono',
+    fontSize: 12,
+    spacing: 1.1
   });
 
-  document.querySelector('.main').appendChild(display.getContainer());
+  const mainContainer = document.querySelector('.main');
+  mainContainer.appendChild(display.getContainer());
 
   return display;
 };
 
+const mapNoise = new ROT.Noise.Simplex(4);
+
 export const drawMap = ({ game, display }): void => {
-  const { explorationMap, lightingMap, map, camera } = game.getState();
+  const { explorationMap, visibilityMap, lightingMap, map, camera } = game.getState();
+  const ambientLight: Color = [100, 100, 100];
 
   Object.values(map).forEach((cell: Cell) => {
     const { x, y, type } = cell;
     const key = cellKey(x, y);
     const { glyph, fg, bg } = CELL_PROPERTIES[type].glyph;
-    if (key in lightingMap) {
-      display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
+    const fore = mapNoise.get(x/255, y/255) * 200;
+    const c = ~~Math.max(50, Math.abs(fore));
+    const baseColor: Color = [c, c, c];
+    const light = key in lightingMap ? ROT.Color.add(ambientLight as Color, lightingMap[key]) : ambientLight;
+    const finalColor = ROT.Color.multiply(baseColor, light);
+    if (key in visibilityMap) {
+      display.draw(x + camera.x, y + camera.y, glyph, ROT.Color.toHex(finalColor), bg);
     } else if (key in explorationMap) {
       display.draw(x + camera.x, y + camera.y, glyph, '#222', bg);
     }
@@ -37,7 +48,7 @@ export const drawMap = ({ game, display }): void => {
 };
 
 export const drawZones = ({ game, display }): void => {
-  const { zones, camera, lightingMap, explorationMap } = game.getState();
+  const { zones, camera, visibilityMap, explorationMap } = game.getState();
 
   const zonesWithGlyphs = Object.values(zones).filter(zone => {
     return (zone as Zone).glyph;
@@ -49,7 +60,7 @@ export const drawZones = ({ game, display }): void => {
       const [ x, y ] = cell;
       const key = cellKey(x, y);
       const { glyph, fg, bg } = GLYPHS[(zone as Zone).glyph];
-      if (key in lightingMap) {
+      if (key in visibilityMap) {
         display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
       } else if (key in explorationMap) {
         display.draw(x + camera.x, y + camera.y, glyph, '#010101', '#000');
@@ -60,12 +71,12 @@ export const drawZones = ({ game, display }): void => {
 
 export const drawEntities = ({ game, display }): void => {
   const state = game.getState();
-  const { entities, camera, lightingMap } = (state as GameState);
+  const { entities, camera, visibilityMap } = (state as GameState);
   Object.values(entities).forEach(entity => {
     const { type, x , y } = entity;
     const key = cellKey(x, y);
     if (entity.type === ENTITY_TYPES.PLAYER) { return; }
-    if (key in lightingMap) {
+    if (key in visibilityMap) {
       const { glyph, fg, bg } = GLYPHS[entity.glyph];
       display.draw(x + camera.x, y + camera.y, glyph, fg, bg);
     }
