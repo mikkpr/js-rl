@@ -13,6 +13,7 @@ export type Entity = {
   y: number;
   type: string;
   glyph: string;
+  inventory: string[];
 }
 
 export type Color = [number, number, number];

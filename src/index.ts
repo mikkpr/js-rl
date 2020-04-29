@@ -5,6 +5,7 @@ import { setupDisplay, draw } from './display';
 import { setupMap, setupZones } from './map';
 import { setupEntities } from './entities';
 import { ID } from './utils/id';
+import { setupItems } from './items';
 
 export const WIDTH = 64;
 export const HEIGHT = 32;
@@ -33,6 +34,8 @@ const setup = (): void => {
   //setupZones({ playerID });
 
   setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, game });
+
+  setupItems({ game });
 
   game.dispatch({ type: 'CALCULATE_FOV', payload: {} });
 

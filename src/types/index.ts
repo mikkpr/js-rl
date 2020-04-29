@@ -51,3 +51,8 @@ export {
   Comparison,
   Condition
 } from './conditions';
+
+export {
+  Item,
+  Items
+} from './items';

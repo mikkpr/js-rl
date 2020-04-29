@@ -3,7 +3,8 @@ export const GLYPH_TYPES = {
   WALL: 'WALL',
   PLAYER: 'PLAYER',
   FOLIAGE: 'FOLIAGE',
-  PORTAL: 'PORTAL'
+  PORTAL: 'PORTAL',
+  KEY: 'KEY'
 };
 
 export const GLYPHS = {
@@ -30,6 +31,11 @@ export const GLYPHS = {
   [GLYPH_TYPES.PORTAL]: {
     glyph: '~',
     fg: '#646',
+    bg: '#000'
+  },
+  [GLYPH_TYPES.KEY]: {
+    glyph: 'F',
+    fg: '#aa2',
     bg: '#000'
   }
 };
