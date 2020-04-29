@@ -9,12 +9,12 @@ export const GLYPH_TYPES = {
 export const GLYPHS = {
   [GLYPH_TYPES.FLOOR]: {
     glyph: '.',
-    fg: '#444',
+    fg: '#111',
     bg: '#000'
   },
   [GLYPH_TYPES.WALL]: {
     glyph: '█',
-    fg: '#666',
+    fg: '#444',
     bg: '#000'
   },
   [GLYPH_TYPES.PLAYER]: {

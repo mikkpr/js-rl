@@ -23,13 +23,13 @@ export function* calculateLighting() {
   const reflectivity = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return CELL_PROPERTIES[cell.type].solid ? 0 : 0.3;
+    return CELL_PROPERTIES[cell.type].solid ? 0 : 0.1;
   }
   if (!fov) {
     fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
   }
   if (!lighting) {
-    lighting = new ROT.Lighting(reflectivity, { range: 10, passes: 2});
+    lighting = new ROT.Lighting(reflectivity, { range: 8, passes: 2});
   }
   lighting.clearLights();
   lighting.setFOV(fov);
