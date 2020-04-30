@@ -11,7 +11,7 @@ const middlewares: Array<Middleware> = [
   sagaMiddleware
 ];
 
-const loggingEnabled = false;
+const loggingEnabled = true;
 if (loggingEnabled) {
   const logger = createLogger({
     collapsed: true,

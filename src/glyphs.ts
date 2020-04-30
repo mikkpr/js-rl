@@ -11,6 +11,8 @@ enum UI_TYPES {
 enum CELL_TYPES {
   FLOOR = 'FLOOR',
   WALL = 'WALL',
+  DOOR_OPEN = 'DOOR_OPEN',
+  DOOR_CLOSED = 'DOOR_CLOSED'
 }
 
 enum ENTITY_TYPES {
@@ -45,6 +47,16 @@ const CELL_GLYPHS = {
   [GLYPH_TYPES.WALL]: {
     glyph: '█',
     fg: '#444',
+    bg: '#000'
+  },
+  [GLYPH_TYPES.DOOR_OPEN]: {
+    glyph: '\'',
+    fg: '#655',
+    bg: '#000'
+  },
+  [GLYPH_TYPES.DOOR_CLOSED]: {
+    glyph: '+',
+    fg: '#655',
     bg: '#000'
   }
 };

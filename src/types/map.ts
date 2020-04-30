@@ -12,7 +12,7 @@ export type ExplorationMap = {
   [id: string]: number;
 };
 
-export type CellType = 'FLOOR' | 'WALL';
+export type CellType = 'FLOOR' | 'WALL' | 'DOOR_OPEN' | 'DOOR_CLOSED';
 
 export type Cell = {
   x: number;

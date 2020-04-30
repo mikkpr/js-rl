@@ -41,7 +41,15 @@ const showInventory = (): void => {
 
 const closeTopmostUIPanel = (): void => {
   action('COMMAND_CLOSE_TOP', {});
-}
+};
+
+const openDoor = (): void => {
+  action('COMMAND_OPEN_DOOR', {});
+};
+
+const closeDoor = (): void => {
+  action('COMMAND_CLOSE_DOOR', {});
+};
 
 export const setupKeys = (): void => {
   keymage('default','h', move('W'));
@@ -66,6 +74,9 @@ export const setupKeys = (): void => {
   keymage('esc', closeUI);
   keymage('default', 'i', showInventory);
   keymage('backspace', closeTopmostUIPanel)
+
+  keymage('o', openDoor);
+  keymage('c', closeDoor);
 
   keymage.setScope('default');
 };

@@ -19,18 +19,14 @@ export function* calculateLighting() {
     const key = cellKey(x, y);
     const cell = map[key];
     return cell && !CELL_PROPERTIES[cell.type].solid;
-  }
+  };
   const reflectivity = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
     return CELL_PROPERTIES[cell.type].solid ? 0 : 0.1;
-  }
-  if (!fov) {
-    fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
-  }
-  if (!lighting) {
-    lighting = new ROT.Lighting(reflectivity, { range: 8, passes: 2});
-  }
+  };
+  let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
+  let lighting = new ROT.Lighting(reflectivity, { range: 8, passes: 2});
   lighting.clearLights();
   lighting.setFOV(fov);
   lighting.setLight(player.x, player.y, [240, 240, 200]);
@@ -54,9 +50,7 @@ export function* calculateFOV(action) {
     const cell = map[key];
     return cell && !CELL_PROPERTIES[cell.type].solid;
   }
-  if (!fov) {
-    fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
-  }
+  let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
 
   const visibilityMap = {};
   const explorationMap = [];

@@ -1,6 +1,7 @@
 import { takeEvery } from 'redux-saga/effects';
 import { entityMoved, movePlayer, moveEntity, movementFailed, randomWalk } from './movement';
 import { calculateFOV } from './fov';
+import { closeDoor, openDoor } from './map';
 import { pickUpTopmostItem, pickUpItem, dropItem, dropPlayerItem } from './items';
 import { showDropPanel, showInventoryPanel, closeAllUIPanels, closeTopUIPanel } from './ui';
 
@@ -21,4 +22,6 @@ export function* rootSaga(): Generator {
   yield takeEvery('COMMAND_DROP_UI', showDropPanel);
   yield takeEvery('COMMAND_CLOSE', closeAllUIPanels);
   yield takeEvery('COMMAND_CLOSE_TOP', closeTopUIPanel);
+  yield takeEvery('COMMAND_CLOSE_DOOR', closeDoor);
+  yield takeEvery('COMMAND_OPEN_DOOR', openDoor);
 }
