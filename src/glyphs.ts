@@ -12,8 +12,9 @@ enum CELL_TYPES {
   FLOOR = 'FLOOR',
   WALL = 'WALL',
   DOOR_OPEN = 'DOOR_OPEN',
-  DOOR_CLOSED = 'DOOR_CLOSED'
-}
+  DOOR_CLOSED = 'DOOR_CLOSED',
+  PORTCULLIS_OPEN = 'PORTCULLIS_OPEN',
+  PORTCULLIS_CLOSED = 'PORTCULLIS_CLOSED'}
 
 enum ENTITY_TYPES {
   PLAYER = 'PLAYER',
@@ -57,6 +58,16 @@ const CELL_GLYPHS = {
   [GLYPH_TYPES.DOOR_CLOSED]: {
     glyph: '+',
     fg: '#655',
+    bg: '#000'
+  },
+  [GLYPH_TYPES.PORTCULLIS_OPEN]: {
+    glyph: '\'',
+    fg: '#577',
+    bg: '#000'
+  },
+  [GLYPH_TYPES.PORTCULLIS_CLOSED]: {
+    glyph: '#',
+    fg: '#577',
     bg: '#000'
   }
 };

@@ -21,6 +21,12 @@ export type Cell = {
   type: CellType;
 };
 
+export type CellProperties = {
+  glyph: string;
+  flags: string[];
+  name?: string;
+}
+
 export type Map = {
   [key: string]: Cell;
 }

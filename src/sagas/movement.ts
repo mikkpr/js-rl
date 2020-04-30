@@ -112,7 +112,7 @@ export function* entityMoved(action): Generator {
   }
 
   if (!preventMove) {
-    if (!CELL_PROPERTIES[dest.type].solid) {
+    if (!CELL_PROPERTIES[dest.type].flags.includes('SOLID')) {
       yield put({
         type: 'UPDATE_ENTITY_POSITION',
         payload: {
@@ -168,7 +168,7 @@ export function* randomWalk(): Generator {
   }
   const nextCell = map[cellKey(entities[id].x + dx, entities[id].y + dy)];
 
-  if (!CELL_PROPERTIES[nextCell.type].solid) {
+  if (!CELL_PROPERTIES[nextCell.type].flags.includes('SOLID')) {
     yield put({
       type: 'MOVE_ENTITY',
       payload: {

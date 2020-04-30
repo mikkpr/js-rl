@@ -1,4 +1,5 @@
 import produce from 'immer';
+import { CELL_TYPES } from '../cells';
 import { GameState, Action } from '../types';
 import { cellKey } from '../utils/map';
 
@@ -62,6 +63,30 @@ const updateExplorationMap = (state, action) => {
   });
 };
 
+const openDoorCell = (state, action) => {
+  const { cell } = action.payload;
+  return produce(state, state => {
+    const key = cellKey(cell.x, cell.y);
+    if (cell.type === CELL_TYPES.DOOR_CLOSED) {
+      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_OPEN }
+    } else if (cell.type === CELL_TYPES.PORTCULLIS_CLOSED) {
+      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_OPEN }
+    }
+  });
+};
+
+const closeDoorCell = (state, action) => {
+  const { cell } = action.payload;
+  return produce(state, state => {
+    const key = cellKey(cell.x, cell.y);
+    if (cell.type === CELL_TYPES.DOOR_OPEN) {
+      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_CLOSED }
+    } else if (cell.type === CELL_TYPES.PORTCULLIS_OPEN) {
+      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_CLOSED }
+    }
+  });
+};
+
 const actionMap = {
   'UPDATE_CELL': updateCell,
   'UPDATE_CELLS': updateCells,
@@ -69,7 +94,9 @@ const actionMap = {
   'UPDATE_ZONES': updateZones,
   'UPDATE_LIGHTING_MAP': updateLightingMap,
   'UPDATE_EXPLORATION_MAP': updateExplorationMap,
-  'UPDATE_VISIBILITY_MAP': updateVisibilityMap
+  'UPDATE_VISIBILITY_MAP': updateVisibilityMap,
+  'OPEN_DOOR_CELL': openDoorCell,
+  'CLOSE_DOOR_CELL': closeDoorCell
 };
 
 export default actionMap;

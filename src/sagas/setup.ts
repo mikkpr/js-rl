@@ -58,7 +58,10 @@ function* placeDoors(cells: Cell[]): Generator {
         return acc && !cand.includes(adj);
       }, true);
     })
-    .map(c => ({ ...map[c], type: CELL_TYPES.DOOR_CLOSED }))
+    .map(c => ({
+      ...map[c],
+      type: ROT.RNG.getItem([CELL_TYPES.DOOR_CLOSED, CELL_TYPES.PORTCULLIS_CLOSED])
+    }))
     .forEach(c => candidates.push(c));
 
   return candidates;

@@ -11,7 +11,8 @@ export {
   ExplorationMap,
   VisibilityMap,
   Position,
-  CardinalDirection
+  CardinalDirection,
+  CellProperties
 } from './map';
 
 export {

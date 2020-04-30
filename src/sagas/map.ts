@@ -1,6 +1,6 @@
 import { select, put } from 'redux-saga/effects';
 import { ENTITY_TYPES } from '../entities';
-import { CELL_TYPES } from '../cells';
+import { CELL_PROPERTIES, CELL_TYPES } from '../cells';
 import { cellKey, getAdjacentCells } from '../utils/map';
 import { GameState } from '../types';
 
@@ -19,7 +19,7 @@ function* entityOpenDoor(id) {
 
   const adjacentCells = Object.values(getAdjacentCells(map, cell)).filter(x => x);
 
-  const closedDoors = adjacentCells.filter(c => c.type === CELL_TYPES.DOOR_CLOSED);
+  const closedDoors = adjacentCells.filter(c => CELL_PROPERTIES[c.type].flags.includes('OPENABLE'));
   if (closedDoors.length === 0) {
     yield put({
       type: 'LOG_MESSAGE',
@@ -28,12 +28,10 @@ function* entityOpenDoor(id) {
       }
     });
   } else {
-    const door = closedDoors[0];
+    const cell = closedDoors[0];
     yield put({
-      type: 'UPDATE_CELL',
-      payload: {
-        cell: { ...door, type: CELL_TYPES.DOOR_OPEN }
-      }
+      type: 'OPEN_DOOR_CELL',
+      payload: { cell }
     });
     yield put({
       type: 'CALCULATE_FOV',
@@ -42,7 +40,7 @@ function* entityOpenDoor(id) {
     yield put({
       type: 'LOG_MESSAGE',
       payload: {
-        message: 'You open the door.'
+        message: `You open the ${CELL_PROPERTIES[cell.type].name}.`
       }
     });
   }
@@ -63,7 +61,7 @@ function* entityCloseDoor(id) {
 
   const adjacentCells = Object.values(getAdjacentCells(map, cell)).filter(x => x);
 
-  const openDoors = adjacentCells.filter(c => c.type === CELL_TYPES.DOOR_OPEN);
+  const openDoors = adjacentCells.filter(c => CELL_PROPERTIES[c.type].flags.includes('CLOSABLE'));
   if (openDoors.length === 0) {
     yield put({
       type: 'LOG_MESSAGE',
@@ -72,12 +70,10 @@ function* entityCloseDoor(id) {
       }
     });
   } else {
-    const door = openDoors[0];
+    const cell = openDoors[0];
     yield put({
-      type: 'UPDATE_CELL',
-      payload: {
-        cell: { ...door, type: CELL_TYPES.DOOR_CLOSED }
-      }
+      type: 'CLOSE_DOOR_CELL',
+      payload: { cell }
     });
     yield put({
       type: 'CALCULATE_FOV',
@@ -86,7 +82,7 @@ function* entityCloseDoor(id) {
     yield put({
       type: 'LOG_MESSAGE',
       payload: {
-        message: 'You close the door.'
+        message: `You close the ${CELL_PROPERTIES[cell.type].name}.`
       }
     });
   }

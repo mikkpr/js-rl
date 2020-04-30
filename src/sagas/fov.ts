@@ -7,10 +7,7 @@ import { cellKey } from '../utils/map';
 
 import { GameState } from '../types';
 
-let fov;
-let lighting;
-
-export function* calculateLighting() {
+export function* calculateLighting(): Generator {
   const state = yield select();
   const { map, entities } = (state as GameState);
   const player = Object.values(entities).filter(e => e.type === ENTITY_TYPES.PLAYER)[0];
@@ -18,15 +15,17 @@ export function* calculateLighting() {
   const lightPasses = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return cell && !CELL_PROPERTIES[cell.type].solid;
+    return cell && !CELL_PROPERTIES[cell.type].flags.includes('BLOCKS_LIGHT');
   };
   const reflectivity = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return CELL_PROPERTIES[cell.type].solid ? 0 : 0.1;
+    return CELL_PROPERTIES[cell.type].flags.includes('BLOCKS_LIGHT') ? 0 : 0.1;
   };
-  let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
-  let lighting = new ROT.Lighting(reflectivity, { range: 8, passes: 2});
+
+  const fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
+  const lighting = new ROT.Lighting(reflectivity, { range: 8, passes: 2});
+
   lighting.clearLights();
   lighting.setFOV(fov);
   lighting.setLight(player.x, player.y, [240, 240, 200]);
@@ -40,7 +39,7 @@ export function* calculateLighting() {
   yield put({ type: 'UPDATE_LIGHTING_MAP', payload: { lightingMap } })
 }
 
-export function* calculateFOV(action) {
+export function* calculateFOV(action): Generator {
   const state = yield select();
   const { map, entities } = (state as GameState);
   const player = Object.values(entities).filter(e => e.type === ENTITY_TYPES.PLAYER)[0];
@@ -48,9 +47,9 @@ export function* calculateFOV(action) {
   const lightPasses = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return cell && !CELL_PROPERTIES[cell.type].solid;
-  }
-  let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
+    return cell && !CELL_PROPERTIES[cell.type].flags.includes('BLOCKS_LIGHT');
+  };
+  const fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});
 
   const visibilityMap = {};
   const explorationMap = [];
