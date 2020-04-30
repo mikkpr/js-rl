@@ -1,50 +1,8 @@
-import * as ROT from 'rot-js';
-import game, { action } from './state';
-import { Zone, Zones, Trigger, Area, Position, CardinalDirection } from './types';
+import { action } from './state';
+import { Zone, Zones, Area, Position, CardinalDirection } from './types';
 import { ID } from './utils/id';
-import { cellKey } from './utils/map';
-import { CELL_TYPES } from './cells';
 import { ENTITY_TYPES } from './entities';
 import { GLYPH_TYPES } from './glyphs';
-
-const WORLD_WIDTH = 64;
-const WORLD_HEIGHT = 32;
-
-const fillRect = (cells) => (x, y, w, h, type = CELL_TYPES.FLOOR): void => {
-  for (let _y = y; _y <= y + h; _y++) {
-    for (let _x = x; _x <= x + w; _x++) {
-      cells.push({ x: _x, y: _y, type, contents: [] });
-    }
-  }
-};
-
-export const setupMap = ({ playerID }) => {
-  const cells = [];
-  const filler = fillRect(cells);
-  filler(0, 0, WORLD_WIDTH - 1, WORLD_HEIGHT - 1, CELL_TYPES.WALL);
-  const map = new ROT.Map.Cellular(WORLD_WIDTH, WORLD_HEIGHT);
-  map.randomize(0.5);
-  for (let i = 0; i <= 3; i++) {
-    map.create();
-  }
-  map.create((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
-  });
-  map.connect((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
-  }, 1);
-  for (let x = -1; x <= WORLD_WIDTH; x++) {
-    cells.push({ x, y: -1, type: CELL_TYPES.WALL, contents: [] });
-    cells.push({ x, y: WORLD_HEIGHT, type: CELL_TYPES.WALL, contents: [] });
-  }
-  for (let y = -1; y < WORLD_HEIGHT; y++) {
-    cells.push({ x: -1, y, type: CELL_TYPES.WALL, contents: [] });
-    cells.push({ x: WORLD_WIDTH, y, type: CELL_TYPES.WALL, contents: [] });
-  }
-
-  action('UPDATE_CELLS', { cells });
-};
-
 
 export const createRandomWalkZone = ({
   x, y, width, height

@@ -11,8 +11,9 @@ const middlewares: Array<Middleware> = [
   sagaMiddleware
 ];
 
-const loggingEnabled = true;
-if (loggingEnabled) {
+const LOGGING_ENABLED = false;
+
+if (LOGGING_ENABLED) {
   const logger = createLogger({
     collapsed: true,
     timestamp: true
@@ -23,14 +24,13 @@ export type GameStore = Store<GameState, Action>;
 const game: GameStore = createStore(rootReducer, applyMiddleware(...middlewares));
 sagaMiddleware.run(rootSaga);
 
-
 eval('window.game = game;');
 
 export const action = (type: string, payload: any): void => {
-  game.dispatch({
+  requestAnimationFrame(() => game.dispatch({
     type,
     payload
-  });
+  }));
 };
 
 export default game;

@@ -2,10 +2,6 @@ import * as ROT from 'rot-js';
 import game from './state';
 import { setupKeys } from './keys';
 import { setupDisplay, draw } from './display';
-import { setupMap, setupZones } from './map';
-import { setupEntities } from './entities';
-import { ID } from './utils/id';
-import { setupItems } from './items';
 
 import './fonts';
 
@@ -13,9 +9,10 @@ export const WIDTH = 64;
 export const HEIGHT = 32;
 export const BOTTOM_PANEL_HEIGHT = 6;
 
-let display: ROT.Display;
+const WORLD_WIDTH = 64;
+const WORLD_HEIGHT = 32;
 
-export const playerID = ID();
+let display: ROT.Display;
 
 const hideLoadingText = () => {
   document.querySelector('.main .loading').remove();
@@ -27,21 +24,11 @@ const setup = (): void => {
     height: HEIGHT
   });
 
-  setupKeys();
-
-  setupMap({ playerID });
+  game.dispatch({ type: 'BEGIN_SETUP', payload: { WORLD_WIDTH, WORLD_HEIGHT } });
 
   hideLoadingText();
 
-  //setupZones({ playerID });
-
-  setupEntities({ playerID, WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT, game });
-
-  setupItems({ game });
-
-  game.dispatch({ type: 'CALCULATE_FOV', payload: {} });
-
-  draw({ game, display });
+  setupKeys();
 };
 
 window.addEventListener('DOMContentLoaded', setup);

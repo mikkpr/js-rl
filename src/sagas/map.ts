@@ -17,7 +17,7 @@ function* entityOpenDoor(id) {
 
   if (!cell) { return; }
 
-  const adjacentCells = getAdjacentCells(map, cell);
+  const adjacentCells = Object.values(getAdjacentCells(map, cell)).filter(x => x);
 
   const closedDoors = adjacentCells.filter(c => c.type === CELL_TYPES.DOOR_CLOSED);
   if (closedDoors.length === 0) {
@@ -61,7 +61,7 @@ function* entityCloseDoor(id) {
 
   if (!cell) { return; }
 
-  const adjacentCells = getAdjacentCells(map, cell);
+  const adjacentCells = Object.values(getAdjacentCells(map, cell)).filter(x => x);
 
   const openDoors = adjacentCells.filter(c => c.type === CELL_TYPES.DOOR_OPEN);
   if (openDoors.length === 0) {

@@ -5,8 +5,9 @@ import { GameState, Action, Entities } from '../types';
 import { ENTITY_TYPES } from '../entities';
 import { GLYPHS } from '../glyphs';
 
-export const entitiesState: { entities: Entities } = {
-  entities: {}
+export const entitiesState: { entities: Entities, playerID: string | null } = {
+  entities: {},
+  playerID: null
 };
 
 const updateEntityPosition = (state: GameState, action: Action): GameState => {
@@ -43,9 +44,17 @@ const updateEntities = (state: GameState, action: Action): GameState => {
   });
 };
 
+const updatePlayerID = (state: GameState, action: Action): GameState => {
+  const { id } = action.payload;
+  return produce(state, state => {
+    state.playerID = id;
+  });
+};
+
 const actionMap = {
   'UPDATE_ENTITY_POSITION': updateEntityPosition,
-  'UPDATE_ENTITIES': updateEntities
+  'UPDATE_ENTITIES': updateEntities,
+  'UPDATE_PLAYER_ID': updatePlayerID
 };
 
 export default actionMap;

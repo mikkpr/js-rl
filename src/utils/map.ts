@@ -1,22 +1,26 @@
+import { CELL_TYPES } from '../cells';
 import { Map, Cell } from '../types';
 
 export const cellKey = (x: number, y: number): string => `${x}_${y}`;
 
 export const getAdjacentCells = (map: Map, cell: Cell) => {
   const { x, y } = cell;
-  const adjacentCoords = [
-    [x-1, y],
-    [x+1, y],
-    [x, y-1],
-    [x, y+1]
-  ];
+  return {
+    n: map[cellKey(x, y - 1)],
+    s: map[cellKey(x, y + 1)],
+    w: map[cellKey(x - 1, y)],
+    e: map[cellKey(x + 1, y)]
+  };
+};
+
+export const fillRect = (x, y, w, h, type = CELL_TYPES.FLOOR): Cell[] => {
   const cells = [];
-  for (const coords of adjacentCoords) {
-    const [_x, _y] = coords;
-    if (map[cellKey(_x, _y)]) {
-      cells.push(map[cellKey(_x, _y)]);
+
+  for (let _y = y; _y <= y + h; _y++) {
+    for (let _x = x; _x <= x + w; _x++) {
+      cells.push({ x: _x, y: _y, type, contents: [] });
     }
   }
 
   return cells;
-}
+};

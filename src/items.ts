@@ -1,20 +1,19 @@
-import * as ROT from 'rot-js';
-import { Item, Cell } from './types';
-import { GLYPH_TYPES } from './glyphs';
-import { CELL_TYPES } from './cells';
 import { ID } from './utils/id';
-import { action } from './state';
+import { Item } from './types';
 
-export const setupItems = ({ game }) => {
-  const item: Item = {
-    glyph: GLYPH_TYPES.KEY,
+export const createItem = ({
+  name,
+  glyph,
+  flags = []
+}: {
+  name: string;
+  glyph: string;
+  flags?: string[];
+}): Item => {
+  return {
+    name,
+    glyph,
+    flags,
     id: ID(),
-    name: 'a key'
   };
-
-  game.dispatch({ type: 'CREATE_ITEM', payload: { item } });
-
-  const cell: Cell = ROT.RNG.getItem<Cell>(Object.values<Cell>(game.getState().map).filter(c => (c as Cell).type === CELL_TYPES.FLOOR));
-
-  game.dispatch({ type: 'UPDATE_CELL', payload: { cell: { ...cell, contents: cell.contents.concat(item.id) } } });
 };

@@ -23,6 +23,7 @@ export type GameState = {
   log: Log;
   items: Items;
   activePanels: Panels;
+  playerID: string | null;
 }
 
 export type Action = {
