@@ -20,6 +20,12 @@ const closePanel = (state: GameState, action: Action): GameState => {
   });
 };
 
+const closeTopPanel = (state: GameState, action: Action): GameState => {
+  return produce(state, state => {
+    state.activePanels.pop();
+  });
+}
+
 const closeAllPanels = (state: GameState, action: Action): GameState => {
   return produce(state, state => {
     state.activePanels = [];
@@ -29,7 +35,8 @@ const closeAllPanels = (state: GameState, action: Action): GameState => {
 const uiActions = {
   'SHOW_PANEL': showPanel,
   'CLOSE_PANEL': closePanel,
-  'CLOSE_ALL_PANELS': closeAllPanels
+  'CLOSE_ALL_PANELS': closeAllPanels,
+  'CLOSE_TOP_PANEL': closeTopPanel
 };
 
 export default uiActions;

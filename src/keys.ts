@@ -22,24 +22,26 @@ const get = (): void => {
 
 const dropItem = (idx) => (): void => {
   action('COMMAND_DROP', { idx });
-  action('CLOSE_UI', {});
-  keymage.setScope('default');
 };
 
 const drop = (): void => {
-  action('SHOW_DROP_PANEL', {});
+  action('COMMAND_DROP_UI', {});
   keymage.setScope('inventory:drop');
 };
 
 const closeUI = (): void => {
-  action('CLOSE_UI', {});
+  action('COMMAND_CLOSE', {});
   keymage.setScope('default');
 };
 
 const showInventory = (): void => {
-  action('SHOW_INVENTORY_PANEL', {});
+  action('COMMAND_INVENTORY_UI', {});
   keymage.setScope('inventory');
 };
+
+const closeTopmostUIPanel = (): void => {
+  action('COMMAND_CLOSE_TOP', {});
+}
 
 export const setupKeys = (): void => {
   keymage('default','h', move('W'));
@@ -63,6 +65,7 @@ export const setupKeys = (): void => {
     keymage('inventory:drop', key, dropItem(idx)));
   keymage('esc', closeUI);
   keymage('default', 'i', showInventory);
+  keymage('backspace', closeTopmostUIPanel)
 
   keymage.setScope('default');
 };

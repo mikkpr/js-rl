@@ -20,6 +20,7 @@
     "@types/redux-logger": "^3.0.7",
     "eslint": "^5.10.0",
     "eslint-watch": "^4.0.2",
+    "file-loader": "^6.0.0",
     "npm-run-all": "^4.0.2",
     "ts-loader": "^7.0.1",
     "webpack": "^4.27.1",

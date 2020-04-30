@@ -104,4 +104,9 @@ export function* dropPlayerItem(action): Generator {
     type: 'DROP_ITEM',
     payload: { entityID, itemID }
   });
+
+  yield put({
+    type: 'CLOSE_UI',
+    payload: {}
+  });
 }

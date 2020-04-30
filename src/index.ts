@@ -7,6 +7,8 @@ import { setupEntities } from './entities';
 import { ID } from './utils/id';
 import { setupItems } from './items';
 
+import './fonts';
+
 export const WIDTH = 64;
 export const HEIGHT = 32;
 export const BOTTOM_PANEL_HEIGHT = 6;

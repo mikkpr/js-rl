@@ -57,7 +57,7 @@ const matchTriggerType = (type, currentInZone, nextInZone) => {
   }
 
   return false;
-}
+};
 
 export function* entityMoved(action): Generator {
   const state = yield select();

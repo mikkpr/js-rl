@@ -3,26 +3,35 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400&display=swap" rel="stylesheet">
     <title>JS RL</title>
 
     <style>
-     body {
-       font-family: 'Fira Mono', monospace;
-       font-weight: 500;
-       font-size: 12px;
-       background: black;
-       color: white;
-     }
-     .main {
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       min-height: 380px;
-     }
-     canvas {
-       outline: 1px solid rgba(255, 255, 255, 0.15);
-     }
+      @font-face {
+        font-family: 'IBMVGA8';
+        src: url(dist/fonts/ibm_vga8.eot);
+        src: url(dist/fonts/ibm_vga8.eot?#iefix) format('embedded-opentype'),
+            url(dist/fonts/ibm_vga8.woff2) format('woff2'),
+            url(dist/fonts/ibm_vga8.woff) format('woff'),
+            url(dist/fonts/ibm_vga8.ttf) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      body {
+        font-family: 'IBMVGA8', monospace;
+        font-weight: 400;
+        font-size: 16px;
+        background: black;
+        color: white;
+      }
+      .main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 512px;
+      }
+      canvas {
+        outline: 1px solid rgba(255, 255, 255, 0.15);
+      }
     </style>
 </head>
 <body>
