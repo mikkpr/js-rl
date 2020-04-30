@@ -28,7 +28,7 @@ const mapNoise = new ROT.Noise.Simplex(4);
 export const drawMap = ({ game, display }): void => {
   const state = game.getState();
   const { items, explorationMap, visibilityMap, lightingMap, map, camera } = (state as GameState);
-  const omniscience = eval('window.omniscience === true');
+  const clairvoyance = eval('window.clairvoyance === true');
   const ambientLight: Color = [80, 80, 80];
 
   Object.values(map).forEach((cell: Cell) => {
@@ -53,7 +53,7 @@ export const drawMap = ({ game, display }): void => {
       ];
     const light = key in lightingMap ? ROT.Color.add(ambientLight as Color, lightingMap[key]) : ambientLight;
     const finalColor = ROT.Color.multiply(baseColor, light);
-    if (key in visibilityMap || omniscience) {
+    if (key in visibilityMap || clairvoyance ) {
       display.draw(x + camera.x, y + camera.y, glyph, ROT.Color.toHex(finalColor), bg);
     } else if (key in explorationMap) {
       display.draw(x + camera.x, y + camera.y, cellGlyph.glyph, '#222', bg);

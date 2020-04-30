@@ -59,6 +59,18 @@ const matchTriggerType = (type, currentInZone, nextInZone) => {
   return false;
 };
 
+export function* afterPlayerMove(nextCell): Generator {
+  const state = yield select();
+  const { items } = (state as GameState);
+  if (nextCell.contents.length > 0) {
+    const topItem = items[nextCell.contents[nextCell.contents.length - 1]];
+    yield put({
+      type: 'LOG_MESSAGE',
+      payload: { message: `There is ${topItem.name} here.` }
+    });
+  }
+}
+
 export function* entityMoved(action): Generator {
   const state = yield select();
   const { zones, entities } = (state as GameState);
@@ -101,17 +113,6 @@ export function* entityMoved(action): Generator {
 
   if (!preventMove) {
     if (!CELL_PROPERTIES[dest.type].solid) {
-      if (entity.type === ENTITY_TYPES.PLAYER) {
-        yield put({
-          type: 'UPDATE_CAMERA_POSITION',
-          payload: {
-            x: -dx,
-            y: -dy,
-            relative: true
-          }
-        });
-      }
-
       yield put({
         type: 'UPDATE_ENTITY_POSITION',
         payload: {
@@ -121,6 +122,18 @@ export function* entityMoved(action): Generator {
           id
         }
       });
+
+      if (entity.type === ENTITY_TYPES.PLAYER) {
+        yield put({
+          type: 'UPDATE_CAMERA_POSITION',
+          payload: {
+            x: -dx,
+            y: -dy,
+            relative: true
+          }
+        });
+        yield afterPlayerMove(dest);
+      }
     } else {
       yield put({
         type: 'MOVEMENT_FAILED',

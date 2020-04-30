@@ -24,7 +24,7 @@ export const setupMap = ({ playerID }) => {
   filler(0, 0, WORLD_WIDTH - 1, WORLD_HEIGHT - 1, CELL_TYPES.WALL);
   const map = new ROT.Map.Cellular(WORLD_WIDTH, WORLD_HEIGHT);
   map.randomize(0.5);
-  for (let i = 0; i <= 5; i++) {
+  for (let i = 0; i <= 3; i++) {
     map.create();
   }
   map.create((x, y, value) => {
