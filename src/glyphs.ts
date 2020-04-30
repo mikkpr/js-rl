@@ -20,22 +20,22 @@ export const GLYPHS = {
   },
   [GLYPH_TYPES.PLAYER]: {
     glyph: '@',
-    fg: '#fff',
+    fg: '#e6ebff',
     bg: null
   },
   [GLYPH_TYPES.FOLIAGE]: {
     glyph: '~',
-    fg: '#6a6',
+    fg: '#426f47',
     bg: '#262'
   },
   [GLYPH_TYPES.PORTAL]: {
     glyph: '~',
-    fg: '#646',
+    fg: '#8c0f51',
     bg: '#000'
   },
   [GLYPH_TYPES.KEY]: {
     glyph: 'F',
-    fg: '#aa2',
+    fg: '#9ca417',
     bg: '#000'
   }
 };

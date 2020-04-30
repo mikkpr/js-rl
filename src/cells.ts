@@ -1,4 +1,4 @@
-import { GLYPHS } from './glyphs';
+import { GLYPH_TYPES } from './glyphs';
 
 export enum CELL_TYPES {
   FLOOR = 'FLOOR',
@@ -7,11 +7,11 @@ export enum CELL_TYPES {
 
 export const CELL_PROPERTIES = {
   [CELL_TYPES.FLOOR]: {
-    glyph: GLYPHS.FLOOR,
+    glyph: GLYPH_TYPES.FLOOR as string,
     solid: false
   },
   [CELL_TYPES.WALL]: {
-    glyph: GLYPHS.WALL,
+    glyph: GLYPH_TYPES.WALL as string,
     solid: true
   }
 };

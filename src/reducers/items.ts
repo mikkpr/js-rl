@@ -6,7 +6,7 @@ export const itemsState: { items: Items } = {
   items: {}
 };
 
-const addItem = (state: GameState, action: Action): GameState => {
+const createItem = (state: GameState, action: Action): GameState => {
   const { item } = action.payload;
   return produce(state, state => {
     state.items[item.id] = item;
@@ -44,11 +44,11 @@ const removeItemFromCell = (state: GameState, action: Action): GameState => {
 };
 
 const itemActions = {
-  'ADD_ITEM': addItem,
+  'CREATE_ITEM': createItem,
   'ADD_ITEM_TO_CELL': addItemToCell,
   'ADD_ITEM_TO_ENTITY': addItemToEntity,
-  'REMOVE_ITEM_TO_CELL': removeItemFromCell,
-  'REMOVE_ITEM_TO_ENTITY': removeItemFromEntity
+  'REMOVE_ITEM_FROM_CELL': removeItemFromCell,
+  'REMOVE_ITEM_FROM_ENTITY': removeItemFromEntity
 };
 
 export default itemActions;

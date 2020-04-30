@@ -25,31 +25,39 @@ export const setupDisplay = (options: {width: number; height: number }): ROT.Dis
 const mapNoise = new ROT.Noise.Simplex(4);
 
 export const drawMap = ({ game, display }): void => {
+  const state = game.getState();
+  const { items, explorationMap, visibilityMap, lightingMap, map, camera } = (state as GameState);
   const omniscience = eval('window.omniscience === true');
-  const { explorationMap, visibilityMap, lightingMap, map, camera } = game.getState();
   const ambientLight: Color = [80, 80, 80];
 
   Object.values(map).forEach((cell: Cell) => {
-    const { x, y, type } = cell;
+    const { x, y, type, contents } = cell;
     const key = cellKey(x, y);
-    const { glyph, fg, bg } = CELL_PROPERTIES[type].glyph;
+    const useItemGlyph = contents.length > 0;
+    const item = items[contents[0]];
+    const itemGlyph = item ? GLYPHS[item.glyph] : undefined;
+    const cellGlyph = GLYPHS[CELL_PROPERTIES[type].glyph];
+    const { glyph, fg, bg } = useItemGlyph
+      ? itemGlyph
+      : cellGlyph;
     const [R, G, B] = ROT.Color.fromString(fg);
     const noiseVal = mapNoise.get(x/20, y/20) * 240;
     const c = ~~Math.max(1, noiseVal);
-    const baseColor: Color = [
-      255-c / 255 * R,
-      255-c / 255 * G,
-      255-c / 255 * B
-    ];
+    const baseColor: Color = useItemGlyph
+      ? [R, G, B]
+      : [
+        255-c / 255 * R,
+        255-c / 255 * G,
+        255-c / 255 * B
+      ];
     const light = key in lightingMap ? ROT.Color.add(ambientLight as Color, lightingMap[key]) : ambientLight;
     const finalColor = ROT.Color.multiply(baseColor, light);
     if (key in visibilityMap || omniscience) {
       display.draw(x + camera.x, y + camera.y, glyph, ROT.Color.toHex(finalColor), bg);
     } else if (key in explorationMap) {
-      display.draw(x + camera.x, y + camera.y, glyph, '#222', bg);
+      display.draw(x + camera.x, y + camera.y, cellGlyph.glyph, '#222', bg);
     }
   });
-
 };
 
 export const drawZones = ({ game, display }): void => {
