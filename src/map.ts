@@ -34,7 +34,29 @@ export const createRandomWalkZone = ({
     }],
     glyph: GLYPH_TYPES.FOLIAGE
   };
-}
+};
+
+export const createExit = ({ playerID }) => ({ src }): Zone => {
+  return {
+    cells: [[src.x, src.y]],
+    triggers: [{
+      type: 'ENTER',
+      actions: [{
+        type: 'LOG_MESSAGE',
+        payload: { message: 'You successfully reached the exit.' },
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+        ]
+      }, {
+        type: 'EXIT',
+        payload: {},
+        conditions: [
+          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
+        ]
+      }]
+    }]
+  };
+};
 
 export const createPortal = ({ playerID  }) => ({
   src, dest, direction, glyph = GLYPH_TYPES.PORTAL
@@ -91,8 +113,8 @@ export const createPortal = ({ playerID  }) => ({
       }]
     }],
     glyph
-  }
-}
+  };
+};
 
 export const setupZones = ({ playerID }) => {
   const grassID = ID();

@@ -4,7 +4,7 @@ import { calculateFOV } from './fov';
 import { closeDoor, openDoor } from './map';
 import { pickUpTopmostItem, pickUpItem, dropItem, dropPlayerItem } from './items';
 import { showDropPanel, showInventoryPanel, closeAllUIPanels, closeTopUIPanel } from './ui';
-import { beginSetup, setupMap, setupEntities, setupItems } from './setup';
+import { beginSetup, setupMap, setupEntities, setupItems, setupZones } from './setup';
 
 export function* rootSaga(): Generator {
   yield takeEvery('COMMAND_MOVE', movePlayer);
@@ -29,4 +29,5 @@ export function* rootSaga(): Generator {
   yield takeEvery('DO_SETUP_MAP', setupMap);
   yield takeEvery('DO_SETUP_ENTITIES', setupEntities);
   yield takeEvery('DO_SETUP_ITEMS', setupItems);
+  yield takeEvery('DO_SETUP_ZONES', setupZones);
 }

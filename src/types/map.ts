@@ -19,6 +19,7 @@ export type Cell = {
   y: number;
   contents: string[];
   type: CellType;
+  flags: string[];
 };
 
 export type CellProperties = {

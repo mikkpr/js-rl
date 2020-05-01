@@ -27,8 +27,16 @@ function* entityOpenDoor(id) {
         message: 'There is nothing to open here.'
       }
     });
+  } else if (closedDoors[0].flags.filter(f => f.startsWith('LOCKED:')).length > 0) {
+    yield put({
+      type: 'LOG_MESSAGE',
+      payload: {
+        message: `The ${CELL_PROPERTIES[closedDoors[0].type].name} is locked.`
+      }
+    });
   } else {
     const cell = closedDoors[0];
+
     yield put({
       type: 'OPEN_DOOR_CELL',
       payload: { cell }

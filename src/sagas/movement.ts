@@ -82,29 +82,33 @@ export function* entityMoved(action): Generator {
   const checkNextCellInZone = isWithinZone(dest.x, dest.y);
   const conditionChecker = isConditionTrue(entities[id], src, dest, dx, dy);
   let preventMove = false;
-  for (const zone of Object.values(skipZones ? [] : zones)) {
-    const currentInZone = checkCurrentCellInZone(zone);
-    const nextInZone = checkNextCellInZone(zone);
-    for (const trigger of zone.triggers) {
-      for (const action of (trigger as Trigger).actions) {
-        const { conditions } = (action as ConditionalAction);
-        if (!matchTriggerType(trigger.type, currentInZone, nextInZone)) { break; }
-        const noConditions = !conditions || conditions.length === 0;
-        const conditionsMatch = !noConditions && conditions.reduce(
-          (isTrue, condition) => isTrue && conditionChecker(condition),
-          true
-        );
 
-        if (noConditions || conditionsMatch) {
-          if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
-            preventMove = true;
+  if (!CELL_PROPERTIES[dest.type].flags.includes('SOLID')) {
+    for (const zone of Object.values(skipZones ? [] : zones)) {
+      const currentInZone = checkCurrentCellInZone(zone);
+      const nextInZone = checkNextCellInZone(zone);
+
+      for (const trigger of zone.triggers) {
+        for (const action of (trigger as Trigger).actions) {
+          const { conditions } = (action as ConditionalAction);
+          if (!matchTriggerType(trigger.type, currentInZone, nextInZone)) { break; }
+          const noConditions = !conditions || conditions.length === 0;
+          const conditionsMatch = !noConditions && conditions.reduce(
+            (isTrue, condition) => isTrue && conditionChecker(condition),
+            true
+          );
+
+          if (noConditions || conditionsMatch) {
+            if (trigger.flags && trigger.flags.includes('PREVENT_DEFAULT_MOVE')) {
+              preventMove = true;
+            }
+            yield put((action as Action));
           }
-          yield put((action as Action));
-        }
 
-        if (!noConditions && !conditionsMatch){
-          if (trigger.flags && trigger.flags.includes('BREAK_ON_MISMATCH')) {
-            break;
+          if (!noConditions && !conditionsMatch){
+            if (trigger.flags && trigger.flags.includes('BREAK_ON_MISMATCH')) {
+              break;
+            }
           }
         }
       }
