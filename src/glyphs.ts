@@ -95,7 +95,7 @@ const ZONE_GLYPHS = {
 
 const ITEM_GLYPHS = {
   [GLYPH_TYPES.KEY]: {
-    glyph: 'F',
+    glyph: '-',
     fg: '#9ca417',
     bg: '#000'
   }
