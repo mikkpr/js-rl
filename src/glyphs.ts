@@ -41,7 +41,7 @@ export type GLYPH_TYPES = UI_TYPES | CELL_TYPES | ENTITY_TYPES | ZONE_TYPES | IT
 
 const CELL_GLYPHS = {
   [GLYPH_TYPES.FLOOR]: {
-    glyph: '.',
+    glyph: '·',
     fg: '#111',
     bg: '#000'
   },
