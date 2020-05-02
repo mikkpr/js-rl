@@ -27,10 +27,10 @@ sagaMiddleware.run(rootSaga);
 eval('window.game = game;');
 
 export const action = (type: string, payload: any): void => {
-  requestAnimationFrame(() => game.dispatch({
+  game.dispatch({
     type,
     payload
-  }));
+  });
 };
 
 export default game;

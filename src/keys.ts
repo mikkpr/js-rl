@@ -3,8 +3,13 @@ import * as ROT from 'rot-js';
 import throttle from 'lodash/throttle';
 import keymage from 'keymage';
 import { GameStore, action } from './state';
+import game from './state';
 
 type Direction = 'N' | 'E' | 'S' |'W';
+
+const throttledMove = throttle((dx, dy) => {
+}, 16);
+
 const move = (dir: Direction) => throttle((): void => {
   const dirs = {
     N: [0, -1],
@@ -13,7 +18,8 @@ const move = (dir: Direction) => throttle((): void => {
     W: [-1, 0]
   };
   const [dx, dy] = dirs[dir];
-  action('COMMAND_MOVE', { dx, dy });
+  game.dispatch({ type: 'COMMAND_MOVE', payload: { dx, dy } });
+  //throttledMove(dx, dy);
 }, 16);
 
 const get = (): void => {
@@ -51,6 +57,10 @@ const closeDoor = (): void => {
   action('COMMAND_CLOSE_DOOR', {});
 };
 
+const unlockDoor = (): void => {
+  action('COMMAND_UNLOCK_DOOR', {});
+}
+
 export const setupKeys = (): void => {
   keymage('default','h', move('W'));
   keymage('default','j', move('S'));
@@ -77,6 +87,7 @@ export const setupKeys = (): void => {
 
   keymage('o', openDoor);
   keymage('c', closeDoor);
+  keymage('u', unlockDoor);
 
   keymage.setScope('default');
 };

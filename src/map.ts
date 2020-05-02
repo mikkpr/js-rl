@@ -170,12 +170,6 @@ export const createExit = ({ playerID }) => ({ src }): Zone => {
         conditions: [
           [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
         ]
-      }, {
-        type: 'EXIT',
-        payload: {},
-        conditions: [
-          [ 'entity', [ 'type', 'eq', ENTITY_TYPES.PLAYER]]
-        ]
       }]
     }]
   };
