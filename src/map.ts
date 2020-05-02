@@ -3,6 +3,101 @@ import { Zone, Zones, Area, Position, CardinalDirection } from './types';
 import { ID } from './utils/id';
 import { ENTITY_TYPES } from './entities';
 import { GLYPH_TYPES } from './glyphs';
+import WFC from '../lib/ndwfc/ndwfc';
+import { WFCTool2D } from '../lib/ndwfc/ndwfc-tools';
+
+export const generateMap = (WORLD_WIDTH, WORLD_HEIGHT) => {
+  const cells = [];
+
+  const tool = new WFCTool2D();
+
+  tool.addTile(
+`.##.
+.###
+.###
+....`
+  );
+
+  tool.addTile(
+`.##.
+....
+.##.
+.##.`, {
+      transformations: ['cw']
+    });
+
+  tool.addTile(
+`....
+....
+....
+....`, {
+    transformations: [],
+    weight: 0.5
+  });
+
+  // DEBUG
+  eval('window.clairvoyance = true');
+
+  tool.addColor('#', [255,255,255]);
+  tool.addColor('.', [100, 100, 100]);
+
+  const tiles = tool.getTileFormulae();
+
+  const WFCInput: {
+    nd: any;
+    weights: any;
+    rules: any;
+    wave: any;
+  } = tool.generateWFCInput();
+  const wfc = new WFC(WFCInput);
+
+  let size = 3;
+  wfc.expand(
+    [0, 0],
+    [size, size]
+  );
+
+  let i = 0;
+  while (i++ < 5000) {
+    const done = wfc.step();
+    if (done) {
+      if (size >= 12) { break; }
+
+      size += 5;
+      wfc.expand([0, 0], [size, size]);
+    }
+  }
+
+  const readout = wfc.readout();
+
+  let maxX = 0;
+  let maxY = 0;
+  Object.keys(readout).forEach(k => {
+    const [y, x] = k.split(',').map(n => parseInt(n, 10));
+    if (x >= maxX) { maxX = x; }
+    if (y >= maxY) { maxY = y; }
+
+    const worldX = x*3;
+    const worldY = y*3;
+
+    const tile = tiles[readout[k]];
+    const rows = tile[2];
+
+    rows.forEach((vrow, yOffset) => {
+      vrow.forEach((tile, xOffset) => {
+        cells.push({
+          x: worldX + xOffset,
+          y: worldY + yOffset,
+          type: tile === '#' ? 'WALL' : 'FLOOR',
+          contents: [],
+          flags: []
+        });
+      })
+    });
+  });
+
+  return cells;
+};
 
 export const createRandomWalkZone = ({
   x, y, width, height

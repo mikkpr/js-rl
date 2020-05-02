@@ -3,6 +3,7 @@ import { put, select } from 'redux-saga/effects';
 
 import { CELL_TYPES } from '../cells';
 import { GLYPH_TYPES } from '../glyphs';
+import { generateMap } from '../map';
 import { createEntity, ENTITY_TYPES } from '../entities';
 import { createExit } from '../map';
 import { WIDTH, HEIGHT, BOTTOM_PANEL_HEIGHT } from '../index';
@@ -29,27 +30,31 @@ function* placeDoors(cells: Cell[]): Generator {
   while (searching) {
     const randomFloorCell = ROT.RNG.getItem(floorCells);
     const adjacentCells = getAdjacentCells(map, randomFloorCell);
+    const { n, e, s, w } = adjacentCells;
+    console.log({ n, e, s, w });
 
     if (
-      adjacentCells.n.type === CELL_TYPES.WALL &&
-      adjacentCells.s.type === CELL_TYPES.WALL &&
-      adjacentCells.w.type === CELL_TYPES.FLOOR &&
-      adjacentCells.e.type === CELL_TYPES.FLOOR
+      n && (n.type === CELL_TYPES.WALL) &&
+      s && (s.type === CELL_TYPES.WALL) &&
+      w && (w.type === CELL_TYPES.FLOOR) &&
+      e && (e.type === CELL_TYPES.FLOOR)
     ) {
       doorCandidates.push(randomFloorCell);
     } else if (
-      adjacentCells.w.type === CELL_TYPES.WALL &&
-      adjacentCells.e.type === CELL_TYPES.WALL &&
-      adjacentCells.n.type === CELL_TYPES.FLOOR &&
-      adjacentCells.s.type === CELL_TYPES.FLOOR
+      w && (w.type === CELL_TYPES.WALL) &&
+      e && (e.type === CELL_TYPES.WALL) &&
+      n && (n.type === CELL_TYPES.FLOOR) &&
+      s && (s.type === CELL_TYPES.FLOOR)
     ) {
       doorCandidates.push(randomFloorCell);
     }
 
-    if (doorCandidates.length > 10 || --i > 1000) {
+    if (doorCandidates.length > 10 || ++i > 1000) {
       searching = false;
     }
   }
+
+  console.log(doorCandidates);
 
   const candidates = [];
   doorCandidates
@@ -69,7 +74,7 @@ function* placeDoors(cells: Cell[]): Generator {
   return candidates;
 }
 
-function* placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT): Generator<Cell> {
+function placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT): Cell {
   const grid = {};
   for (const cell of cells) {
     const key = cellKey(cell.x, cell.y) ;
@@ -100,7 +105,7 @@ function* placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT): Generator<Cell> {
   for (let y = 0; y < WORLD_HEIGHT; y++) {
     for (let x = 0; x < WORLD_WIDTH; x++) {
       const cell = grid[cellKey(x, y)];
-      if (cell.type === CELL_TYPES.FLOOR) {
+      if (cell && cell.type === CELL_TYPES.FLOOR) {
         for (const mask of bitmask) {
           const [score, vec] = mask;
           const [dx, dy] = vec;
@@ -129,26 +134,42 @@ function* placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT): Generator<Cell> {
 export function* setupMap(action): Generator {
   const { WORLD_WIDTH, WORLD_HEIGHT } = action.payload;
 
-  const cells = fillRect(0, 0, WORLD_WIDTH - 1, WORLD_HEIGHT - 1, CELL_TYPES.WALL);
-  const map = new ROT.Map.Cellular(WORLD_WIDTH, WORLD_HEIGHT);
+  //const cells = fillRect(0, 0, WORLD_WIDTH - 1, WORLD_HEIGHT - 1, CELL_TYPES.WALL);
+  const map = generateMap(WORLD_WIDTH, WORLD_HEIGHT);
+  const cells = map;
+  const{
+    minX, minY, maxX, maxY
+  } = Object.values(map).reduce((acc, cell) => {
+    const { x, y } = cell;
 
-  map.randomize(0.5);
-  for (let i = 0; i <= 2; i++) {
-    map.create();
+    if (x < acc.minX) { acc.minX = x; }
+    if (y < acc.minY) { acc.minY = y; }
+    if (x > acc.maxX) { acc.maxX = x; }
+    if (x > acc.maxY) { acc.maxY = y; }
+
+    return acc;
+  }, {maxX: 0, maxY: 0, minX: 0, minY: 0});
+
+  console.log(minX, minY, maxX, maxY);
+  //const map = new ROT.Map.Cellular(WORLD_WIDTH, WORLD_HEIGHT);
+
+  // map.randomize(0.5);
+  // for (let i = 0; i <= 2; i++) {
+  //   map.create();
+  // }
+  // map.create((x, y, value) => {
+  //   cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
+  // });
+  // map.connect((x, y, value) => {
+  //   cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [] });
+  // }, 1);
+  for (let x = minX - 1; x <= maxX + 1; x++) {
+    cells.push({ x, y: minY - 1, type: CELL_TYPES.WALL, contents: [], flags: [] });
+    cells.push({ x, y: maxY + 1, type: CELL_TYPES.WALL, contents: [], flags: [] });
   }
-  map.create((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [], flags: [] });
-  });
-  map.connect((x, y, value) => {
-    cells.push({ x, y, type: !value ? CELL_TYPES.WALL : CELL_TYPES.FLOOR, contents: [], flags: [] });
-  }, 1);
-  for (let x = -1; x <= WORLD_WIDTH; x++) {
-    cells.push({ x, y: -1, type: CELL_TYPES.WALL, contents: [], flags: [] });
-    cells.push({ x, y: WORLD_HEIGHT, type: CELL_TYPES.WALL, contents: [], flags: [] });
-  }
-  for (let y = -1; y < WORLD_HEIGHT; y++) {
-    cells.push({ x: -1, y, type: CELL_TYPES.WALL, contents: [], flags: [] });
-    cells.push({ x: WORLD_WIDTH, y, type: CELL_TYPES.WALL, contents: [], flags: [] });
+  for (let y = minY - 1; y <= maxY + 1; y++) {
+    cells.push({ x: minX - 1, y, type: CELL_TYPES.WALL, contents: [], flags: [] });
+    cells.push({ x: maxX + 1, y, type: CELL_TYPES.WALL, contents: [], flags: [] });
   }
 
   yield put({ type: 'UPDATE_CELLS', payload: { cells } });
@@ -157,7 +178,7 @@ export function* setupMap(action): Generator {
 
   yield put({ type: 'UPDATE_CELLS', payload: { cells: doors } });
 
-  const exit = yield placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT);
+  const exit = placeExit(cells, WORLD_WIDTH, WORLD_HEIGHT);
   yield put({ type: 'UPDATE_CELL', payload: { cell: Object.assign({}, exit, { type: CELL_TYPES.DOOR_CLOSED, contents: [], flags: ['LOCKED:NONE']}) } });
 
 
@@ -193,7 +214,7 @@ export function* setupEntities(): Generator {
     glyph: GLYPH_TYPES.PLAYER,
     type: ENTITY_TYPES.PLAYER,
     inventory: []
-  })
+  });
   entities.push(player);
   yield put({ type: 'UPDATE_ENTITIES', payload: { entities } });
 

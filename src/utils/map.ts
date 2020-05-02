@@ -6,10 +6,10 @@ export const cellKey = (x: number, y: number): string => `${x}_${y}`;
 export const getAdjacentCells = (map: Map, cell: Cell) => {
   const { x, y } = cell;
   return {
-    n: map[cellKey(x, y - 1)],
-    s: map[cellKey(x, y + 1)],
-    w: map[cellKey(x - 1, y)],
-    e: map[cellKey(x + 1, y)]
+    n: map[cellKey(x, y - 1)] || null,
+    s: map[cellKey(x, y + 1)] || null,
+    w: map[cellKey(x - 1, y)] || null,
+    e: map[cellKey(x + 1, y)] || null
   };
 };
 
