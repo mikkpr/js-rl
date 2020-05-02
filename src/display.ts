@@ -32,7 +32,7 @@ export const drawMap = ({ game, display }): void => {
   const ambientLight: Color = [80, 80, 80];
 
   Object.values(map).forEach((cell: Cell) => {
-    const { x, y, type, contents } = cell;
+    const { x, y, type, contents, flags } = cell;
     const key = cellKey(x, y);
     const useItemGlyph = contents.length > 0;
     const item = items[contents[0]];
@@ -41,20 +41,26 @@ export const drawMap = ({ game, display }): void => {
     const { glyph, fg, bg } = useItemGlyph
       ? itemGlyph
       : cellGlyph;
-    const [R, G, B] = ROT.Color.fromString(fg);
-    const noiseVal = mapNoise.get(x/20, y/20) * 240;
-    const c = ~~Math.max(1, noiseVal);
-    const baseColor: Color = useItemGlyph
-      ? [R, G, B]
-      : [
-        255-c / 255 * R,
-        255-c / 255 * G,
-        255-c / 255 * B
-      ];
-    const light = key in lightingMap ? ROT.Color.add(ambientLight as Color, lightingMap[key]) : ambientLight;
-    const finalColor = ROT.Color.multiply(baseColor, light);
+    const getColorWithLight = color => {
+      const [R, G, B] = ROT.Color.fromString(color);
+      const noiseVal = mapNoise.get(x/20, y/20) * 240;
+      const c = ~~Math.max(1, noiseVal);
+      const baseColor: Color = useItemGlyph
+        ? [R, G, B]
+        : [
+          255-c / 255 * R,
+          255-c / 255 * G,
+          255-c / 255 * B
+        ];
+      const light = key in lightingMap ? ROT.Color.add(ambientLight as Color, lightingMap[key]) : ambientLight;
+      const finalColor = ROT.Color.multiply(baseColor, light);
+      return ROT.Color.toHex(finalColor);
+    }
+    const applyLightingToBG = CELL_PROPERTIES[type].flags.includes('COLOR_BG');
+    const fore = applyLightingToBG ? fg : getColorWithLight(fg);
+    const back = applyLightingToBG ? getColorWithLight(bg) : bg;
     if (key in visibilityMap || clairvoyance ) {
-      display.draw(x + camera.x, y + camera.y, glyph, ROT.Color.toHex(finalColor), bg);
+      display.draw(x + camera.x, y + camera.y, glyph, fore, back);
     } else if (key in explorationMap) {
       display.draw(x + camera.x, y + camera.y, cellGlyph.glyph, '#222', bg);
     }

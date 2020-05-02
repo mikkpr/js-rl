@@ -6,34 +6,59 @@ import { GLYPH_TYPES } from './glyphs';
 import WFC from '../lib/ndwfc/ndwfc';
 import { WFCTool2D } from '../lib/ndwfc/ndwfc-tools';
 
+const makeTiles = (tile: string | string[][], size): Array<string[][]> => {
+  const EMPTY = [];
+  let tileArr = tile;
+  if (typeof tile === 'string') {
+    tileArr = tile.trim().split('\n').map(r => r.trim().split(''));
+  }
+  if (tileArr.length !== tileArr[0].length) {
+    console.error('input tile is not square!', tile);
+    return EMPTY;
+  }
+  const N = tileArr.length;
+  if (size > tileArr.length) {
+    console.error('input size is larger than input tile size!');
+    return EMPTY;
+  }
+
+  const out = EMPTY;
+
+  for (let x = 0; x <= N - size; x++) {
+    for (let y = 0; y <= N - size; y++) {
+      const square = [];
+      let i = 0;
+      for (let q = y; q < y + size; q++) {
+        for (let p = x; p < x + size; p++) {
+          square.push(tileArr[q][p]);
+          // if (i++ % size !== 0) {
+          //   square.push('\n');
+          // }
+        }
+        square.push('\n')
+      }
+      out.push(square.slice(0, square.length - 1).join(''));
+    }
+  }
+  console.log(out);
+  return out;
+}
+
 export const generateMap = (WORLD_WIDTH, WORLD_HEIGHT) => {
   const cells = [];
 
   const tool = new WFCTool2D();
 
-  tool.addTile(
-`.##.
-.###
-.###
-....`
-  );
+  const input = `\
+  ###.#
+  .....
+  #.###
+  #.###
+  #...#
+  `;
 
-  tool.addTile(
-`.##.
-....
-.##.
-.##.`, {
-      transformations: ['cw']
-    });
+  makeTiles(input, 3).forEach(t => tool.addTile(t));
 
-  tool.addTile(
-`....
-....
-....
-....`, {
-    transformations: [],
-    weight: 0.5
-  });
 
   // DEBUG
   eval('window.clairvoyance = true');
@@ -53,7 +78,7 @@ export const generateMap = (WORLD_WIDTH, WORLD_HEIGHT) => {
 
   let size = 3;
   wfc.expand(
-    [0, 0],
+    [-size, -size],
     [size, size]
   );
 
@@ -61,10 +86,13 @@ export const generateMap = (WORLD_WIDTH, WORLD_HEIGHT) => {
   while (i++ < 5000) {
     const done = wfc.step();
     if (done) {
-      if (size >= 12) { break; }
+      if (size >= 5) { break; }
 
-      size += 5;
-      wfc.expand([0, 0], [size, size]);
+      size += 1;
+      wfc.expand(
+        [-size, -size],
+        [size, size]
+      );
     }
   }
 
@@ -77,11 +105,11 @@ export const generateMap = (WORLD_WIDTH, WORLD_HEIGHT) => {
     if (x >= maxX) { maxX = x; }
     if (y >= maxY) { maxY = y; }
 
-    const worldX = x*3;
-    const worldY = y*3;
-
     const tile = tiles[readout[k]];
     const rows = tile[2];
+
+    const worldX = x*rows[0].length;
+    const worldY = y*rows.length;
 
     rows.forEach((vrow, yOffset) => {
       vrow.forEach((tile, xOffset) => {

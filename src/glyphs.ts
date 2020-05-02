@@ -46,9 +46,9 @@ const CELL_GLYPHS = {
     bg: '#000'
   },
   [GLYPH_TYPES.WALL]: {
-    glyph: '█',
-    fg: '#444',
-    bg: '#000'
+    glyph: ' ',
+    fg: '#000',
+    bg: '#444'
   },
   [GLYPH_TYPES.DOOR_OPEN]: {
     glyph: '\'',

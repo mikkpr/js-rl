@@ -20,7 +20,7 @@ export function* calculateLighting(): Generator {
   const reflectivity = (x, y) => {
     const key = cellKey(x, y);
     const cell = map[key];
-    return CELL_PROPERTIES[cell.type].flags.includes('BLOCKS_LIGHT') ? 0 : 0.1;
+    return cell && CELL_PROPERTIES[cell.type].flags.includes('BLOCKS_LIGHT') ? 0 : cell ? 0.1 : 0;
   };
 
   const fov = new ROT.FOV.RecursiveShadowcasting(lightPasses, {topology: 4});

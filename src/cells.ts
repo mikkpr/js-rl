@@ -22,7 +22,8 @@ export const CELL_PROPERTIES: {
     glyph: GLYPH_TYPES.WALL as string,
     flags: [
       'SOLID',
-      'BLOCKS_LIGHT'
+      'BLOCKS_LIGHT',
+      'COLOR_BG'
     ]
   },
   [CELL_TYPES.DOOR_OPEN]: {

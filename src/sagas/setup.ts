@@ -31,7 +31,6 @@ function* placeDoors(cells: Cell[]): Generator {
     const randomFloorCell = ROT.RNG.getItem(floorCells);
     const adjacentCells = getAdjacentCells(map, randomFloorCell);
     const { n, e, s, w } = adjacentCells;
-    console.log({ n, e, s, w });
 
     if (
       n && (n.type === CELL_TYPES.WALL) &&
@@ -53,8 +52,6 @@ function* placeDoors(cells: Cell[]): Generator {
       searching = false;
     }
   }
-
-  console.log(doorCandidates);
 
   const candidates = [];
   doorCandidates
