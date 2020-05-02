@@ -68,9 +68,9 @@ const openDoorCell = (state, action) => {
   return produce(state, state => {
     const key = cellKey(cell.x, cell.y);
     if (cell.type === CELL_TYPES.DOOR_CLOSED) {
-      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_OPEN }
+      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_OPEN };
     } else if (cell.type === CELL_TYPES.PORTCULLIS_CLOSED) {
-      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_OPEN }
+      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_OPEN };
     }
   });
 };
@@ -80,10 +80,21 @@ const closeDoorCell = (state, action) => {
   return produce(state, state => {
     const key = cellKey(cell.x, cell.y);
     if (cell.type === CELL_TYPES.DOOR_OPEN) {
-      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_CLOSED }
+      state.map[key] = { ...cell, type: CELL_TYPES.DOOR_CLOSED };
     } else if (cell.type === CELL_TYPES.PORTCULLIS_OPEN) {
-      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_CLOSED }
+      state.map[key] = { ...cell, type: CELL_TYPES.PORTCULLIS_CLOSED };
     }
+  });
+};
+
+const unlockDoorCell = (state, action) => {
+  const { cell } = action.payload;
+  return produce(state, state => {
+    const key = cellKey(cell.x, cell.y);
+    state.map[key] = {
+      ...cell,
+      flags: cell.flags.filter(f => !f.startsWith('LOCKED:'))
+    };
   });
 };
 
@@ -96,7 +107,8 @@ const actionMap = {
   'UPDATE_EXPLORATION_MAP': updateExplorationMap,
   'UPDATE_VISIBILITY_MAP': updateVisibilityMap,
   'OPEN_DOOR_CELL': openDoorCell,
-  'CLOSE_DOOR_CELL': closeDoorCell
+  'CLOSE_DOOR_CELL': closeDoorCell,
+  'UNLOCK_DOOR_CELL': unlockDoorCell
 };
 
 export default actionMap;

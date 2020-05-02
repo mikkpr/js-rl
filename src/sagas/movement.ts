@@ -8,6 +8,7 @@ import { isConditionTrue } from '../utils/conditions';
 import { isWithinZone } from '../zones';
 
 import { GameState, Trigger, Action, ConditionalAction } from '../types';
+
 export function* moveEntity(action): Generator {
   const state = yield select();
   const { dx, dy, id, skipZones } = action.payload;

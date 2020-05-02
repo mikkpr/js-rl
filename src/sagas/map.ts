@@ -96,6 +96,56 @@ function* entityCloseDoor(id) {
   }
 }
 
+function* entityUnlockDoor(id) {
+  const state = yield select();
+  const { items, entities, map } = (state as GameState);
+
+  const entity = entities[id];
+  if (!entity) { return; }
+
+  const { x, y } = entity;
+  const key = cellKey(x, y);
+  const cell = map[key];
+
+  if (!cell) { return; }
+
+  const adjacentCells = Object.values(getAdjacentCells(map, cell)).filter(x => x);
+
+  const lockedDoors = adjacentCells.filter(c => c.flags.filter(f => f.startsWith('LOCKED:')).length > 0);
+  if (lockedDoors.length === 0) {
+    yield put({
+      type: 'LOG_MESSAGE',
+      payload: {
+        message: 'There is nothing to unlock here.'
+      }
+    });
+  } else {
+    const cell = lockedDoors[0];
+    const keyID = cell.flags.filter(f => f.startsWith('LOCKED:'))[0].split(':')[1];
+    if (entity.inventory.includes(keyID)) {
+      const key = items[keyID];
+      yield put({
+        type: 'UNLOCK_DOOR_CELL',
+        payload: { cell }
+      });
+      yield put({
+        type: 'LOG_MESSAGE',
+        payload: {
+          message: `You unlock the ${CELL_PROPERTIES[cell.type].name} with ${key.name}.`
+        }
+      });
+    } else {
+      yield put({
+        type: 'LOG_MESSAGE',
+        payload: {
+          message: `You can't unlock the ${CELL_PROPERTIES[cell.type].name}.`
+        }
+      });
+    }
+
+  }
+}
+
 export function* closeDoor() {
   const state = yield select();
   const { entities } = (state as GameState);
@@ -114,4 +164,14 @@ export function* openDoor() {
     .filter(id => entities[id].type === ENTITY_TYPES.PLAYER)[0];
 
   yield entityOpenDoor(playerID);
+}
+
+export function* unlockDoor() {
+  const state = yield select();
+  const { entities } = (state as GameState);
+
+  const playerID = Object.keys(entities)
+    .filter(id => entities[id].type === ENTITY_TYPES.PLAYER)[0];
+
+  yield entityUnlockDoor(playerID);
 }
