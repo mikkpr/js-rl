@@ -1,52 +1,113 @@
-import { Middleware, Store, createStore, applyMiddleware } from 'redux';
-import createSagaMiddleware from 'redux-saga';
-import { createLogger } from 'redux-logger';
-import rootReducer from './reducers/root';
-import { rootSaga } from './sagas/root';
+import produce from 'immer';
+import * as ROT from 'rot-js';
+import { World } from 'ecsy';
+import throttle from 'lodash/throttle';
+import { WIDTH, HEIGHT } from '.';
+import { CellType } from './map';
+const ENABLE_LOGGING = false;
 
-export interface GameState {
+export enum RunState {
+  PRERUN = 'PRERUN',
+  RUNNING = 'RUNNING',
+  PAUSED = 'PAUSED',
+}
+
+export type State = {
   player: {
     x: number;
     y: number;
   };
+  runState: RunState;
+  map: CellType[];
 }
 
-export const defaultState: GameState = {
-  player: {
-    x: 0,
-    y: 0
+type PartialState = {
+  [key: string]: any;
+}
+
+type StateGetter = (state: State) => PartialState;
+
+type StateSetter = (state: State) => void;
+
+class GameState {
+  state: State;
+  display: ROT.Display;
+  ecs: World;
+  lastTime: number;
+
+  constructor(initialState: State, display: ROT.Display, ecs: World) {
+    this.state = initialState;
+    this.display = display;
+    this.ecs = ecs;
+    this.lastTime = performance.now();
   }
-};
 
-export interface Action {
-  type: string;
-  payload: any;
+  getState(getter?: StateGetter): PartialState {
+    if (getter) {
+      return getter(this.state);
+    }
+
+    return this.state;
+  }
+
+  setState(setters: Array<StateSetter> | (StateSetter)): GameState {
+    let fns = setters;
+    if (typeof setters === 'function') {
+      fns = [setters];
+    }
+
+    const newState = (fns as Array<StateSetter>).reduce((state, setter) => produce(state, setter), this.state);
+    this.state = newState;
+
+    return this;
+  }
+
+  tick = throttle((): void => {
+    const time = performance.now();
+    const delta = time - this.lastTime;
+
+    this.ecs.execute(delta, time);
+
+    this.lastTime = time;
+
+    const { player, map } = this.getState(state => ({ player: state.player, map: state.map }));
+    this.display.clear();
+
+    for (let idx = 0; idx < map.length; idx++) {
+      const x = idx % WIDTH;
+      const y = ~~(idx / WIDTH);
+      const glyph = map[idx] === CellType.FLOOR ? '.' : '#';
+      this.display.draw(x, y, glyph, '#aaa', '#000');
+    }
+  }, 16)
+
+  gameLoop = () => {
+    const { running } = this.getState(state => ({ running: state.runState === RunState.RUNNING }));
+
+    if (running) {
+      this.tick();
+    }
+  
+    requestAnimationFrame(this.gameLoop);
+  }
 }
-const sagaMiddleware = createSagaMiddleware();
-const middlewares: Array<Middleware> = [
-  sagaMiddleware
-];
 
-const loggingEnabled = true;
-if (loggingEnabled) {
-  const logger = createLogger({
-    collapsed: true,
-    timestamp: true
-  });
-  middlewares.push(logger);
-}
-export type GameStore = Store<GameState, Action>;
-const game: GameStore = createStore(rootReducer, applyMiddleware(...middlewares));
-sagaMiddleware.run(rootSaga);
+export default GameState;
 
+export const createSetter = (name: string, fn) => {
+  return (...args): StateSetter => (state): void => {
+    let before, after;
+    if (ENABLE_LOGGING) {
+      before = JSON.parse(JSON.stringify(state));
+    }
 
-eval('window.game = game;');
+    const newState = fn(...args)(state);
 
-export const action = (type: string, payload: any): void => {
-  game.dispatch({
-    type,
-    payload
-  });
+    if (ENABLE_LOGGING) {
+      after = JSON.parse(JSON.stringify(state));
+      console.log('Action:', name, ...args, { before, after });
+    }
+    
+    return newState;    
+  };
 };
-
-export default game;

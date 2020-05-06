@@ -1,7 +1,6 @@
-import * as Redux from 'redux';
-import * as ROT from 'rot-js';
 import keymage from 'keymage';
-import { GameStore, action } from './state';
+import { game } from '.';
+import { updatePlayerPosition } from './setters';
 
 type Direction = 'N' | 'E' | 'S' |'W';
 const move = (dir: Direction) => (): void => {
@@ -12,8 +11,8 @@ const move = (dir: Direction) => (): void => {
     W: [-1, 0]
   };
   const [dx, dy] = dirs[dir];
-  action('COMMAND_MOVE', { dx, dy });
-}
+  game.setState(updatePlayerPosition(dx, dy));
+};
 
 const setupKeys = (): void => {
   keymage('k', move('N'));

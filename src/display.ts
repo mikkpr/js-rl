@@ -5,7 +5,10 @@ export const setupDisplay = (options: {width: number; height: number }): ROT.Dis
   const display = new ROT.Display({
     width: options.width,
     height: options.height,
-    fontFamily: 'Fira Mono'
+    fontFamily: 'IBMVGA8',
+    forceSquareRatio: true,
+    fontSize: 16,
+    spacing: 1.0
   });
 
   document.querySelector('.main').appendChild(display.getContainer());

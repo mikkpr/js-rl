@@ -1,41 +1,51 @@
-import * as ROT from 'rot-js';
 import setupKeys from './keys';
-import game, { action } from './state';
+import GameState, { RunState } from './state';
+import { setPlayerPosition, setRunState } from './setters';
 import { setupDisplay } from './display';
+import { createMap } from './map';
+import ECS from './ecs';
+import { RenderingSystem } from './ecs/systems';
+
+import './assets/ibm_vga8.eot';
+import './assets/ibm_vga8.ttf';
+import './assets/ibm_vga8.woff';
+import './assets/ibm_vga8.woff2';
 
 const WIDTH = 64;
 const HEIGHT = 32;
 
-let display: ROT.Display;
+const display = setupDisplay({
+  width: WIDTH,
+  height: HEIGHT
+});
 
-export const draw = (): void => {
-  const { player } = game.getState();
-  display.clear();
+const game = new GameState({
+  player: {
+    x: 0,
+    y: 0,
+  },
+  runState: RunState.PRERUN,
+  map: createMap(WIDTH, HEIGHT)
+}, display, ECS);
 
-  for (let i=0; i < HEIGHT; i++) {
-    display.drawText(0, i, '%c{#444}................................................................');
-  }
+ECS.registerSystem(RenderingSystem, { display });
 
-  display.draw(player.x, player.y, '@', '#aa0', '#000');
-};
+eval('window.game = game;');
 
-const playerInitialPos = {
-  x: WIDTH / 2,
-  y: HEIGHT / 2
-};
-action('UPDATE_PLAYER_POSITION', { ...playerInitialPos, relative: false });
-
-const setup = (): void => {
-  display = setupDisplay({
-    width: WIDTH,
-    height: HEIGHT
-  });
-
+const main = (): void => {
   setupKeys();
 
-  draw();
+  const playerInitialPos = {
+    x: WIDTH / 2,
+    y: HEIGHT / 2
+  };
+  game
+    .setState(setPlayerPosition(playerInitialPos.x, playerInitialPos.y))
+    .setState(setRunState(RunState.RUNNING));
+
+  game.gameLoop();
 };
 
-setup();
+main();
 
-game.subscribe(() => requestAnimationFrame(draw));
+export { game, WIDTH, HEIGHT };
