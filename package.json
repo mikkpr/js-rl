@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "npm-run-all --parallel dev:server lint:watch",
-    "dev:server": "webpack-dev-server --hot --inline --host 0.0.0.0",
-    "watch": "webpack -w -d",
-    "build": "webpack -p",
+    "dev:server": "webpack-dev-server --hot --inline --host 0.0.0.0 --config webpack.dev.js",
+    "watch": "webpack -w -d --config webpack.dev.js",
+    "build": "webpack -p --config webpack.prod.js",
     "lint": "node_modules/.bin/esw ./src/* --color",
     "lint:watch": "npm run lint -- --watch"
   },
@@ -23,7 +23,8 @@
     "ts-loader": "^7.0.1",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^3.1.10",
+    "webpack-merge": "^4.2.2"
   },
   "dependencies": {
     "@types/lodash": "^4.14.150",
