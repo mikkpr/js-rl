@@ -25,13 +25,17 @@ const display = setupDisplay({
 });
 
 const ECS = new World();
+
 ECS.registerComponent(Position);
 ECS.registerComponent(Viewshed);
 ECS.registerComponent(Renderable);
+
 ECS.registerSystem(RenderingSystem);
 ECS.registerSystem(VisibilitySystem);
 
 const map = createMap(WIDTH, HEIGHT);
+
+ROT.RNG.setSeed(1337)
 
 const game = new GameState({
   runState: RunState.PRERUN,
