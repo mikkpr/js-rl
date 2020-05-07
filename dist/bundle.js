@@ -672,19 +672,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
 const player_1 = __importDefault(__webpack_require__(14));
-const state_1 = __importStar(__webpack_require__(9));
-const setters_1 = __webpack_require__(24);
-const display_1 = __webpack_require__(10);
+const state_1 = __importStar(__webpack_require__(11));
+const display_1 = __webpack_require__(9);
 const map_1 = __webpack_require__(6);
 const ecsy_1 = __webpack_require__(4);
 const systems_1 = __webpack_require__(12);
-const entities_1 = __webpack_require__(25);
+const entities_1 = __webpack_require__(24);
 const components_1 = __webpack_require__(7);
+__webpack_require__(26);
 __webpack_require__(27);
 __webpack_require__(28);
 __webpack_require__(29);
 __webpack_require__(30);
-__webpack_require__(31);
 const WIDTH = 64;
 exports.WIDTH = WIDTH;
 const HEIGHT = 32;
@@ -713,8 +712,7 @@ const main = () => {
     entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
     game.player = game.ecs.entityManager.getEntityByName('player');
     player_1.default(game);
-    game
-        .setState(setters_1.setRunState(state_1.RunState.PRERUN));
+    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
     game.gameLoop();
 };
 document.addEventListener('DOMContentLoaded', () => {
@@ -3325,7 +3323,7 @@ function parseColor(color) {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/term.js
-var term = __webpack_require__(11);
+var term = __webpack_require__(10);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/text.js
 /**
@@ -7482,114 +7480,6 @@ const Text = text_namespaceObject;
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const immer_1 = __importDefault(__webpack_require__(17));
-const display_1 = __webpack_require__(10);
-const systems_1 = __webpack_require__(12);
-const ENABLE_LOGGING = false;
-var RunState;
-(function (RunState) {
-    RunState["PRERUN"] = "PRERUN";
-    RunState["RUNNING"] = "RUNNING";
-    RunState["PAUSED"] = "PAUSED";
-    RunState["AWAITINGINPUT"] = "AWAITINGINPUT";
-    RunState["PLAYERTURN"] = "PLAYERTURN";
-    RunState["MONSTERTURN"] = "MONSTERTURN";
-    RunState["SHOWINVENTORY"] = "SHOWINVENTORY";
-    RunState["SHOWDROPITEM"] = "SHOWDROPITEM";
-    RunState["SHOWTARGETING"] = "SHOWTARGETING";
-    RunState["MAINMENU"] = "MAINMENU";
-    RunState["SAVEGAME"] = "SAVEGAME";
-})(RunState = exports.RunState || (exports.RunState = {}));
-class GameState {
-    constructor(initialState, display, ecs) {
-        this.executeSystemsAndProceed = (nextRunState, delta, time) => {
-            this.ecs.execute(delta, time);
-            this.setState(state => { state.runState = nextRunState; });
-            requestAnimationFrame(this.tick);
-        };
-        this.tick = () => {
-            const time = performance.now();
-            const delta = time - this.lastTime;
-            this.lastTime = time;
-            const runState = this.getState(state => state.runState);
-            if (runState !== RunState.MAINMENU) {
-                this.display.clear();
-                this.ecs.getSystem(systems_1.RenderingSystem).execute(delta, time);
-                display_1.drawGUI();
-            }
-            if (runState === RunState.PRERUN) {
-                this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
-            }
-            else if (runState === RunState.AWAITINGINPUT) {
-                requestAnimationFrame(this.tick);
-            }
-            else if (runState === RunState.PLAYERTURN) {
-                this.executeSystemsAndProceed(RunState.MONSTERTURN, delta, time);
-            }
-            else if (runState === RunState.MONSTERTURN) {
-                this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
-            }
-            else if (runState === RunState.SHOWINVENTORY) {
-            }
-            else if (runState === RunState.SHOWDROPITEM) {
-            }
-            else if (runState === RunState.SHOWTARGETING) {
-            }
-            else if (runState === RunState.MAINMENU) {
-            }
-            else if (runState === RunState.SAVEGAME) {
-            }
-            else if (runState === RunState.RUNNING) {
-            }
-            else if (runState === RunState.PAUSED) {
-            }
-        };
-        this.gameLoop = () => {
-            this.tick();
-        };
-        this.state = initialState;
-        this.display = display;
-        this.ecs = ecs;
-        this.lastTime = performance.now();
-    }
-    getState(getter) {
-        if (getter) {
-            return getter(this.state);
-        }
-        return this.state;
-    }
-    setState(setter) {
-        this.state = immer_1.default(this.state, setter);
-        return this;
-    }
-}
-exports.default = GameState;
-exports.createSetter = (name, fn) => {
-    return (...args) => (state) => {
-        let before, after;
-        if (ENABLE_LOGGING) {
-            before = JSON.parse(JSON.stringify(state));
-        }
-        const newState = fn(...args)(state);
-        if (ENABLE_LOGGING) {
-            after = JSON.parse(JSON.stringify(state));
-            console.log('Action:', name, ...args, { before, after });
-        }
-        return newState;
-    };
-};
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -7641,7 +7531,7 @@ exports.drawMap = (map, viewshed) => {
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7737,6 +7627,100 @@ class Term extends _backend_js__WEBPACK_IMPORTED_MODULE_0__[/* default */ "a"] {
 }
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(13)))
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const immer_1 = __importDefault(__webpack_require__(17));
+const display_1 = __webpack_require__(9);
+const systems_1 = __webpack_require__(12);
+const ENABLE_LOGGING = false;
+var RunState;
+(function (RunState) {
+    RunState["PRERUN"] = "PRERUN";
+    RunState["RUNNING"] = "RUNNING";
+    RunState["PAUSED"] = "PAUSED";
+    RunState["AWAITINGINPUT"] = "AWAITINGINPUT";
+    RunState["PLAYERTURN"] = "PLAYERTURN";
+    RunState["MONSTERTURN"] = "MONSTERTURN";
+    RunState["SHOWINVENTORY"] = "SHOWINVENTORY";
+    RunState["SHOWDROPITEM"] = "SHOWDROPITEM";
+    RunState["SHOWTARGETING"] = "SHOWTARGETING";
+    RunState["MAINMENU"] = "MAINMENU";
+    RunState["SAVEGAME"] = "SAVEGAME";
+})(RunState = exports.RunState || (exports.RunState = {}));
+class GameState {
+    constructor(initialState, display, ecs) {
+        this.executeSystemsAndProceed = (nextRunState, delta, time) => {
+            this.ecs.execute(delta, time);
+            this.setState(state => { state.runState = nextRunState; });
+            requestAnimationFrame(this.tick);
+        };
+        this.tick = () => {
+            const time = performance.now();
+            const delta = time - this.lastTime;
+            this.lastTime = time;
+            const runState = this.getState(state => state.runState);
+            if (runState !== RunState.MAINMENU) {
+                this.display.clear();
+                this.ecs.getSystem(systems_1.RenderingSystem).execute(delta, time);
+                display_1.drawGUI();
+            }
+            if (runState === RunState.PRERUN) {
+                this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
+            }
+            else if (runState === RunState.AWAITINGINPUT) {
+                requestAnimationFrame(this.tick);
+            }
+            else if (runState === RunState.PLAYERTURN) {
+                this.executeSystemsAndProceed(RunState.MONSTERTURN, delta, time);
+            }
+            else if (runState === RunState.MONSTERTURN) {
+                this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
+            }
+            else if (runState === RunState.SHOWINVENTORY) {
+            }
+            else if (runState === RunState.SHOWDROPITEM) {
+            }
+            else if (runState === RunState.SHOWTARGETING) {
+            }
+            else if (runState === RunState.MAINMENU) {
+            }
+            else if (runState === RunState.SAVEGAME) {
+            }
+            else if (runState === RunState.RUNNING) {
+            }
+            else if (runState === RunState.PAUSED) {
+            }
+        };
+        this.gameLoop = () => {
+            this.tick();
+        };
+        this.state = initialState;
+        this.display = display;
+        this.ecs = ecs;
+        this.lastTime = performance.now();
+    }
+    getState(getter) {
+        if (getter) {
+            return getter(this.state);
+        }
+        return this.state;
+    }
+    setState(setter) {
+        this.state = immer_1.default(this.state, setter);
+        return this;
+    }
+}
+exports.default = GameState;
+
 
 /***/ }),
 /* 12 */
@@ -7955,7 +7939,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const keymage_1 = __importDefault(__webpack_require__(15));
-const state_1 = __webpack_require__(9);
+const state_1 = __webpack_require__(11);
 const components_1 = __webpack_require__(7);
 const map_1 = __webpack_require__(6);
 const tryMove = (dir) => (game) => () => {
@@ -8656,7 +8640,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(4);
 const components_1 = __webpack_require__(7);
 const __1 = __webpack_require__(3);
-const display_1 = __webpack_require__(10);
+const display_1 = __webpack_require__(9);
 const map_1 = __webpack_require__(6);
 const __2 = __webpack_require__(3);
 class RenderingSystem extends ecsy_1.System {
@@ -8794,11 +8778,10 @@ const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
 class VisibilitySystem extends ecsy_1.System {
     execute(delta, time) {
         this.queries.visibles.results.forEach(entity => {
-            console.log(entity);
             const { x, y } = entity.getComponent(components_1.Position);
             const viewshed = entity.getMutableComponent(components_1.Viewshed);
             if (viewshed.dirty) {
-                let visibleTiles = [];
+                const visibleTiles = [];
                 FOV.compute(x, y, viewshed.range, (x, y, r, visibility) => {
                     visibleTiles.push(map_1.xyIdx(x, y));
                     viewshed.exploredTiles.add(map_1.xyIdx(x, y));
@@ -8821,29 +8804,16 @@ exports.default = VisibilitySystem;
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-const state_1 = __webpack_require__(9);
-exports.setRunState = state_1.createSetter('SET_RUN_STATE', (runState) => (state) => {
-    state.runState = runState;
-});
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const player_1 = __importDefault(__webpack_require__(26));
+const player_1 = __importDefault(__webpack_require__(25));
 exports.createPlayer = player_1.default;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8862,7 +8832,7 @@ exports.default = createPlayer;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8870,7 +8840,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8878,7 +8848,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8886,7 +8856,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8894,7 +8864,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

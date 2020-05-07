@@ -114,21 +114,3 @@ class GameState {
 }
 
 export default GameState;
-
-export const createSetter = (name: string, fn) => {
-  return (...args): StateSetter => (state): void => {
-    let before, after;
-    if (ENABLE_LOGGING) {
-      before = JSON.parse(JSON.stringify(state));
-    }
-
-    const newState = fn(...args)(state);
-
-    if (ENABLE_LOGGING) {
-      after = JSON.parse(JSON.stringify(state));
-      console.log('Action:', name, ...args, { before, after });
-    }
-    
-    return newState;    
-  };
-};

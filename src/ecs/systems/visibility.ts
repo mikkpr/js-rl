@@ -13,11 +13,10 @@ const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
 class VisibilitySystem extends System {
   execute(delta: number, time: number): void {
     this.queries.visibles.results.forEach(entity => {
-      console.log(entity)
       const { x, y } = entity.getComponent(Position);
       const viewshed = entity.getMutableComponent(Viewshed);
       if (viewshed.dirty) {
-        let visibleTiles = [];
+        const visibleTiles = [];
         FOV.compute(x, y, viewshed.range, (x, y, r, visibility) => {
           visibleTiles.push(xyIdx(x, y));
           viewshed.exploredTiles.add(xyIdx(x, y));

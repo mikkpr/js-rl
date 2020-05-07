@@ -1,7 +1,6 @@
 import * as ROT from 'rot-js';
 import setupKeys from './player';
 import GameState, { RunState } from './state';
-import { setRunState } from './setters';
 import { setupDisplay } from './display';
 import { createMap } from './map';
 import { World } from 'ecsy';
@@ -48,17 +47,9 @@ const main = (): void => {
   createPlayer(ECS, randomCenter[0], randomCenter[1]);
   game.player = (game.ecs as any).entityManager.getEntityByName('player');
 
-  // game.player.getMutableComponent(Position).x = randomCenter[0];
-  // game.player.getMutableComponent(Position).y = randomCenter[1];
-  // game.player.getMutableComponent(Viewshed).dirty = true;
-  // game.player.getMutableComponent(Viewshed).visibleTiles = [];
-  // game.player.getMutableComponent(Viewshed).exploredTiles = new Set<number>();
-  // game.player.getMutableComponent(Renderable).glyph = '@';
-  // game.player.getMutableComponent(Renderable).fg = '#aa0';
   setupKeys(game);
 
-  game
-    .setState(setRunState(RunState.PRERUN));
+  game.setState(state => { state.runState = RunState.PRERUN; });
 
   game.gameLoop();
 };
