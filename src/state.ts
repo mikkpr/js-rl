@@ -67,6 +67,11 @@ class GameState {
     requestAnimationFrame(this.tick);
   }
 
+  proceed = (nextRunState) => {
+    this.setState(state => {state.runState = nextRunState; });
+    requestAnimationFrame(this.tick);
+  }
+
   tick = (): void => {
     const time = performance.now();
     const delta = time - this.lastTime;
@@ -87,7 +92,7 @@ class GameState {
       // poll for input
       requestAnimationFrame(this.tick);
     } else if (runState === RunState.PLAYERTURN) {
-      this.executeSystemsAndProceed(RunState.MONSTERTURN, delta, time);
+      this.proceed(RunState.MONSTERTURN);
     } else if (runState === RunState.MONSTERTURN) {
       this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
     } else if (runState === RunState.SHOWINVENTORY) {

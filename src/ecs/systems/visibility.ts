@@ -4,7 +4,7 @@ import { Position, Renderable, Viewshed } from '../components';
 import { game } from '../..';
 import { xyIdx, lightPasses } from '../../map';
 
-const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
+const FOV = new ROT.FOV.DiscreteShadowcasting((x, y) => {
   const map = game.getState().map;
   const idx = xyIdx(x, y);
   return !lightPasses(map, idx);

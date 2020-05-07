@@ -28,65 +28,63 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
 
 export const drawGUI = (): void => { };
 
-/*
- * #===#===#===#
- * |  1|  2|  4|
- * #===#===#===#
- * |  8|  0| 16|
- * #===#===#===#
- * | 32| 64|128|
- * #===#===#===#
- */
 const getWallGlyph = (scores, idx) => {
-  switch(scores[idx]) {
-    case 0:
-      return '○';
-    case 1:
-    case 2:
-    case 3:
-      return '║';
-    case 5:
-      return '╝';
-    case 6:
-      return '╗';
-    case 7:
-      return '╣';
-    case 9:
-      return '╚';
-    case 10:
-      return '╔';
-    case 11:
-      return '╠';
-    case 4:
-    case 8:
-    case 12:
-      return '═';
-    case 13:
-      return '╩';
-    case 14:
-      return '╦';
-    case 15:
-      return '╬';
-    default:
-      return '#';
+  switch (scores[idx]) {
+  case 0:
+    return '○';
+  case 1:
+  case 2:
+  case 3:
+    return '║';
+  case 5:
+    return '╝';
+  case 6:
+    return '╗';
+  case 7:
+    return '╣';
+  case 9:
+    return '╚';
+  case 10:
+    return '╔';
+  case 11:
+    return '╠';
+  case 4:
+  case 8:
+  case 12:
+    return '═';
+  case 13:
+    return '╩';
+  case 14:
+    return '╦';
+  case 15:
+    return '╬';
+  default:
+    return '#';
   }
 };
 
+// only look at cardinal directions as corner tiles don't affect the center tile
 const getNeighborScores = (map, exploredTiles) => {
   const relScores = {
     '0,-1': 0b0001,
     '-1,0': 0b0100,
-     '1,0': 0b1000,
-     '0,1': 0b0010,
+    '1,0': 0b1000,
+    '0,1': 0b0010,
   }
   return map
+    // discard tiles that are not visible
     .map((c, idx) => c === CellType.WALL && exploredTiles.has(idx) ? 1 : 0)
     .map((s, idx, scores) => {
       const [x, y] = [idx % WIDTH, ~~(idx / WIDTH)];
-
       const total = Object.entries(relScores).reduce((acc: number, [coordString, score]: [string, number]) => {
         const relCoords = coordString.split(',').map(s => parseInt(s, 10));
-        if (x + relCoords[0] < 0 || x + relCoords[0] >= WIDTH || y + relCoords[1] < 0 || y + relCoords[1] >= HEIGHT) { return acc; }
+        if (
+          x + relCoords[0] < 0 ||
+          x + relCoords[0] >= WIDTH ||
+          y + relCoords[1] < 0 ||
+          y + relCoords[1] >= HEIGHT
+        ) { return acc; }
+
         const relIdx = xyIdx(x + relCoords[0], y + relCoords[1]);
         return acc | (scores[relIdx] > 0 ? score : 0b0);
       }, 0);

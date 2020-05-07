@@ -9,7 +9,6 @@ class Position extends Component {
     super();
     this.x = 1;
     this.y = 1;
-    this.name = 'Position';
   }
 
   reset(): void {

@@ -1,14 +1,18 @@
-import * as ROT from 'rot-js';import setupKeys from './player';
+import * as ROT from 'rot-js';
+import setupKeys from './player';
+import { World } from 'ecsy';
+
 import GameState, { RunState } from './state';
 import { setupDisplay } from './display';
 import { createMap } from './map';
-import { World } from 'ecsy';
+
 import {
+  AISystem,
   RenderingSystem,
   VisibilitySystem
 } from './ecs/systems';
-import { createPlayer } from './ecs/entities';
-import { Renderable, Viewshed, Position } from './ecs/components';
+import { createPlayer, createOrc } from './ecs/entities';
+import { Renderable, Viewshed, Position, Monster } from './ecs/components';
 
 import './assets/VGA8x16.png';
 import './assets/ibm_vga8.eot';
@@ -29,13 +33,13 @@ const ECS = new World();
 ECS.registerComponent(Position);
 ECS.registerComponent(Viewshed);
 ECS.registerComponent(Renderable);
+ECS.registerComponent(Monster);
 
 ECS.registerSystem(RenderingSystem);
 ECS.registerSystem(VisibilitySystem);
+ECS.registerSystem(AISystem);
 
 const map = createMap(WIDTH, HEIGHT);
-
-ROT.RNG.setSeed(1337)
 
 const game = new GameState({
   runState: RunState.PRERUN,
@@ -51,6 +55,9 @@ const main = (): void => {
 
   createPlayer(ECS, randomCenter[0], randomCenter[1]);
   game.player = (game.ecs as any).entityManager.getEntityByName('player');
+
+  const randomCenter2 = ROT.RNG.getItem(map.centers);
+  createOrc(ECS, randomCenter2[0], randomCenter2[1]);
 
   setupKeys(game);
 

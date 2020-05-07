@@ -33,9 +33,13 @@ const tryMove = (dir: Direction) => (game) => (): void => {
 
 const setupKeys = (game): void => {
   keymage('k', tryMove('N')(game));
+  keymage('up', tryMove('N')(game));
   keymage('l', tryMove('E')(game));
+  keymage('right', tryMove('E')(game));
   keymage('j', tryMove('S')(game));
+  keymage('down', tryMove('S')(game));
   keymage('h', tryMove('W')(game));
+  keymage('left', tryMove('W')(game));
 };
 
 export default setupKeys;

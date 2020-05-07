@@ -71,7 +71,7 @@ export const createMap = (w: number, h: number): {
   const MAX_SIZE = 10;
   // create random rooms
   let rooms = [];
-  const nRooms = ROT.RNG.getUniformInt(3, 7);
+  const nRooms = ROT.RNG.getUniformInt(4, 10);
   while(rooms.length < nRooms) {
     const width = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
     const height = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
@@ -79,7 +79,7 @@ export const createMap = (w: number, h: number): {
     const y = ROT.RNG.getUniformInt(1, HEIGHT - 1 - MAX_SIZE);
     const room = [x, y, width, height];
     if (rooms.length === 0) {
-      rooms.push(room)
+      rooms.push(room);
     } else {
       let ok = true;
       rooms.forEach(other => {

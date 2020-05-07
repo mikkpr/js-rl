@@ -15,7 +15,6 @@ class RenderingSystem extends System {
 
     drawMap(game.getState().map, viewshed);
 
-
     this.queries.renderables.results.forEach(entity => {
       const position = entity.getComponent(Position);
       const renderable = entity.getComponent(Renderable);

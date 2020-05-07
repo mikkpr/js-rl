@@ -1,5 +1,7 @@
 import createPlayer from './player';
+import { createOrc } from './mobs';
 
 export {
-  createPlayer
+  createPlayer,
+  createOrc
 };
