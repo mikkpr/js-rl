@@ -1,5 +1,4 @@
-import * as ROT from 'rot-js';
-import setupKeys from './player';
+import * as ROT from 'rot-js';import setupKeys from './player';
 import GameState, { RunState } from './state';
 import { setupDisplay } from './display';
 import { createMap } from './map';
@@ -37,6 +36,8 @@ const map = createMap(WIDTH, HEIGHT);
 const game = new GameState({
   runState: RunState.PRERUN,
   map: map.map,
+  rooms: map.rooms,
+  centers: map.centers,
 }, display, ECS);
 
 eval('window.game = game;');

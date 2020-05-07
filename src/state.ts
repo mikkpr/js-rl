@@ -26,6 +26,8 @@ export enum RunState {
 export type State = {
   runState: RunState;
   map: CellType[];
+  rooms: number[][];
+  centers: number[][];
 }
 
 type StateGetter = (state: State) => any;
