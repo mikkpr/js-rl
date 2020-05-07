@@ -6,7 +6,12 @@ class Position extends Component {
 
   constructor() {
     super();
-    this.x = 0;
+    this.x = 1;
+    this.y = 1;
+  }
+
+  reset(): void {
+    this.x = 1;
     this.y = 0;
   }
 }

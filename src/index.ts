@@ -1,3 +1,4 @@
+import * as ROT from 'rot-js';
 import setupKeys from './player';
 import GameState, { RunState } from './state';
 import { setRunState } from './setters';
@@ -7,10 +8,6 @@ import { World } from 'ecsy';
 import { RenderingSystem } from './ecs/systems';
 import { createPlayer } from './ecs/entities';
 
-import './assets/ibm_vga8.eot';
-import './assets/ibm_vga8.ttf';
-import './assets/ibm_vga8.woff';
-import './assets/ibm_vga8.woff2';
 import './assets/VGA8x16.png';
 
 const WIDTH = 64;
@@ -22,21 +19,18 @@ const display = setupDisplay({
 });
 
 const ECS = new World();
-
+const map = createMap(WIDTH, HEIGHT);
 const game = new GameState({
   runState: RunState.PRERUN,
-  map: createMap(WIDTH, HEIGHT)
+  map: map.map,
 }, display, ECS);
 
 eval('window.game = game;');
 
 const main = (): void => {
-  const playerInitialPos = {
-    x: WIDTH / 2,
-    y: HEIGHT / 2
-  };
+  const randomCenter = ROT.RNG.getItem(map.centers);
 
-  createPlayer(ECS, playerInitialPos.x, playerInitialPos.y);
+  game.playerID = createPlayer(ECS, randomCenter[0], randomCenter[1]);
 
   setupKeys(game);
 
@@ -52,7 +46,7 @@ const main = (): void => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.main .loading').remove();
-  requestAnimationFrame(main);
+  main();
 });
 
 export { game, ECS, display, WIDTH, HEIGHT };

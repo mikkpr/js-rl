@@ -11,6 +11,12 @@ class Renderable extends Component {
     this.fg = null;
     this.bg = null;
   }
+
+  reset() {
+    this.glyph = null;
+    this.fg = null;
+    this.bg = null;
+  }
 }
 
 export default Renderable;

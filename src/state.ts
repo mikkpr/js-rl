@@ -36,6 +36,7 @@ class GameState {
   display: ROT.Display;
   ecs: World;
   lastTime: number;
+  playerID?: number;
 
   constructor(initialState: State, display: ROT.Display, ecs: World) {
     this.state = initialState;
@@ -58,7 +59,7 @@ class GameState {
     return this;
   }
 
-  tick = throttle((): void => {
+  tick = (): void => {
     const time = performance.now();
     const delta = time - this.lastTime;
     this.lastTime = time;
@@ -99,9 +100,8 @@ class GameState {
     } else if (runState === RunState.SAVEGAME) {
     } else if (runState === RunState.RUNNING) {
     } else if (runState === RunState.PAUSED) {
-
     }
- }, 1000/60.0)
+  }
 
   gameLoop = () => {
     this.tick();
