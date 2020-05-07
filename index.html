@@ -13,22 +13,21 @@
         background: black;
         color: white;
       }
-     .main {
-       position: relative;
-        display: inline-flex;
+      .main {
+        display: flex;
         justify-content: center;
-        align-items: center;       
+        align-items: center;
       }
-     .main .loading {
-       position: absolute;
-       top: 0;
-       left: 0;
-       right: 0;
-       bottom: 0;
-     }
-     .main + img {
-       opacity: 0.01;
-     }
+      .main .loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      .main + img {
+        opacity: 0.01;
+      }
       canvas {
         outline: 1px solid rgba(255, 255, 255, 0.15);
 	    image-rendering: -webkit-optimize-contrast; /* historic fallback */
