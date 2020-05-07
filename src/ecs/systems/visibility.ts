@@ -7,7 +7,7 @@ import { xyIdx, lightPasses } from '../../map';
 const FOV = new ROT.FOV.DiscreteShadowcasting((x, y) => {
   const map = game.getState().map;
   const idx = xyIdx(x, y);
-  return !lightPasses(map, idx);
+  return lightPasses(map, idx);
 });
 
 class VisibilitySystem extends System {

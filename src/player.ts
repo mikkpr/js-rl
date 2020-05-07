@@ -1,7 +1,7 @@
 import keymage from 'keymage';
 import { RunState } from './state';
 import { Position, Viewshed } from './ecs/components';
-import { CellType, xyIdx, isBlocked } from './map';
+import { CellType, xyIdx, isPassable } from './map';
 
 type Direction = 'N' | 'E' | 'S' |'W';
 
@@ -20,8 +20,7 @@ const tryMove = (dir: Direction) => (game) => (): void => {
   const position = player.getMutableComponent(Position);
   const { x, y } = position;
   const destinationIdx = xyIdx(x + dx, y + dy);
-
-  if (!isBlocked(map, destinationIdx)) {
+  if (isPassable(map, destinationIdx)) {
     position.x += dx;
     position.y += dy;
     const viewshed = player.getMutableComponent(Viewshed);

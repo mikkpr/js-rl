@@ -3,7 +3,7 @@ import { System } from 'ecsy';
 import { Position, Monster, Viewshed } from '../components';
 import { display } from '../..';
 import { drawMap } from '../../display';
-import { xyIdx } from '../../map';
+import { xyIdx, isPassable } from '../../map';
 import { game } from '../..';
 
 class AISystem extends System {

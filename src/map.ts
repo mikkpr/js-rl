@@ -11,11 +11,11 @@ export type Map = CellType[];
 export const xyIdx = (x: number, y: number): number => y * WIDTH + x;
 
 export const lightPasses = (map, idx) => {
-  return map[idx] && map[idx] === CellType.WALL;
+  return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
 
-export const isBlocked = (map, idx) => {
-  return map[idx] && map[idx] === CellType.WALL;
+export const isPassable = (map, idx) => {
+  return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
 
 const fillSquare = (map, x, y, w, h, type) => {
@@ -25,34 +25,34 @@ const fillSquare = (map, x, y, w, h, type) => {
       map[idx] = type;
     }
   }
-}
+};
 
 const overlaps = (rect1, rect2) => {
   const [rect1x, rect1y, rect1w, rect1h] = rect1;
   const [rect2x, rect2y, rect2w, rect2h] = rect2;
 
   return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
-}
+};
 
-const getCenter = (rect) => {
+const getCenter = (rect): number[] => {
   const [x, y, w, h] = rect;
 
   return [~~((x + x + w)/2), ~~((y + y + h)/2)];
-}
+};
 
 const drawHorizontalLine = (map, x1, x2, y, type = CellType.FLOOR) => {
   for (let _x = Math.min(x1, x2); _x <= Math.max(x1, x2); _x++) {
     const idx = xyIdx(_x, y);
     map[idx] = type;
   }
-}
+};
 
 const drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR) => {
   for (let _y = Math.min(y1, y2); _y <= Math.max(y1, y2); _y++) {
     const idx = xyIdx(x, _y);
     map[idx] = type;
   }
-}
+};
 
 export const createMap = (w: number, h: number): {
   map: Map;
