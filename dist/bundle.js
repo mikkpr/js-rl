@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -655,77 +655,6 @@ const CACHE = {
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
-const player_1 = __importDefault(__webpack_require__(14));
-const state_1 = __importStar(__webpack_require__(11));
-const display_1 = __webpack_require__(9);
-const map_1 = __webpack_require__(6);
-const ecsy_1 = __webpack_require__(4);
-const systems_1 = __webpack_require__(12);
-const entities_1 = __webpack_require__(24);
-const components_1 = __webpack_require__(7);
-__webpack_require__(26);
-__webpack_require__(27);
-__webpack_require__(28);
-__webpack_require__(29);
-__webpack_require__(30);
-const WIDTH = 64;
-exports.WIDTH = WIDTH;
-const HEIGHT = 32;
-exports.HEIGHT = HEIGHT;
-const display = display_1.setupDisplay({
-    width: WIDTH,
-    height: HEIGHT
-});
-exports.display = display;
-const ECS = new ecsy_1.World();
-exports.ECS = ECS;
-ECS.registerComponent(components_1.Position);
-ECS.registerComponent(components_1.Viewshed);
-ECS.registerComponent(components_1.Renderable);
-ECS.registerSystem(systems_1.RenderingSystem);
-ECS.registerSystem(systems_1.VisibilitySystem);
-const map = map_1.createMap(WIDTH, HEIGHT);
-ROT.RNG.setSeed(1337);
-const game = new state_1.default({
-    runState: state_1.RunState.PRERUN,
-    map: map.map,
-    rooms: map.rooms,
-    centers: map.centers,
-}, display, ECS);
-exports.game = game;
-eval('window.game = game;');
-const main = () => {
-    const randomCenter = ROT.RNG.getItem(map.centers);
-    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
-    game.player = game.ecs.entityManager.getEntityByName('player');
-    player_1.default(game);
-    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
-    game.gameLoop();
-};
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.main .loading').remove();
-    main();
-});
-
-
-/***/ }),
-/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2492,19 +2421,97 @@ if (urlParams.has("enable-remote-devtools")) {
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
-/**
- * @class Abstract display backend module
- * @private
- */
-class Backend {
-    getContainer() { return null; }
-    setOptions(options) { this._options = options; }
-}
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ROT = __importStar(__webpack_require__(8));
+const player_1 = __importDefault(__webpack_require__(14));
+const ecsy_1 = __webpack_require__(3);
+const state_1 = __importStar(__webpack_require__(11));
+const display_1 = __webpack_require__(9);
+const map_1 = __webpack_require__(6);
+const systems_1 = __webpack_require__(12);
+const entities_1 = __webpack_require__(26);
+const components_1 = __webpack_require__(5);
+__webpack_require__(29);
+__webpack_require__(30);
+__webpack_require__(31);
+__webpack_require__(32);
+__webpack_require__(33);
+const WIDTH = 64;
+exports.WIDTH = WIDTH;
+const HEIGHT = 32;
+exports.HEIGHT = HEIGHT;
+const display = display_1.setupDisplay({
+    width: WIDTH,
+    height: HEIGHT
+});
+exports.display = display;
+const ECS = new ecsy_1.World();
+exports.ECS = ECS;
+ECS.registerComponent(components_1.Position);
+ECS.registerComponent(components_1.Viewshed);
+ECS.registerComponent(components_1.Renderable);
+ECS.registerComponent(components_1.Monster);
+ECS.registerSystem(systems_1.RenderingSystem);
+ECS.registerSystem(systems_1.VisibilitySystem);
+ECS.registerSystem(systems_1.AISystem);
+const map = map_1.createMap(WIDTH, HEIGHT);
+const game = new state_1.default({
+    runState: state_1.RunState.PRERUN,
+    map: map.map,
+    rooms: map.rooms,
+    centers: map.centers,
+}, display, ECS);
+exports.game = game;
+eval('window.game = game;');
+const main = () => {
+    const randomCenter = ROT.RNG.getItem(map.centers);
+    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
+    game.player = game.ecs.entityManager.getEntityByName('player');
+    const randomCenter2 = ROT.RNG.getItem(map.centers);
+    entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
+    player_1.default(game);
+    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
+    game.gameLoop();
+};
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.main .loading').remove();
+    main();
+});
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const renderable_1 = __importDefault(__webpack_require__(20));
+exports.Renderable = renderable_1.default;
+const position_1 = __importDefault(__webpack_require__(21));
+exports.Position = position_1.default;
+const viewshed_1 = __importDefault(__webpack_require__(22));
+exports.Viewshed = viewshed_1.default;
+const monster_1 = __importDefault(__webpack_require__(23));
+exports.Monster = monster_1.default;
 
 
 /***/ }),
@@ -2522,7 +2529,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
-const _1 = __webpack_require__(3);
+const _1 = __webpack_require__(4);
 var CellType;
 (function (CellType) {
     CellType[CellType["FLOOR"] = 0] = "FLOOR";
@@ -2530,10 +2537,10 @@ var CellType;
 })(CellType = exports.CellType || (exports.CellType = {}));
 exports.xyIdx = (x, y) => y * _1.WIDTH + x;
 exports.lightPasses = (map, idx) => {
-    return map[idx] && map[idx] === CellType.WALL;
+    return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
-exports.isBlocked = (map, idx) => {
-    return map[idx] && map[idx] === CellType.WALL;
+exports.isPassable = (map, idx) => {
+    return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
 const fillSquare = (map, x, y, w, h, type) => {
     for (let _x = x; _x < x + w; _x++) {
@@ -2574,7 +2581,7 @@ exports.createMap = (w, h) => {
     const MIN_SIZE = 6;
     const MAX_SIZE = 10;
     let rooms = [];
-    const nRooms = ROT.RNG.getUniformInt(3, 7);
+    const nRooms = ROT.RNG.getUniformInt(4, 10);
     while (rooms.length < nRooms) {
         const width = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
         const height = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
@@ -2621,20 +2628,18 @@ exports.createMap = (w, h) => {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const renderable_1 = __importDefault(__webpack_require__(20));
-exports.Renderable = renderable_1.default;
-const position_1 = __importDefault(__webpack_require__(21));
-exports.Position = position_1.default;
-const viewshed_1 = __importDefault(__webpack_require__(22));
-exports.Viewshed = viewshed_1.default;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
+/**
+ * @class Abstract display backend module
+ * @private
+ */
+class Backend {
+    getContainer() { return null; }
+    setOptions(options) { this._options = options; }
+}
 
 
 /***/ }),
@@ -2679,7 +2684,7 @@ __webpack_require__.d(text_namespaceObject, "tokenize", function() { return toke
 var rng = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/backend.js
-var backend = __webpack_require__(5);
+var backend = __webpack_require__(7);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/canvas.js
 
@@ -7496,7 +7501,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
 const map_1 = __webpack_require__(6);
-const _1 = __webpack_require__(3);
+const _1 = __webpack_require__(4);
 const tileMap_1 = __importDefault(__webpack_require__(18));
 exports.setupDisplay = (options) => {
     const tileSet = document.createElement("img");
@@ -7563,7 +7568,10 @@ const getNeighborScores = (map, exploredTiles) => {
         const [x, y] = [idx % _1.WIDTH, ~~(idx / _1.WIDTH)];
         const total = Object.entries(relScores).reduce((acc, [coordString, score]) => {
             const relCoords = coordString.split(',').map(s => parseInt(s, 10));
-            if (x + relCoords[0] < 0 || x + relCoords[0] >= _1.WIDTH || y + relCoords[1] < 0 || y + relCoords[1] >= _1.HEIGHT) {
+            if (x + relCoords[0] < 0 ||
+                x + relCoords[0] >= _1.WIDTH ||
+                y + relCoords[1] < 0 ||
+                y + relCoords[1] >= _1.HEIGHT) {
                 return acc;
             }
             const relIdx = map_1.xyIdx(x + relCoords[0], y + relCoords[1]);
@@ -7596,7 +7604,7 @@ exports.drawMap = (map, viewshed) => {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Term; });
-/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
 /* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
 
 
@@ -7723,6 +7731,10 @@ class GameState {
             this.setState(state => { state.runState = nextRunState; });
             requestAnimationFrame(this.tick);
         };
+        this.proceed = (nextRunState) => {
+            this.setState(state => { state.runState = nextRunState; });
+            requestAnimationFrame(this.tick);
+        };
         this.tick = () => {
             const time = performance.now();
             const delta = time - this.lastTime;
@@ -7740,7 +7752,7 @@ class GameState {
                 requestAnimationFrame(this.tick);
             }
             else if (runState === RunState.PLAYERTURN) {
-                this.executeSystemsAndProceed(RunState.MONSTERTURN, delta, time);
+                this.proceed(RunState.MONSTERTURN);
             }
             else if (runState === RunState.MONSTERTURN) {
                 this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
@@ -7794,8 +7806,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const rendering_1 = __importDefault(__webpack_require__(19));
 exports.RenderingSystem = rendering_1.default;
-const visibility_1 = __importDefault(__webpack_require__(23));
+const visibility_1 = __importDefault(__webpack_require__(24));
 exports.VisibilitySystem = visibility_1.default;
+const ai_1 = __importDefault(__webpack_require__(25));
+exports.AISystem = ai_1.default;
 
 
 /***/ }),
@@ -8000,7 +8014,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const keymage_1 = __importDefault(__webpack_require__(15));
 const state_1 = __webpack_require__(11);
-const components_1 = __webpack_require__(7);
+const components_1 = __webpack_require__(5);
 const map_1 = __webpack_require__(6);
 const tryMove = (dir) => (game) => () => {
     const { map, runState } = game.getState(state => ({ runState: state.runState, map: state.map }));
@@ -8018,7 +8032,7 @@ const tryMove = (dir) => (game) => () => {
     const position = player.getMutableComponent(components_1.Position);
     const { x, y } = position;
     const destinationIdx = map_1.xyIdx(x + dx, y + dy);
-    if (!map_1.isBlocked(map, destinationIdx)) {
+    if (map_1.isPassable(map, destinationIdx)) {
         position.x += dx;
         position.y += dy;
         const viewshed = player.getMutableComponent(components_1.Viewshed);
@@ -8028,9 +8042,13 @@ const tryMove = (dir) => (game) => () => {
 };
 const setupKeys = (game) => {
     keymage_1.default('k', tryMove('N')(game));
+    keymage_1.default('up', tryMove('N')(game));
     keymage_1.default('l', tryMove('E')(game));
+    keymage_1.default('right', tryMove('E')(game));
     keymage_1.default('j', tryMove('S')(game));
+    keymage_1.default('down', tryMove('S')(game));
     keymage_1.default('h', tryMove('W')(game));
+    keymage_1.default('left', tryMove('W')(game));
 };
 exports.default = setupKeys;
 
@@ -8698,12 +8716,12 @@ exports.default = tileMap;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(4);
-const components_1 = __webpack_require__(7);
-const __1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(3);
+const components_1 = __webpack_require__(5);
+const __1 = __webpack_require__(4);
 const display_1 = __webpack_require__(9);
 const map_1 = __webpack_require__(6);
-const __2 = __webpack_require__(3);
+const __2 = __webpack_require__(4);
 class RenderingSystem extends ecsy_1.System {
     execute(delta, time) {
         const player = __2.game.player;
@@ -8731,7 +8749,7 @@ exports.default = RenderingSystem;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(4);
+const ecsy_1 = __webpack_require__(3);
 class Renderable extends ecsy_1.Component {
     constructor() {
         super();
@@ -8760,13 +8778,12 @@ exports.default = Renderable;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(4);
+const ecsy_1 = __webpack_require__(3);
 class Position extends ecsy_1.Component {
     constructor() {
         super();
         this.x = 1;
         this.y = 1;
-        this.name = 'Position';
     }
     reset() {
         this.x = 1;
@@ -8787,7 +8804,7 @@ exports.default = Position;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(4);
+const ecsy_1 = __webpack_require__(3);
 class Viewshed extends ecsy_1.Component {
     constructor() {
         super();
@@ -8818,6 +8835,19 @@ exports.default = Viewshed;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecsy_1 = __webpack_require__(3);
+class Monster extends ecsy_1.TagComponent {
+}
+exports.default = Monster;
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -8827,14 +8857,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
-const ecsy_1 = __webpack_require__(4);
-const components_1 = __webpack_require__(7);
-const __1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(3);
+const components_1 = __webpack_require__(5);
+const __1 = __webpack_require__(4);
 const map_1 = __webpack_require__(6);
-const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
+const FOV = new ROT.FOV.DiscreteShadowcasting((x, y) => {
     const map = __1.game.getState().map;
     const idx = map_1.xyIdx(x, y);
-    return !map_1.lightPasses(map, idx);
+    return map_1.lightPasses(map, idx);
 });
 class VisibilitySystem extends ecsy_1.System {
     execute(delta, time) {
@@ -8860,7 +8890,37 @@ exports.default = VisibilitySystem;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecsy_1 = __webpack_require__(3);
+const components_1 = __webpack_require__(5);
+const map_1 = __webpack_require__(6);
+const __1 = __webpack_require__(4);
+class AISystem extends ecsy_1.System {
+    execute(delta, time) {
+        const player = __1.game.player;
+        const playerPos = player.getComponent(components_1.Position);
+        const playerIdx = map_1.xyIdx(playerPos.x, playerPos.y);
+        this.queries.monsters.results.forEach(mob => {
+            const viewshed = mob.getComponent(components_1.Viewshed);
+            if (viewshed.visibleTiles.includes(playerIdx)) {
+                console.log(mob['name'], 'exclaims!');
+            }
+        });
+    }
+}
+AISystem.queries = {
+    monsters: { components: [components_1.Monster, components_1.Position, components_1.Viewshed] }
+};
+exports.default = AISystem;
+
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8869,52 +8929,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const player_1 = __importDefault(__webpack_require__(25));
+const player_1 = __importDefault(__webpack_require__(27));
 exports.createPlayer = player_1.default;
+const mobs_1 = __webpack_require__(28);
+exports.createOrc = mobs_1.createOrc;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(7);
+const components_1 = __webpack_require__(5);
 const createPlayer = (ecs, x, y) => {
     const player = ecs
-        .createEntity("player")
-        .addComponent(components_1.Viewshed, { range: 6, visibleTiles: [], exploredTiles: new Set(), dirty: true })
-        .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0', bg: null })
-        .addComponent(components_1.Position, { x: x, y: y });
-    return player.id;
+        .createEntity('player')
+        .addComponent(components_1.Viewshed)
+        .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0' })
+        .addComponent(components_1.Position, { x, y });
+    return player;
 };
 exports.default = createPlayer;
 
 
 /***/ }),
-/* 26 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
-
-/***/ }),
-/* 27 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
-
-/***/ }),
 /* 28 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const components_1 = __webpack_require__(5);
+exports.createOrc = (ecs, x, y) => {
+    const orc = ecs
+        .createEntity('Orc')
+        .addComponent(components_1.Viewshed)
+        .addComponent(components_1.Renderable, { glyph: 'o', fg: '#f00' })
+        .addComponent(components_1.Position, { x, y })
+        .addComponent(components_1.Monster);
+    return orc;
+};
+
 
 /***/ }),
 /* 29 */
@@ -8922,10 +8979,34 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
 /* 30 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
+
+/***/ }),
+/* 31 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
+
+/***/ }),
+/* 32 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
+
+/***/ }),
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
