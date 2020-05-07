@@ -4,29 +4,31 @@ import { World } from 'ecsy';
 import throttle from 'lodash/throttle';
 import { WIDTH, HEIGHT } from '.';
 import { CellType } from './map';
+import { drawMap, drawGUI } from './display';
+import { RenderingSystem } from './ecs/systems';
+
 const ENABLE_LOGGING = false;
 
 export enum RunState {
   PRERUN = 'PRERUN',
   RUNNING = 'RUNNING',
   PAUSED = 'PAUSED',
+  AWAITINGINPUT = 'AWAITINGINPUT',
+  PLAYERTURN = 'PLAYERTURN',
+  MONSTERTURN = 'MONSTERTURN',
+  SHOWINVENTORY = 'SHOWINVENTORY',
+  SHOWDROPITEM = 'SHOWDROPITEM',
+  SHOWTARGETING = 'SHOWTARGETING',
+  MAINMENU = 'MAINMENU',
+  SAVEGAME = 'SAVEGAME'
 }
 
 export type State = {
-  player: {
-    x: number;
-    y: number;
-  };
   runState: RunState;
   map: CellType[];
 }
 
-type PartialState = {
-  [key: string]: any;
-}
-
-type StateGetter = (state: State) => PartialState;
-
+type StateGetter = (state: State) => any;
 type StateSetter = (state: State) => void;
 
 class GameState {
@@ -42,7 +44,7 @@ class GameState {
     this.lastTime = performance.now();
   }
 
-  getState(getter?: StateGetter): PartialState {
+  getState(getter?: StateGetter): any {
     if (getter) {
       return getter(this.state);
     }
@@ -50,14 +52,8 @@ class GameState {
     return this.state;
   }
 
-  setState(setters: Array<StateSetter> | (StateSetter)): GameState {
-    let fns = setters;
-    if (typeof setters === 'function') {
-      fns = [setters];
-    }
-
-    const newState = (fns as Array<StateSetter>).reduce((state, setter) => produce(state, setter), this.state);
-    this.state = newState;
+  setState(setter: StateSetter): GameState {
+    this.state = produce(this.state, setter);
 
     return this;
   }
@@ -65,29 +61,51 @@ class GameState {
   tick = throttle((): void => {
     const time = performance.now();
     const delta = time - this.lastTime;
-
-    this.ecs.execute(delta, time);
-
     this.lastTime = time;
 
-    const { player, map } = this.getState(state => ({ player: state.player, map: state.map }));
-    this.display.clear();
+    const runState = this.getState(state => state.runState);
+    if (runState !== RunState.MAINMENU) {
+      this.display.clear();
+      drawMap(this.getState(state => state.map));
 
-    for (let idx = 0; idx < map.length; idx++) {
-      const x = idx % WIDTH;
-      const y = ~~(idx / WIDTH);
-      const glyph = map[idx] === CellType.FLOOR ? '.' : '#';
-      this.display.draw(x, y, glyph, '#aaa', '#000');
+      this.ecs.getSystem(RenderingSystem).execute(delta, time);
+
+      drawGUI();
     }
-  }, 16)
+
+    if (runState === RunState.PRERUN) {
+      this.ecs.execute(delta, time);
+      this.setState(state => {state.runState = RunState.AWAITINGINPUT});
+    } else if (runState === RunState.AWAITINGINPUT) {
+      // poll for input
+    } else if (runState === RunState.PLAYERTURN) {
+      this.ecs.execute(delta, time);
+      this.setState(state => state.runState = RunState.MONSTERTURN);
+    } else if (runState === RunState.MONSTERTURN) {
+      this.ecs.execute(delta, time);
+      this.setState(state => state.runState = RunState.AWAITINGINPUT);
+    } else if (runState === RunState.SHOWINVENTORY) {
+      // const result = showInventory();
+      // if (result === ItemMenuResult.CANCEL) {
+      //   this.setState(state => state.runState = RunState.AWAITINGINPUT);
+      // } else if (result === ItemMenuResult.NORESPONSE) {
+
+      // } else if (result === ItemMenuResult.SELECTED) {
+
+      // }
+    } else if (runState === RunState.SHOWDROPITEM) {
+    } else if (runState === RunState.SHOWTARGETING) {
+    } else if (runState === RunState.MAINMENU) {
+    } else if (runState === RunState.SAVEGAME) {
+    } else if (runState === RunState.RUNNING) {
+    } else if (runState === RunState.PAUSED) {
+
+    }
+ }, 1000/60.0)
 
   gameLoop = () => {
-    const { running } = this.getState(state => ({ running: state.runState === RunState.RUNNING }));
+    this.tick();
 
-    if (running) {
-      this.tick();
-    }
-  
     requestAnimationFrame(this.gameLoop);
   }
 }

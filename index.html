@@ -8,35 +8,46 @@
     <style>
       @font-face {
         font-family: 'IBMVGA8';
-        src: url(dist/fonts/ibm_vga8.eot);
-        src: url(dist/fonts/ibm_vga8.eot?#iefix) format('embedded-opentype'),
-            url(dist/fonts/ibm_vga8.woff2) format('woff2'),
-            url(dist/fonts/ibm_vga8.woff) format('woff'),
-            url(dist/fonts/ibm_vga8.ttf) format('truetype');
+        src: url('dist/fonts/ibm_vga8.eot');
+        src: url('dist/fonts/ibm_vga8.woff2') format('woff2'),
+             url('dist/fonts/ibm_vga8.eot?#iefix') format('embedded-opentype'),
+             url('dist/fonts/ibm_vga8.woff') format('woff'),
+             url('dist/fonts/ibm_vga8.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
       }
       body {
-        font-family: 'IBMVGA8', monospace;
+        font-family: 'IBMVGA8';
         font-weight: 400;
         font-size: 16px;
         background: black;
         color: white;
       }
-      .main {
-        display: flex;
+     .main {
+       position: relative;
+        display: inline-flex;
         justify-content: center;
-        align-items: center;
-        min-height: 512px;
+        align-items: center;       
       }
+     .main .loading {
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+     }
+     .main + img {
+       opacity: 0.01;
+     }
       canvas {
         outline: 1px solid rgba(255, 255, 255, 0.15);
+	    image-rendering: -webkit-optimize-contrast; /* historic fallback */
+        image-rendering: crisp-edges; /* standard property */
       }
     </style>
   </head>
   <body>
-    <section class="main"></section>
-
+    <section class="main"><div class="loading">Loading...</div></section>
     <script type="text/javascript" src="dist/bundle.js"></script>
   </body>
 </html>

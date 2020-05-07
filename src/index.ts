@@ -1,15 +1,17 @@
-import setupKeys from './keys';
+import setupKeys from './player';
 import GameState, { RunState } from './state';
-import { setPlayerPosition, setRunState } from './setters';
+import { setRunState } from './setters';
 import { setupDisplay } from './display';
 import { createMap } from './map';
-import ECS from './ecs';
+import { World } from 'ecsy';
 import { RenderingSystem } from './ecs/systems';
+import { createPlayer } from './ecs/entities';
 
 import './assets/ibm_vga8.eot';
 import './assets/ibm_vga8.ttf';
 import './assets/ibm_vga8.woff';
 import './assets/ibm_vga8.woff2';
+import './assets/VGA8x16.png';
 
 const WIDTH = 64;
 const HEIGHT = 32;
@@ -19,33 +21,40 @@ const display = setupDisplay({
   height: HEIGHT
 });
 
+const ECS = new World();
+
 const game = new GameState({
-  player: {
-    x: 0,
-    y: 0,
-  },
   runState: RunState.PRERUN,
   map: createMap(WIDTH, HEIGHT)
 }, display, ECS);
 
-ECS.registerSystem(RenderingSystem, { display });
-
 eval('window.game = game;');
 
 const main = (): void => {
-  setupKeys();
-
   const playerInitialPos = {
     x: WIDTH / 2,
     y: HEIGHT / 2
   };
+
+  const player = createPlayer(ECS, playerInitialPos.x, playerInitialPos.y);
+
+  setupKeys(game, player);
+
+  ECS.registerSystem(RenderingSystem);
+  const rendering = ECS.getSystem(RenderingSystem);
+  rendering.stop();
+
   game
-    .setState(setPlayerPosition(playerInitialPos.x, playerInitialPos.y))
-    .setState(setRunState(RunState.RUNNING));
+    .setState(setRunState(RunState.PRERUN));
 
   game.gameLoop();
 };
 
-main();
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelector('.main .loading').remove();
+    requestAnimationFrame(main)
+  }, 500)
+});
 
-export { game, WIDTH, HEIGHT };
+export { game, ECS, display, WIDTH, HEIGHT };
