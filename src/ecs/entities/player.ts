@@ -6,12 +6,12 @@ import {
   Viewshed
 } from '../components/';
 
-const createPlayer = (ecs: World): number => {
+const createPlayer = (ecs: World, x, y): number => {
   const player = (ecs as any)
     .createEntity("player")
-    .addComponent(Position)
-    .addComponent(Renderable, { glyph: '@', fg: '#ff0' })
-    .addComponent(Viewshed, { range: 5 });
+    .addComponent(Viewshed, { range: 6, visibleTiles: [], exploredTiles: new Set<number>(), dirty: true })
+    .addComponent(Renderable, { glyph: '@', fg: '#ff0', bg: null })
+    .addComponent(Position, { x: x, y: y });
   return player.id;
 };
 

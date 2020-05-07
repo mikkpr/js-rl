@@ -14,10 +14,12 @@ class RenderingSystem extends System {
     const viewshed = player.getMutableComponent(Viewshed);
 
     drawMap(game.getState().map, viewshed);
+
+
     this.queries.renderables.results.forEach(entity => {
       const position = entity.getComponent(Position);
       const renderable = entity.getComponent(Renderable);
-      if (viewshed.visibleTiles.includes(xyIdx(position.x, position.y))) {
+      if (viewshed.visibleTiles && viewshed.visibleTiles.includes(xyIdx(position.x, position.y))) {
         display.draw(
           position.x,
           position.y,

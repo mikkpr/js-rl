@@ -10,7 +10,7 @@ import {
   VisibilitySystem
 } from './ecs/systems';
 import { createPlayer } from './ecs/entities';
-import { Position } from './ecs/components';
+import { Renderable, Viewshed, Position } from './ecs/components';
 
 import './assets/VGA8x16.png';
 import './assets/ibm_vga8.eot';
@@ -27,6 +27,9 @@ const display = setupDisplay({
 });
 
 const ECS = new World();
+ECS.registerComponent(Position);
+ECS.registerComponent(Viewshed);
+ECS.registerComponent(Renderable);
 ECS.registerSystem(RenderingSystem);
 ECS.registerSystem(VisibilitySystem);
 
@@ -42,11 +45,16 @@ eval('window.game = game;');
 const main = (): void => {
   const randomCenter = ROT.RNG.getItem(map.centers);
 
-  createPlayer(ECS);
+  createPlayer(ECS, randomCenter[0], randomCenter[1]);
   game.player = (game.ecs as any).entityManager.getEntityByName('player');
 
-  game.player.getMutableComponent(Position).x = randomCenter[0];
-  game.player.getMutableComponent(Position).y = randomCenter[1];
+  // game.player.getMutableComponent(Position).x = randomCenter[0];
+  // game.player.getMutableComponent(Position).y = randomCenter[1];
+  // game.player.getMutableComponent(Viewshed).dirty = true;
+  // game.player.getMutableComponent(Viewshed).visibleTiles = [];
+  // game.player.getMutableComponent(Viewshed).exploredTiles = new Set<number>();
+  // game.player.getMutableComponent(Renderable).glyph = '@';
+  // game.player.getMutableComponent(Renderable).fg = '#aa0';
   setupKeys(game);
 
   game

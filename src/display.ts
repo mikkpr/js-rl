@@ -30,8 +30,13 @@ export const drawGUI = (): void => {};
 
 export const drawMap = (map: Map, viewshed: Viewshed) => {
   for (let idx = 0; idx < map.length; idx++) {
-    if (viewshed.visibleTiles.includes(idx) ||
-       viewshed.exploredTiles.has(idx)) {
+    if (
+      viewshed &&
+      viewshed.visibleTiles &&
+      viewshed.exploredTiles &&
+      (viewshed.visibleTiles.includes(idx) ||
+       viewshed.exploredTiles.has(idx))
+    ) {
       const x = idx % WIDTH;
       const y = ~~(idx / WIDTH);
       const glyph = map[idx] === CellType.FLOOR ? '.' : '#';
