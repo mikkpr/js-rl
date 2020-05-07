@@ -4,9 +4,9 @@ import { Position, Renderable } from '../components/';
 
 const createPlayer = (ecs: World, x: number, y: number): Entity => {
   return (ecs as World)
-    .createEntity()
+    .createEntity("player")
     .addComponent(Position, { x, y })
     .addComponent(Renderable, { glyph: '@', fg: '#ff0' });
-}
+};
 
 export default createPlayer;

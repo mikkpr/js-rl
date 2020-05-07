@@ -36,9 +36,9 @@ const main = (): void => {
     y: HEIGHT / 2
   };
 
-  const player = createPlayer(ECS, playerInitialPos.x, playerInitialPos.y);
+  createPlayer(ECS, playerInitialPos.x, playerInitialPos.y);
 
-  setupKeys(game, player);
+  setupKeys(game);
 
   ECS.registerSystem(RenderingSystem);
   const rendering = ECS.getSystem(RenderingSystem);
@@ -51,10 +51,8 @@ const main = (): void => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    document.querySelector('.main .loading').remove();
-    requestAnimationFrame(main)
-  }, 500)
+  document.querySelector('.main .loading').remove();
+  requestAnimationFrame(main);
 });
 
 export { game, ECS, display, WIDTH, HEIGHT };

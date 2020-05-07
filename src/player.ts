@@ -5,8 +5,9 @@ import { CellType, xyIdx, isBlocked } from './map';
 
 type Direction = 'N' | 'E' | 'S' |'W';
 
-const tryMove = (dir: Direction) => (game, player) => (): void => {
+const tryMove = (dir: Direction) => (game) => (): void => {
   const { map, runState } = game.getState(state => ({ runState: state.runState, map: state.map }));
+  const player = game.ecs.entityManager.getEntityByName('player');
   if (runState !== RunState.AWAITINGINPUT) { return; }
   const dirs = {
     N: [0, -1],
@@ -24,11 +25,11 @@ const tryMove = (dir: Direction) => (game, player) => (): void => {
   }
 };
 
-const setupKeys = (game, player): void => {
-  keymage('k', tryMove('N')(game, player));
-  keymage('l', tryMove('E')(game, player));
-  keymage('j', tryMove('S')(game, player));
-  keymage('h', tryMove('W')(game, player));
+const setupKeys = (game): void => {
+  keymage('k', tryMove('N')(game));
+  keymage('l', tryMove('E')(game));
+  keymage('j', tryMove('S')(game));
+  keymage('h', tryMove('W')(game));
 };
 
 export default setupKeys;
