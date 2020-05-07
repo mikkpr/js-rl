@@ -701,9 +701,12 @@ ECS.registerComponent(components_1.Renderable);
 ECS.registerSystem(systems_1.RenderingSystem);
 ECS.registerSystem(systems_1.VisibilitySystem);
 const map = map_1.createMap(WIDTH, HEIGHT);
+ROT.RNG.setSeed(1337);
 const game = new state_1.default({
     runState: state_1.RunState.PRERUN,
     map: map.map,
+    rooms: map.rooms,
+    centers: map.centers,
 }, display, ECS);
 exports.game = game;
 eval('window.game = game;');
@@ -7513,7 +7516,64 @@ exports.setupDisplay = (options) => {
     return display;
 };
 exports.drawGUI = () => { };
+const getWallGlyph = (scores, idx) => {
+    switch (scores[idx]) {
+        case 0:
+            return '○';
+        case 1:
+        case 2:
+        case 3:
+            return '║';
+        case 5:
+            return '╝';
+        case 6:
+            return '╗';
+        case 7:
+            return '╣';
+        case 9:
+            return '╚';
+        case 10:
+            return '╔';
+        case 11:
+            return '╠';
+        case 4:
+        case 8:
+        case 12:
+            return '═';
+        case 13:
+            return '╩';
+        case 14:
+            return '╦';
+        case 15:
+            return '╬';
+        default:
+            return '#';
+    }
+};
+const getNeighborScores = (map, exploredTiles) => {
+    const relScores = {
+        '0,-1': 0b0001,
+        '-1,0': 0b0100,
+        '1,0': 0b1000,
+        '0,1': 0b0010,
+    };
+    return map
+        .map((c, idx) => c === map_1.CellType.WALL && exploredTiles.has(idx) ? 1 : 0)
+        .map((s, idx, scores) => {
+        const [x, y] = [idx % _1.WIDTH, ~~(idx / _1.WIDTH)];
+        const total = Object.entries(relScores).reduce((acc, [coordString, score]) => {
+            const relCoords = coordString.split(',').map(s => parseInt(s, 10));
+            if (x + relCoords[0] < 0 || x + relCoords[0] >= _1.WIDTH || y + relCoords[1] < 0 || y + relCoords[1] >= _1.HEIGHT) {
+                return acc;
+            }
+            const relIdx = map_1.xyIdx(x + relCoords[0], y + relCoords[1]);
+            return acc | (scores[relIdx] > 0 ? score : 0b0);
+        }, 0);
+        return total;
+    });
+};
 exports.drawMap = (map, viewshed) => {
+    const mapScores = getNeighborScores(map, viewshed.exploredTiles);
     for (let idx = 0; idx < map.length; idx++) {
         if (viewshed &&
             viewshed.visibleTiles &&
@@ -7522,7 +7582,7 @@ exports.drawMap = (map, viewshed) => {
                 viewshed.exploredTiles.has(idx))) {
             const x = idx % _1.WIDTH;
             const y = ~~(idx / _1.WIDTH);
-            const glyph = map[idx] === map_1.CellType.FLOOR ? '.' : '#';
+            const glyph = map[idx] === map_1.CellType.FLOOR ? '·' : getWallGlyph(mapScores, idx);
             const fg = ROT.Color.interpolate(ROT.Color.fromString('#aaa'), ROT.Color.fromString('#222'), viewshed.visibleTiles.includes(idx) ? 0 : 0.9);
             _1.display.draw(x, y, glyph, ROT.Color.toHex(fg), '#000');
         }
@@ -8382,6 +8442,7 @@ const tileMap = () => {
         '♠': [6 * W, 0 * H],
         '•': [7 * W, 0 * H],
         '◘': [8 * W, 0 * H],
+        '○': [9 * W, 0 * H],
         '♂': [11 * W, 0 * H],
         '♀': [12 * W, 0 * H],
         '♫': [14 * W, 0 * H],
