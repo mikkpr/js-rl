@@ -5,11 +5,18 @@ import { setRunState } from './setters';
 import { setupDisplay } from './display';
 import { createMap } from './map';
 import { World } from 'ecsy';
-import { RenderingSystem } from './ecs/systems';
+import {
+  RenderingSystem,
+  VisibilitySystem
+} from './ecs/systems';
 import { createPlayer } from './ecs/entities';
 import { Position } from './ecs/components';
 
 import './assets/VGA8x16.png';
+import './assets/ibm_vga8.eot';
+import './assets/ibm_vga8.woff';
+import './assets/ibm_vga8.woff2';
+import './assets/ibm_vga8.ttf';
 
 const WIDTH = 64;
 const HEIGHT = 32;
@@ -21,7 +28,7 @@ const display = setupDisplay({
 
 const ECS = new World();
 ECS.registerSystem(RenderingSystem);
-// stop rendering system from performing on its own
+ECS.registerSystem(VisibilitySystem);
 
 const map = createMap(WIDTH, HEIGHT);
 
@@ -35,11 +42,11 @@ eval('window.game = game;');
 const main = (): void => {
   const randomCenter = ROT.RNG.getItem(map.centers);
 
-  game.playerID = createPlayer(ECS);
-  const player = (game.ecs as any).entityManager.getEntityByName('player');
+  createPlayer(ECS);
+  game.player = (game.ecs as any).entityManager.getEntityByName('player');
 
-  player.getMutableComponent(Position).x = randomCenter[0];
-  player.getMutableComponent(Position).y = randomCenter[1];
+  game.player.getMutableComponent(Position).x = randomCenter[0];
+  game.player.getMutableComponent(Position).y = randomCenter[1];
   setupKeys(game);
 
   game

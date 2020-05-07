@@ -3,6 +3,7 @@ import * as ROT from 'rot-js';
 import { CellType, Map } from './map';
 import { display, WIDTH } from '.';
 import tileMap from './utils/tileMap';
+import { Viewshed } from './ecs/components';
 
 export const setupDisplay = (options: {width: number; height: number }): ROT.Display => {
   const tileSet = document.createElement("img");
@@ -27,12 +28,21 @@ export const setupDisplay = (options: {width: number; height: number }): ROT.Dis
 
 export const drawGUI = (): void => {};
 
-export const drawMap = (map: Map) => {
+export const drawMap = (map: Map, viewshed: Viewshed) => {
   for (let idx = 0; idx < map.length; idx++) {
-    const x = idx % WIDTH;
-    const y = ~~(idx / WIDTH);
-    const glyph = map[idx] === CellType.FLOOR ? '.' : '#';
+    if (viewshed.visibleTiles.includes(idx) ||
+       viewshed.exploredTiles.has(idx)) {
+      const x = idx % WIDTH;
+      const y = ~~(idx / WIDTH);
+      const glyph = map[idx] === CellType.FLOOR ? '.' : '#';
 
-    display.draw(x, y, glyph, '#aaa', '#000');
+      const fg = ROT.Color.interpolate(
+        (ROT.Color.fromString('#aaa') as [number, number, number]),
+        (ROT.Color.fromString('#222') as [number, number, number]),
+        viewshed.visibleTiles.includes(idx) ? 0 : 0.9
+      );
+
+      display.draw(x, y, glyph, ROT.Color.toHex(fg), '#000');
+    }
   }
 };

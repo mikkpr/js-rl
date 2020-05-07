@@ -1,13 +1,13 @@
 import keymage from 'keymage';
 import { RunState } from './state';
-import { Position } from './ecs/components';
+import { Position, Viewshed } from './ecs/components';
 import { CellType, xyIdx, isBlocked } from './map';
 
 type Direction = 'N' | 'E' | 'S' |'W';
 
 const tryMove = (dir: Direction) => (game) => (): void => {
   const { map, runState } = game.getState(state => ({ runState: state.runState, map: state.map }));
-  const player = game.ecs.entityManager._entities.find(e => e.id === game.playerID);
+  const player = game.player;
   if (runState !== RunState.AWAITINGINPUT) { return; }
 
   const dirs = {
@@ -17,14 +17,18 @@ const tryMove = (dir: Direction) => (game) => (): void => {
     W: [-1, 0]
   };
   const [dx, dy] = dirs[dir];
-  const position = player.getComponent(Position);
+  const position = player.getMutableComponent(Position);
   const { x, y } = position;
   const destinationIdx = xyIdx(x + dx, y + dy);
 
   if (!isBlocked(map, destinationIdx)) {
     position.x += dx;
     position.y += dy;
+    const viewshed = player.getMutableComponent(Viewshed);
+    viewshed.dirty = true;
   }
+
+  game.setState(state => { state.runState = RunState.PLAYERTURN; });
 };
 
 const setupKeys = (game): void => {

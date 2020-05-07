@@ -10,6 +10,10 @@ export type Map = CellType[];
 
 export const xyIdx = (x: number, y: number): number => y * WIDTH + x;
 
+export const lightPasses = (map, idx) => {
+  return map[idx] && map[idx] === CellType.WALL;
+};
+
 export const isBlocked = (map, idx) => {
   return map[idx] && map[idx] === CellType.WALL;
 };

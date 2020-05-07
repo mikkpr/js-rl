@@ -1,6 +1,6 @@
 import produce from 'immer';
 import * as ROT from 'rot-js';
-import { World } from 'ecsy';
+import { World, Entity } from 'ecsy';
 import throttle from 'lodash/throttle';
 import { WIDTH, HEIGHT } from '.';
 import { CellType } from './map';
@@ -36,7 +36,7 @@ class GameState {
   display: ROT.Display;
   ecs: World;
   lastTime: number;
-  playerID?: number;
+  player?: Entity;
 
   constructor(initialState: State, display: ROT.Display, ecs: World) {
     this.state = initialState;
@@ -59,6 +59,12 @@ class GameState {
     return this;
   }
 
+  executeSystemsAndProceed = (nextRunState: RunState, delta: number, time: number): void => {
+    this.ecs.execute(delta, time);
+    this.setState(state => {state.runState = nextRunState; });
+    requestAnimationFrame(this.tick);
+  }
+
   tick = (): void => {
     const time = performance.now();
     const delta = time - this.lastTime;
@@ -67,7 +73,6 @@ class GameState {
     const runState = this.getState(state => state.runState);
     if (runState !== RunState.MAINMENU) {
       this.display.clear();
-      drawMap(this.getState(state => state.map));
 
       this.ecs.getSystem(RenderingSystem).execute(delta, time);
 
@@ -75,16 +80,14 @@ class GameState {
     }
 
     if (runState === RunState.PRERUN) {
-      this.ecs.execute(delta, time);
-      this.setState(state => {state.runState = RunState.AWAITINGINPUT});
+      this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
     } else if (runState === RunState.AWAITINGINPUT) {
       // poll for input
+      requestAnimationFrame(this.tick);
     } else if (runState === RunState.PLAYERTURN) {
-      this.ecs.execute(delta, time);
-      this.setState(state => state.runState = RunState.MONSTERTURN);
+      this.executeSystemsAndProceed(RunState.MONSTERTURN, delta, time);
     } else if (runState === RunState.MONSTERTURN) {
-      this.ecs.execute(delta, time);
-      this.setState(state => state.runState = RunState.AWAITINGINPUT);
+      this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
     } else if (runState === RunState.SHOWINVENTORY) {
       // const result = showInventory();
       // if (result === ItemMenuResult.CANCEL) {
@@ -101,12 +104,12 @@ class GameState {
     } else if (runState === RunState.RUNNING) {
     } else if (runState === RunState.PAUSED) {
     }
+
+
   }
 
   gameLoop = () => {
     this.tick();
-
-    requestAnimationFrame(this.gameLoop);
   }
 }
 
