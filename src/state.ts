@@ -1,10 +1,8 @@
 import produce from 'immer';
 import * as ROT from 'rot-js';
 import { World, Entity } from 'ecsy';
-import throttle from 'lodash/throttle';
-import { WIDTH, HEIGHT } from '.';
 import { CellType } from './map';
-import { drawMap, drawGUI } from './display';
+import { drawGUI } from './display';
 import { RenderingSystem } from './ecs/systems';
 
 const ENABLE_LOGGING = false;
@@ -28,6 +26,7 @@ export type State = {
   map: CellType[];
   rooms: number[][];
   centers: number[][];
+  scores: number[];
 }
 
 type StateGetter = (state: State) => any;
@@ -39,6 +38,7 @@ class GameState {
   ecs: World;
   lastTime: number;
   player?: Entity;
+  cameraOffset: [number, number];
 
   constructor(initialState: State, display: ROT.Display, ecs: World) {
     this.state = initialState;
@@ -72,6 +72,10 @@ class GameState {
     requestAnimationFrame(this.tick);
   }
 
+  render = (delta = 0, time = this.lastTime): void => {
+    this.ecs.getSystem(RenderingSystem).execute(delta, time);
+  }
+
   tick = (): void => {
     const time = performance.now();
     const delta = time - this.lastTime;
@@ -81,7 +85,7 @@ class GameState {
     if (runState !== RunState.MAINMENU) {
       this.display.clear();
 
-      this.ecs.getSystem(RenderingSystem).execute(delta, time);
+      this.render(delta, time);
 
       drawGUI();
     }

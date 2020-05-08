@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -295,362 +295,85 @@ format.map = {
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fromString", function() { return fromString; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add", function() { return add; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add_", function() { return add_; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply", function() { return multiply; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply_", function() { return multiply_; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolate", function() { return interpolate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerp", function() { return lerp; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolateHSL", function() { return interpolateHSL; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerpHSL", function() { return lerpHSL; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomize", function() { return randomize; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgb2hsl", function() { return rgb2hsl; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hsl2rgb", function() { return hsl2rgb; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRGB", function() { return toRGB; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHex", function() { return toHex; });
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
 
-
-function fromString(str) {
-    let cached, r;
-    if (str in CACHE) {
-        cached = CACHE[str];
-    }
-    else {
-        if (str.charAt(0) == "#") { // hex rgb
-            let matched = str.match(/[0-9a-f]/gi) || [];
-            let values = matched.map((x) => parseInt(x, 16));
-            if (values.length == 3) {
-                cached = values.map((x) => x * 17);
-            }
-            else {
-                for (let i = 0; i < 3; i++) {
-                    values[i + 1] += 16 * values[i];
-                    values.splice(i, 1);
-                }
-                cached = values;
-            }
-        }
-        else if ((r = str.match(/rgb\(([0-9, ]+)\)/i))) { // decimal rgb
-            cached = r[1].split(/\s*,\s*/).map((x) => parseInt(x));
-        }
-        else { // html name
-            cached = [0, 0, 0];
-        }
-        CACHE[str] = cached;
-    }
-    return cached.slice();
-}
-/**
- * Add two or more colors
- */
-function add(color1, ...colors) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            result[i] += colors[j][i];
-        }
-    }
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
     return result;
-}
-/**
- * Add two or more colors, MODIFIES FIRST ARGUMENT
- */
-function add_(color1, ...colors) {
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            color1[i] += colors[j][i];
-        }
-    }
-    return color1;
-}
-/**
- * Multiply (mix) two or more colors
- */
-function multiply(color1, ...colors) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            result[i] *= colors[j][i] / 255;
-        }
-        result[i] = Math.round(result[i]);
-    }
-    return result;
-}
-/**
- * Multiply (mix) two or more colors, MODIFIES FIRST ARGUMENT
- */
-function multiply_(color1, ...colors) {
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            color1[i] *= colors[j][i] / 255;
-        }
-        color1[i] = Math.round(color1[i]);
-    }
-    return color1;
-}
-/**
- * Interpolate (blend) two colors with a given factor
- */
-function interpolate(color1, color2, factor = 0.5) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
-    }
-    return result;
-}
-const lerp = interpolate;
-/**
- * Interpolate (blend) two colors with a given factor in HSL mode
- */
-function interpolateHSL(color1, color2, factor = 0.5) {
-    let hsl1 = rgb2hsl(color1);
-    let hsl2 = rgb2hsl(color2);
-    for (let i = 0; i < 3; i++) {
-        hsl1[i] += factor * (hsl2[i] - hsl1[i]);
-    }
-    return hsl2rgb(hsl1);
-}
-const lerpHSL = interpolateHSL;
-/**
- * Create a new random color based on this one
- * @param color
- * @param diff Set of standard deviations
- */
-function randomize(color, diff) {
-    if (!(diff instanceof Array)) {
-        diff = Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff));
-    }
-    let result = color.slice();
-    for (let i = 0; i < 3; i++) {
-        result[i] += (diff instanceof Array ? Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff[i])) : diff);
-    }
-    return result;
-}
-/**
- * Converts an RGB color value to HSL. Expects 0..255 inputs, produces 0..1 outputs.
- */
-function rgb2hsl(color) {
-    let r = color[0] / 255;
-    let g = color[1] / 255;
-    let b = color[2] / 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s, l = (max + min) / 2;
-    if (max == min) {
-        s = 0; // achromatic
-    }
-    else {
-        let d = max - min;
-        s = (l > 0.5 ? d / (2 - max - min) : d / (max + min));
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            case b:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h /= 6;
-    }
-    return [h, s, l];
-}
-function hue2rgb(p, q, t) {
-    if (t < 0)
-        t += 1;
-    if (t > 1)
-        t -= 1;
-    if (t < 1 / 6)
-        return p + (q - p) * 6 * t;
-    if (t < 1 / 2)
-        return q;
-    if (t < 2 / 3)
-        return p + (q - p) * (2 / 3 - t) * 6;
-    return p;
-}
-/**
- * Converts an HSL color value to RGB. Expects 0..1 inputs, produces 0..255 outputs.
- */
-function hsl2rgb(color) {
-    let l = color[2];
-    if (color[1] == 0) {
-        l = Math.round(l * 255);
-        return [l, l, l];
-    }
-    else {
-        let s = color[1];
-        let q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
-        let p = 2 * l - q;
-        let r = hue2rgb(p, q, color[0] + 1 / 3);
-        let g = hue2rgb(p, q, color[0]);
-        let b = hue2rgb(p, q, color[0] - 1 / 3);
-        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-    }
-}
-function toRGB(color) {
-    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255));
-    return `rgb(${clamped.join(",")})`;
-}
-function toHex(color) {
-    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255).toString(16).padStart(2, "0"));
-    return `#${clamped.join("")}`;
-}
-const CACHE = {
-    "black": [0, 0, 0],
-    "navy": [0, 0, 128],
-    "darkblue": [0, 0, 139],
-    "mediumblue": [0, 0, 205],
-    "blue": [0, 0, 255],
-    "darkgreen": [0, 100, 0],
-    "green": [0, 128, 0],
-    "teal": [0, 128, 128],
-    "darkcyan": [0, 139, 139],
-    "deepskyblue": [0, 191, 255],
-    "darkturquoise": [0, 206, 209],
-    "mediumspringgreen": [0, 250, 154],
-    "lime": [0, 255, 0],
-    "springgreen": [0, 255, 127],
-    "aqua": [0, 255, 255],
-    "cyan": [0, 255, 255],
-    "midnightblue": [25, 25, 112],
-    "dodgerblue": [30, 144, 255],
-    "forestgreen": [34, 139, 34],
-    "seagreen": [46, 139, 87],
-    "darkslategray": [47, 79, 79],
-    "darkslategrey": [47, 79, 79],
-    "limegreen": [50, 205, 50],
-    "mediumseagreen": [60, 179, 113],
-    "turquoise": [64, 224, 208],
-    "royalblue": [65, 105, 225],
-    "steelblue": [70, 130, 180],
-    "darkslateblue": [72, 61, 139],
-    "mediumturquoise": [72, 209, 204],
-    "indigo": [75, 0, 130],
-    "darkolivegreen": [85, 107, 47],
-    "cadetblue": [95, 158, 160],
-    "cornflowerblue": [100, 149, 237],
-    "mediumaquamarine": [102, 205, 170],
-    "dimgray": [105, 105, 105],
-    "dimgrey": [105, 105, 105],
-    "slateblue": [106, 90, 205],
-    "olivedrab": [107, 142, 35],
-    "slategray": [112, 128, 144],
-    "slategrey": [112, 128, 144],
-    "lightslategray": [119, 136, 153],
-    "lightslategrey": [119, 136, 153],
-    "mediumslateblue": [123, 104, 238],
-    "lawngreen": [124, 252, 0],
-    "chartreuse": [127, 255, 0],
-    "aquamarine": [127, 255, 212],
-    "maroon": [128, 0, 0],
-    "purple": [128, 0, 128],
-    "olive": [128, 128, 0],
-    "gray": [128, 128, 128],
-    "grey": [128, 128, 128],
-    "skyblue": [135, 206, 235],
-    "lightskyblue": [135, 206, 250],
-    "blueviolet": [138, 43, 226],
-    "darkred": [139, 0, 0],
-    "darkmagenta": [139, 0, 139],
-    "saddlebrown": [139, 69, 19],
-    "darkseagreen": [143, 188, 143],
-    "lightgreen": [144, 238, 144],
-    "mediumpurple": [147, 112, 216],
-    "darkviolet": [148, 0, 211],
-    "palegreen": [152, 251, 152],
-    "darkorchid": [153, 50, 204],
-    "yellowgreen": [154, 205, 50],
-    "sienna": [160, 82, 45],
-    "brown": [165, 42, 42],
-    "darkgray": [169, 169, 169],
-    "darkgrey": [169, 169, 169],
-    "lightblue": [173, 216, 230],
-    "greenyellow": [173, 255, 47],
-    "paleturquoise": [175, 238, 238],
-    "lightsteelblue": [176, 196, 222],
-    "powderblue": [176, 224, 230],
-    "firebrick": [178, 34, 34],
-    "darkgoldenrod": [184, 134, 11],
-    "mediumorchid": [186, 85, 211],
-    "rosybrown": [188, 143, 143],
-    "darkkhaki": [189, 183, 107],
-    "silver": [192, 192, 192],
-    "mediumvioletred": [199, 21, 133],
-    "indianred": [205, 92, 92],
-    "peru": [205, 133, 63],
-    "chocolate": [210, 105, 30],
-    "tan": [210, 180, 140],
-    "lightgray": [211, 211, 211],
-    "lightgrey": [211, 211, 211],
-    "palevioletred": [216, 112, 147],
-    "thistle": [216, 191, 216],
-    "orchid": [218, 112, 214],
-    "goldenrod": [218, 165, 32],
-    "crimson": [220, 20, 60],
-    "gainsboro": [220, 220, 220],
-    "plum": [221, 160, 221],
-    "burlywood": [222, 184, 135],
-    "lightcyan": [224, 255, 255],
-    "lavender": [230, 230, 250],
-    "darksalmon": [233, 150, 122],
-    "violet": [238, 130, 238],
-    "palegoldenrod": [238, 232, 170],
-    "lightcoral": [240, 128, 128],
-    "khaki": [240, 230, 140],
-    "aliceblue": [240, 248, 255],
-    "honeydew": [240, 255, 240],
-    "azure": [240, 255, 255],
-    "sandybrown": [244, 164, 96],
-    "wheat": [245, 222, 179],
-    "beige": [245, 245, 220],
-    "whitesmoke": [245, 245, 245],
-    "mintcream": [245, 255, 250],
-    "ghostwhite": [248, 248, 255],
-    "salmon": [250, 128, 114],
-    "antiquewhite": [250, 235, 215],
-    "linen": [250, 240, 230],
-    "lightgoldenrodyellow": [250, 250, 210],
-    "oldlace": [253, 245, 230],
-    "red": [255, 0, 0],
-    "fuchsia": [255, 0, 255],
-    "magenta": [255, 0, 255],
-    "deeppink": [255, 20, 147],
-    "orangered": [255, 69, 0],
-    "tomato": [255, 99, 71],
-    "hotpink": [255, 105, 180],
-    "coral": [255, 127, 80],
-    "darkorange": [255, 140, 0],
-    "lightsalmon": [255, 160, 122],
-    "orange": [255, 165, 0],
-    "lightpink": [255, 182, 193],
-    "pink": [255, 192, 203],
-    "gold": [255, 215, 0],
-    "peachpuff": [255, 218, 185],
-    "navajowhite": [255, 222, 173],
-    "moccasin": [255, 228, 181],
-    "bisque": [255, 228, 196],
-    "mistyrose": [255, 228, 225],
-    "blanchedalmond": [255, 235, 205],
-    "papayawhip": [255, 239, 213],
-    "lavenderblush": [255, 240, 245],
-    "seashell": [255, 245, 238],
-    "cornsilk": [255, 248, 220],
-    "lemonchiffon": [255, 250, 205],
-    "floralwhite": [255, 250, 240],
-    "snow": [255, 250, 250],
-    "yellow": [255, 255, 0],
-    "lightyellow": [255, 255, 224],
-    "ivory": [255, 255, 240],
-    "white": [255, 255, 255]
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ROT = __importStar(__webpack_require__(8));
+const player_1 = __importDefault(__webpack_require__(26));
+const ecsy_1 = __webpack_require__(3);
+const state_1 = __importStar(__webpack_require__(21));
+const display_1 = __webpack_require__(14);
+const map_1 = __webpack_require__(6);
+const systems_1 = __webpack_require__(22);
+const entities_1 = __webpack_require__(85);
+const components_1 = __webpack_require__(5);
+__webpack_require__(88);
+__webpack_require__(89);
+__webpack_require__(90);
+__webpack_require__(91);
+__webpack_require__(92);
+const WIDTH = 64;
+exports.WIDTH = WIDTH;
+const HEIGHT = 32;
+exports.HEIGHT = HEIGHT;
+const MAPWIDTH = WIDTH * 2;
+exports.MAPWIDTH = MAPWIDTH;
+const MAPHEIGHT = HEIGHT * 2;
+exports.MAPHEIGHT = MAPHEIGHT;
+const display = display_1.setupDisplay({
+    width: WIDTH,
+    height: HEIGHT
+});
+exports.display = display;
+const ECS = new ecsy_1.World();
+exports.ECS = ECS;
+ECS.registerComponent(components_1.Position);
+ECS.registerComponent(components_1.Viewshed);
+ECS.registerComponent(components_1.Renderable);
+ECS.registerComponent(components_1.Monster);
+ECS.registerComponent(components_1.Light);
+ECS.registerSystem(systems_1.RenderingSystem);
+ECS.registerSystem(systems_1.VisibilitySystem);
+ECS.registerSystem(systems_1.AISystem);
+const map = map_1.createMap(MAPWIDTH, MAPHEIGHT);
+const game = new state_1.default({
+    runState: state_1.RunState.PRERUN,
+    map: map.map,
+    rooms: map.rooms,
+    centers: map.centers,
+    scores: map.scores
+}, display, ECS);
+exports.game = game;
+eval('window.game = game;');
+const main = () => {
+    const randomCenter = ROT.RNG.getItem(map.centers);
+    const mapCenter = [~~(WIDTH / 2), ~~(HEIGHT / 2)];
+    const cameraOffset = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
+    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
+    game.player = game.ecs.entityManager.getEntityByName('player');
+    game.cameraOffset = cameraOffset;
+    const randomCenter2 = ROT.RNG.getItem(map.centers);
+    entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
+    player_1.default(game);
+    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
+    game.gameLoop();
+};
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.main .loading').remove();
+    main();
+});
 
 
 /***/ }),
@@ -2422,76 +2145,362 @@ if (urlParams.has("enable-remote-devtools")) {
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fromString", function() { return fromString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add", function() { return add; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add_", function() { return add_; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply", function() { return multiply; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply_", function() { return multiply_; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolate", function() { return interpolate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerp", function() { return lerp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolateHSL", function() { return interpolateHSL; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerpHSL", function() { return lerpHSL; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomize", function() { return randomize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgb2hsl", function() { return rgb2hsl; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hsl2rgb", function() { return hsl2rgb; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRGB", function() { return toRGB; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHex", function() { return toHex; });
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
 
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+
+function fromString(str) {
+    let cached, r;
+    if (str in CACHE) {
+        cached = CACHE[str];
+    }
+    else {
+        if (str.charAt(0) == "#") { // hex rgb
+            let matched = str.match(/[0-9a-f]/gi) || [];
+            let values = matched.map((x) => parseInt(x, 16));
+            if (values.length == 3) {
+                cached = values.map((x) => x * 17);
+            }
+            else {
+                for (let i = 0; i < 3; i++) {
+                    values[i + 1] += 16 * values[i];
+                    values.splice(i, 1);
+                }
+                cached = values;
+            }
+        }
+        else if ((r = str.match(/rgb\(([0-9, ]+)\)/i))) { // decimal rgb
+            cached = r[1].split(/\s*,\s*/).map((x) => parseInt(x));
+        }
+        else { // html name
+            cached = [0, 0, 0];
+        }
+        CACHE[str] = cached;
+    }
+    return cached.slice();
+}
+/**
+ * Add two or more colors
+ */
+function add(color1, ...colors) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            result[i] += colors[j][i];
+        }
+    }
     return result;
+}
+/**
+ * Add two or more colors, MODIFIES FIRST ARGUMENT
+ */
+function add_(color1, ...colors) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            color1[i] += colors[j][i];
+        }
+    }
+    return color1;
+}
+/**
+ * Multiply (mix) two or more colors
+ */
+function multiply(color1, ...colors) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            result[i] *= colors[j][i] / 255;
+        }
+        result[i] = Math.round(result[i]);
+    }
+    return result;
+}
+/**
+ * Multiply (mix) two or more colors, MODIFIES FIRST ARGUMENT
+ */
+function multiply_(color1, ...colors) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            color1[i] *= colors[j][i] / 255;
+        }
+        color1[i] = Math.round(color1[i]);
+    }
+    return color1;
+}
+/**
+ * Interpolate (blend) two colors with a given factor
+ */
+function interpolate(color1, color2, factor = 0.5) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
+    }
+    return result;
+}
+const lerp = interpolate;
+/**
+ * Interpolate (blend) two colors with a given factor in HSL mode
+ */
+function interpolateHSL(color1, color2, factor = 0.5) {
+    let hsl1 = rgb2hsl(color1);
+    let hsl2 = rgb2hsl(color2);
+    for (let i = 0; i < 3; i++) {
+        hsl1[i] += factor * (hsl2[i] - hsl1[i]);
+    }
+    return hsl2rgb(hsl1);
+}
+const lerpHSL = interpolateHSL;
+/**
+ * Create a new random color based on this one
+ * @param color
+ * @param diff Set of standard deviations
+ */
+function randomize(color, diff) {
+    if (!(diff instanceof Array)) {
+        diff = Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff));
+    }
+    let result = color.slice();
+    for (let i = 0; i < 3; i++) {
+        result[i] += (diff instanceof Array ? Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff[i])) : diff);
+    }
+    return result;
+}
+/**
+ * Converts an RGB color value to HSL. Expects 0..255 inputs, produces 0..1 outputs.
+ */
+function rgb2hsl(color) {
+    let r = color[0] / 255;
+    let g = color[1] / 255;
+    let b = color[2] / 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s, l = (max + min) / 2;
+    if (max == min) {
+        s = 0; // achromatic
+    }
+    else {
+        let d = max - min;
+        s = (l > 0.5 ? d / (2 - max - min) : d / (max + min));
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+        h /= 6;
+    }
+    return [h, s, l];
+}
+function hue2rgb(p, q, t) {
+    if (t < 0)
+        t += 1;
+    if (t > 1)
+        t -= 1;
+    if (t < 1 / 6)
+        return p + (q - p) * 6 * t;
+    if (t < 1 / 2)
+        return q;
+    if (t < 2 / 3)
+        return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+}
+/**
+ * Converts an HSL color value to RGB. Expects 0..1 inputs, produces 0..255 outputs.
+ */
+function hsl2rgb(color) {
+    let l = color[2];
+    if (color[1] == 0) {
+        l = Math.round(l * 255);
+        return [l, l, l];
+    }
+    else {
+        let s = color[1];
+        let q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
+        let p = 2 * l - q;
+        let r = hue2rgb(p, q, color[0] + 1 / 3);
+        let g = hue2rgb(p, q, color[0]);
+        let b = hue2rgb(p, q, color[0] - 1 / 3);
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+}
+function toRGB(color) {
+    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255));
+    return `rgb(${clamped.join(",")})`;
+}
+function toHex(color) {
+    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255).toString(16).padStart(2, "0"));
+    return `#${clamped.join("")}`;
+}
+const CACHE = {
+    "black": [0, 0, 0],
+    "navy": [0, 0, 128],
+    "darkblue": [0, 0, 139],
+    "mediumblue": [0, 0, 205],
+    "blue": [0, 0, 255],
+    "darkgreen": [0, 100, 0],
+    "green": [0, 128, 0],
+    "teal": [0, 128, 128],
+    "darkcyan": [0, 139, 139],
+    "deepskyblue": [0, 191, 255],
+    "darkturquoise": [0, 206, 209],
+    "mediumspringgreen": [0, 250, 154],
+    "lime": [0, 255, 0],
+    "springgreen": [0, 255, 127],
+    "aqua": [0, 255, 255],
+    "cyan": [0, 255, 255],
+    "midnightblue": [25, 25, 112],
+    "dodgerblue": [30, 144, 255],
+    "forestgreen": [34, 139, 34],
+    "seagreen": [46, 139, 87],
+    "darkslategray": [47, 79, 79],
+    "darkslategrey": [47, 79, 79],
+    "limegreen": [50, 205, 50],
+    "mediumseagreen": [60, 179, 113],
+    "turquoise": [64, 224, 208],
+    "royalblue": [65, 105, 225],
+    "steelblue": [70, 130, 180],
+    "darkslateblue": [72, 61, 139],
+    "mediumturquoise": [72, 209, 204],
+    "indigo": [75, 0, 130],
+    "darkolivegreen": [85, 107, 47],
+    "cadetblue": [95, 158, 160],
+    "cornflowerblue": [100, 149, 237],
+    "mediumaquamarine": [102, 205, 170],
+    "dimgray": [105, 105, 105],
+    "dimgrey": [105, 105, 105],
+    "slateblue": [106, 90, 205],
+    "olivedrab": [107, 142, 35],
+    "slategray": [112, 128, 144],
+    "slategrey": [112, 128, 144],
+    "lightslategray": [119, 136, 153],
+    "lightslategrey": [119, 136, 153],
+    "mediumslateblue": [123, 104, 238],
+    "lawngreen": [124, 252, 0],
+    "chartreuse": [127, 255, 0],
+    "aquamarine": [127, 255, 212],
+    "maroon": [128, 0, 0],
+    "purple": [128, 0, 128],
+    "olive": [128, 128, 0],
+    "gray": [128, 128, 128],
+    "grey": [128, 128, 128],
+    "skyblue": [135, 206, 235],
+    "lightskyblue": [135, 206, 250],
+    "blueviolet": [138, 43, 226],
+    "darkred": [139, 0, 0],
+    "darkmagenta": [139, 0, 139],
+    "saddlebrown": [139, 69, 19],
+    "darkseagreen": [143, 188, 143],
+    "lightgreen": [144, 238, 144],
+    "mediumpurple": [147, 112, 216],
+    "darkviolet": [148, 0, 211],
+    "palegreen": [152, 251, 152],
+    "darkorchid": [153, 50, 204],
+    "yellowgreen": [154, 205, 50],
+    "sienna": [160, 82, 45],
+    "brown": [165, 42, 42],
+    "darkgray": [169, 169, 169],
+    "darkgrey": [169, 169, 169],
+    "lightblue": [173, 216, 230],
+    "greenyellow": [173, 255, 47],
+    "paleturquoise": [175, 238, 238],
+    "lightsteelblue": [176, 196, 222],
+    "powderblue": [176, 224, 230],
+    "firebrick": [178, 34, 34],
+    "darkgoldenrod": [184, 134, 11],
+    "mediumorchid": [186, 85, 211],
+    "rosybrown": [188, 143, 143],
+    "darkkhaki": [189, 183, 107],
+    "silver": [192, 192, 192],
+    "mediumvioletred": [199, 21, 133],
+    "indianred": [205, 92, 92],
+    "peru": [205, 133, 63],
+    "chocolate": [210, 105, 30],
+    "tan": [210, 180, 140],
+    "lightgray": [211, 211, 211],
+    "lightgrey": [211, 211, 211],
+    "palevioletred": [216, 112, 147],
+    "thistle": [216, 191, 216],
+    "orchid": [218, 112, 214],
+    "goldenrod": [218, 165, 32],
+    "crimson": [220, 20, 60],
+    "gainsboro": [220, 220, 220],
+    "plum": [221, 160, 221],
+    "burlywood": [222, 184, 135],
+    "lightcyan": [224, 255, 255],
+    "lavender": [230, 230, 250],
+    "darksalmon": [233, 150, 122],
+    "violet": [238, 130, 238],
+    "palegoldenrod": [238, 232, 170],
+    "lightcoral": [240, 128, 128],
+    "khaki": [240, 230, 140],
+    "aliceblue": [240, 248, 255],
+    "honeydew": [240, 255, 240],
+    "azure": [240, 255, 255],
+    "sandybrown": [244, 164, 96],
+    "wheat": [245, 222, 179],
+    "beige": [245, 245, 220],
+    "whitesmoke": [245, 245, 245],
+    "mintcream": [245, 255, 250],
+    "ghostwhite": [248, 248, 255],
+    "salmon": [250, 128, 114],
+    "antiquewhite": [250, 235, 215],
+    "linen": [250, 240, 230],
+    "lightgoldenrodyellow": [250, 250, 210],
+    "oldlace": [253, 245, 230],
+    "red": [255, 0, 0],
+    "fuchsia": [255, 0, 255],
+    "magenta": [255, 0, 255],
+    "deeppink": [255, 20, 147],
+    "orangered": [255, 69, 0],
+    "tomato": [255, 99, 71],
+    "hotpink": [255, 105, 180],
+    "coral": [255, 127, 80],
+    "darkorange": [255, 140, 0],
+    "lightsalmon": [255, 160, 122],
+    "orange": [255, 165, 0],
+    "lightpink": [255, 182, 193],
+    "pink": [255, 192, 203],
+    "gold": [255, 215, 0],
+    "peachpuff": [255, 218, 185],
+    "navajowhite": [255, 222, 173],
+    "moccasin": [255, 228, 181],
+    "bisque": [255, 228, 196],
+    "mistyrose": [255, 228, 225],
+    "blanchedalmond": [255, 235, 205],
+    "papayawhip": [255, 239, 213],
+    "lavenderblush": [255, 240, 245],
+    "seashell": [255, 245, 238],
+    "cornsilk": [255, 248, 220],
+    "lemonchiffon": [255, 250, 205],
+    "floralwhite": [255, 250, 240],
+    "snow": [255, 250, 250],
+    "yellow": [255, 255, 0],
+    "lightyellow": [255, 255, 224],
+    "ivory": [255, 255, 240],
+    "white": [255, 255, 255]
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
-const player_1 = __importDefault(__webpack_require__(14));
-const ecsy_1 = __webpack_require__(3);
-const state_1 = __importStar(__webpack_require__(11));
-const display_1 = __webpack_require__(9);
-const map_1 = __webpack_require__(6);
-const systems_1 = __webpack_require__(12);
-const entities_1 = __webpack_require__(26);
-const components_1 = __webpack_require__(5);
-__webpack_require__(29);
-__webpack_require__(30);
-__webpack_require__(31);
-__webpack_require__(32);
-__webpack_require__(33);
-const WIDTH = 64;
-exports.WIDTH = WIDTH;
-const HEIGHT = 32;
-exports.HEIGHT = HEIGHT;
-const display = display_1.setupDisplay({
-    width: WIDTH,
-    height: HEIGHT
-});
-exports.display = display;
-const ECS = new ecsy_1.World();
-exports.ECS = ECS;
-ECS.registerComponent(components_1.Position);
-ECS.registerComponent(components_1.Viewshed);
-ECS.registerComponent(components_1.Renderable);
-ECS.registerComponent(components_1.Monster);
-ECS.registerSystem(systems_1.RenderingSystem);
-ECS.registerSystem(systems_1.VisibilitySystem);
-ECS.registerSystem(systems_1.AISystem);
-const map = map_1.createMap(WIDTH, HEIGHT);
-const game = new state_1.default({
-    runState: state_1.RunState.PRERUN,
-    map: map.map,
-    rooms: map.rooms,
-    centers: map.centers,
-}, display, ECS);
-exports.game = game;
-eval('window.game = game;');
-const main = () => {
-    const randomCenter = ROT.RNG.getItem(map.centers);
-    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
-    game.player = game.ecs.entityManager.getEntityByName('player');
-    const randomCenter2 = ROT.RNG.getItem(map.centers);
-    entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
-    player_1.default(game);
-    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
-    game.gameLoop();
-};
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.main .loading').remove();
-    main();
-});
 
 
 /***/ }),
@@ -2504,14 +2513,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const renderable_1 = __importDefault(__webpack_require__(20));
+const renderable_1 = __importDefault(__webpack_require__(32));
 exports.Renderable = renderable_1.default;
-const position_1 = __importDefault(__webpack_require__(21));
+const position_1 = __importDefault(__webpack_require__(79));
 exports.Position = position_1.default;
-const viewshed_1 = __importDefault(__webpack_require__(22));
+const viewshed_1 = __importDefault(__webpack_require__(80));
 exports.Viewshed = viewshed_1.default;
-const monster_1 = __importDefault(__webpack_require__(23));
+const monster_1 = __importDefault(__webpack_require__(81));
 exports.Monster = monster_1.default;
+const light_1 = __importDefault(__webpack_require__(82));
+exports.Light = light_1.default;
 
 
 /***/ }),
@@ -2529,13 +2540,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
-const _1 = __webpack_require__(4);
+const _1 = __webpack_require__(2);
+const MIN_SIZE = 3;
+const MAX_SIZE = 8;
+const MAX_ROOMS = 20;
+const MIN_ROOMS = 10;
+const CA_ALIVE = 4;
+const CA_DEAD = 6;
+const CA_ITER = 10;
 var CellType;
 (function (CellType) {
     CellType[CellType["FLOOR"] = 0] = "FLOOR";
     CellType[CellType["WALL"] = 1] = "WALL";
 })(CellType = exports.CellType || (exports.CellType = {}));
-exports.xyIdx = (x, y) => y * _1.WIDTH + x;
+exports.xyIdx = (x, y) => y * _1.MAPWIDTH + x;
 exports.lightPasses = (map, idx) => {
     return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
@@ -2571,22 +2589,136 @@ const drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR) => {
         map[idx] = type;
     }
 };
+exports.getNeighborScores = (map) => {
+    const relScores = {
+        '-1,-1': 0b0001,
+        '0,-1': 0b0010,
+        '1,-1': 0b0100,
+        '-1,0': 0b1000,
+        '1,0': 0b00010000,
+        '-1,1': 0b00100000,
+        '0,1': 0b01000000,
+        '1,1': 0b10000000,
+    };
+    return map
+        .map((c, idx) => c === CellType.WALL ? 1 : 0)
+        .map((s, idx, scores) => {
+        let total = 0;
+        const [x, y] = [idx % _1.MAPWIDTH, ~~(idx / _1.MAPWIDTH)];
+        const NIdx = exports.xyIdx(x, y - 1);
+        const EIdx = exports.xyIdx(x + 1, y);
+        const SIdx = exports.xyIdx(x, y + 1);
+        const WIdx = exports.xyIdx(x - 1, y);
+        const NWIdx = exports.xyIdx(x - 1, y - 1);
+        const NEIdx = exports.xyIdx(x + 1, y - 1);
+        const SEIdx = exports.xyIdx(x + 1, y + 1);
+        const SWIdx = exports.xyIdx(x - 1, y + 1);
+        const neighbors = {
+            N: !!(NIdx >= 0 && NIdx < map.length && scores[NIdx]),
+            E: !!(EIdx >= 0 && EIdx < map.length && scores[EIdx]),
+            S: !!(SIdx >= 0 && SIdx < map.length && scores[SIdx]),
+            W: !!(WIdx >= 0 && WIdx < map.length && scores[WIdx]),
+            NW: !!(NWIdx >= 0 && NWIdx < map.length && scores[NWIdx]),
+            NE: !!(NEIdx >= 0 && NEIdx < map.length && scores[NEIdx]),
+            SE: !!(SEIdx >= 0 && SEIdx < map.length && scores[SEIdx]),
+            SW: !!(SWIdx >= 0 && SWIdx < map.length && scores[SWIdx])
+        };
+        if (neighbors.N) {
+            total += 2;
+        }
+        if (neighbors.E) {
+            total += 16;
+        }
+        if (neighbors.S) {
+            total += 64;
+        }
+        if (neighbors.W) {
+            total += 8;
+        }
+        if (neighbors.NW && neighbors.W && neighbors.N) {
+            total += 1;
+        }
+        if (neighbors.NE && neighbors.N && neighbors.E) {
+            total += 4;
+        }
+        if (neighbors.SE && neighbors.E && neighbors.S) {
+            total += 128;
+        }
+        if (neighbors.SW && neighbors.S && neighbors.W) {
+            total += 32;
+        }
+        return total;
+    });
+};
+const applyCellularAutomataToArea = (map, x, y, w, h, params = {
+    alive: CA_ALIVE,
+    dead: CA_DEAD,
+    iterations: CA_ITER
+}) => {
+    const initial = (new Array(map.length)).fill(null);
+    for (let _x = x; _x < x + w; _x++) {
+        for (let _y = y; _y < y + h; _y++) {
+            const idx = exports.xyIdx(_x, _y);
+            if (idx > _1.MAPWIDTH * _1.MAPHEIGHT) {
+                continue;
+            }
+            initial[idx] = map[idx];
+        }
+    }
+    const simulateCells = cells => {
+        const out = [...cells];
+        for (let i = 0; i < cells.length; i++) {
+            const cellX = i % _1.MAPWIDTH;
+            const cellY = ~~(i / _1.MAPWIDTH);
+            let count = 0;
+            for (let _x = -1; _x <= 1; _x++) {
+                for (let _y = -1; _y <= 1; _y++) {
+                    if (_x === 0 && _y === 0) {
+                        continue;
+                    }
+                    const nIdx = exports.xyIdx(cellX + _x, cellY + _y);
+                    if (nIdx < 0 || nIdx >= cells.length) {
+                        continue;
+                    }
+                    count += cells[nIdx];
+                }
+            }
+            if (cells[i] === 0) {
+                out[i] = count < params.dead ? 1 : 0;
+            }
+            else if (cells[i] === 1) {
+                out[i] = count > params.alive ? 0 : 1;
+            }
+        }
+        return out;
+    };
+    let cells = initial.slice(0);
+    for (let i = 0; i < params.iterations; i++) {
+        cells = simulateCells(cells);
+    }
+    const out = map.slice(0);
+    for (let i = 0; i < cells.length; i++) {
+        if (cells[i] != null) {
+            out[i] = cells[i];
+        }
+    }
+    return out;
+};
 exports.createMap = (w, h) => {
     const map = (new Array(w * h)).fill(CellType.WALL);
-    for (let y = 1; y < _1.HEIGHT - 1; y++) {
-        for (let x = 1; x < _1.WIDTH - 1; x++) {
+    for (let y = 0; y < _1.MAPHEIGHT; y++) {
+        for (let x = 0; x < _1.MAPWIDTH; x++) {
             map[exports.xyIdx(x, y)] = CellType.WALL;
         }
     }
-    const MIN_SIZE = 6;
-    const MAX_SIZE = 10;
     let rooms = [];
-    const nRooms = ROT.RNG.getUniformInt(4, 10);
-    while (rooms.length < nRooms) {
+    const nRooms = ROT.RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
+    let i = 0;
+    while (rooms.length < nRooms || i++ > 300) {
         const width = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
         const height = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-        const x = ROT.RNG.getUniformInt(1, _1.WIDTH - 1 - MAX_SIZE);
-        const y = ROT.RNG.getUniformInt(1, _1.HEIGHT - 1 - MAX_SIZE);
+        const x = ROT.RNG.getUniformInt(1, _1.MAPWIDTH - 1 - MAX_SIZE);
+        const y = ROT.RNG.getUniformInt(1, _1.MAPHEIGHT - 1 - MAX_SIZE);
         const room = [x, y, width, height];
         if (rooms.length === 0) {
             rooms.push(room);
@@ -2605,6 +2737,17 @@ exports.createMap = (w, h) => {
     }
     rooms.forEach(([x, y, width, height]) => fillSquare(map, x, y, width, height, CellType.FLOOR));
     const centers = rooms.map(getCenter);
+    let finalMap = map.slice(0);
+    for (const center of centers) {
+        const [cx, cy] = center;
+        const hpad = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const vpad = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const x = cx - hpad;
+        const y = cy - vpad;
+        const w = hpad * 2;
+        const h = vpad * 2;
+        finalMap = applyCellularAutomataToArea(finalMap, x, y, w, h);
+    }
     centers.forEach((center, idx) => {
         if (idx === centers.length - 1) {
             return;
@@ -2614,15 +2757,19 @@ exports.createMap = (w, h) => {
         const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
         const turn = ROT.RNG.getItem(turns);
         if (c1[0] === turn[0]) {
-            drawVerticalLine(map, c1[1], turn[1], turn[0]);
-            drawHorizontalLine(map, c2[0], turn[0], turn[1]);
+            drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
+            drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
         }
         else {
-            drawHorizontalLine(map, c1[0], turn[0], turn[1]);
-            drawVerticalLine(map, c2[1], turn[1], turn[0]);
+            drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
+            drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
         }
     });
-    return { map, rooms, centers };
+    drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, 0, CellType.WALL);
+    drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
+    drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
+    drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
+    return { map: finalMap, rooms, centers, scores: exports.getNeighborScores(finalMap) };
 };
 
 
@@ -3052,7 +3199,7 @@ class tile_Tile extends canvas_Canvas {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/color.js
-var lib_color = __webpack_require__(2);
+var lib_color = __webpack_require__(4);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/tile-gl.js
 
@@ -3331,7 +3478,7 @@ function parseColor(color) {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/term.js
-var term = __webpack_require__(10);
+var term = __webpack_require__(20);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/text.js
 /**
@@ -7486,6 +7633,142 @@ const Text = text_namespaceObject;
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
+var baseHas = __webpack_require__(33),
+    hasPath = __webpack_require__(34);
+
+/**
+ * Checks if `path` is a direct property of `object`.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path to check.
+ * @returns {boolean} Returns `true` if `path` exists, else `false`.
+ * @example
+ *
+ * var object = { 'a': { 'b': 2 } };
+ * var other = _.create({ 'a': _.create({ 'b': 2 }) });
+ *
+ * _.has(object, 'a');
+ * // => true
+ *
+ * _.has(object, 'a.b');
+ * // => true
+ *
+ * _.has(object, ['a', 'b']);
+ * // => true
+ *
+ * _.has(other, 'a');
+ * // => false
+ */
+function has(object, path) {
+  return object != null && hasPath(object, path, baseHas);
+}
+
+module.exports = has;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+module.exports = isArray;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getNative = __webpack_require__(23);
+
+/* Built-in method references that are verified to be native. */
+var nativeCreate = getNative(Object, 'create');
+
+module.exports = nativeCreate;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var eq = __webpack_require__(61);
+
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function assocIndexOf(array, key) {
+  var length = array.length;
+  while (length--) {
+    if (eq(array[length][0], key)) {
+      return length;
+    }
+  }
+  return -1;
+}
+
+module.exports = assocIndexOf;
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isKeyable = __webpack_require__(67);
+
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */
+function getMapData(map, key) {
+  var data = map.__data__;
+  return isKeyable(key)
+    ? data[typeof key == 'string' ? 'string' : 'hash']
+    : data.map;
+}
+
+module.exports = getMapData;
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -7501,8 +7784,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
 const map_1 = __webpack_require__(6);
-const _1 = __webpack_require__(4);
-const tileMap_1 = __importDefault(__webpack_require__(18));
+const _1 = __webpack_require__(2);
+const tileMap_1 = __importDefault(__webpack_require__(30));
+const _2 = __webpack_require__(2);
 exports.setupDisplay = (options) => {
     const tileSet = document.createElement("img");
     tileSet.src = "dist/images/VGA8x16.png";
@@ -7521,91 +7805,253 @@ exports.setupDisplay = (options) => {
     return display;
 };
 exports.drawGUI = () => { };
-const getWallGlyph = (scores, idx) => {
-    switch (scores[idx]) {
-        case 0:
-            return '○';
-        case 1:
-        case 2:
-        case 3:
-            return '║';
-        case 5:
-            return '╝';
-        case 6:
-            return '╗';
-        case 7:
-            return '╣';
-        case 9:
-            return '╚';
-        case 10:
-            return '╔';
-        case 11:
-            return '╠';
-        case 4:
-        case 8:
-        case 12:
-            return '═';
-        case 13:
-            return '╩';
-        case 14:
-            return '╦';
-        case 15:
-            return '╬';
-        default:
-            return '#';
-    }
-};
-const getNeighborScores = (map, exploredTiles) => {
-    const relScores = {
-        '0,-1': 0b0001,
-        '-1,0': 0b0100,
-        '1,0': 0b1000,
-        '0,1': 0b0010,
+const getWallGlyph = (score) => {
+    const pillar = '○';
+    const wallN = '▀';
+    const wallW = '▌';
+    const wallE = '▐';
+    const wallS = '▄';
+    const tiles = [
+        ' ', wallN, wallW, '╝', '╝', wallE, '╚', '╚',
+        '═', '╩', '╩', '╩', '═', wallS, '║', '╗',
+        '╣', '╣', '╔', '╠', '╠', '╦', '╬', '╬',
+        '╬', '╦', '╗', '╣', '║', '╦', '╬', '╠',
+        '╬', '╔', '╔', '╠', '║', '╦', '╬', '╬',
+        '╣', '╗', '═', '╩', '╚', '╝', ' ', pillar
+    ];
+    const scoreLookup = {
+        0: 47,
+        2: 1,
+        8: 2,
+        10: 3,
+        11: 4,
+        16: 5,
+        18: 6,
+        22: 7,
+        24: 8,
+        26: 9,
+        27: 10,
+        30: 11,
+        31: 12,
+        64: 13,
+        66: 14,
+        72: 15,
+        74: 16,
+        75: 17,
+        80: 18,
+        82: 19,
+        86: 20,
+        88: 21,
+        90: 22,
+        91: 23,
+        94: 24,
+        95: 25,
+        104: 26,
+        106: 27,
+        107: 28,
+        120: 29,
+        122: 30,
+        123: 31,
+        126: 32,
+        127: 33,
+        208: 34,
+        210: 35,
+        214: 36,
+        216: 37,
+        218: 38,
+        219: 39,
+        222: 40,
+        223: 41,
+        248: 42,
+        250: 43,
+        251: 44,
+        254: 45,
+        255: 46
     };
-    return map
-        .map((c, idx) => c === map_1.CellType.WALL && exploredTiles.has(idx) ? 1 : 0)
-        .map((s, idx, scores) => {
-        const [x, y] = [idx % _1.WIDTH, ~~(idx / _1.WIDTH)];
-        const total = Object.entries(relScores).reduce((acc, [coordString, score]) => {
-            const relCoords = coordString.split(',').map(s => parseInt(s, 10));
-            if (x + relCoords[0] < 0 ||
-                x + relCoords[0] >= _1.WIDTH ||
-                y + relCoords[1] < 0 ||
-                y + relCoords[1] >= _1.HEIGHT) {
-                return acc;
-            }
-            const relIdx = map_1.xyIdx(x + relCoords[0], y + relCoords[1]);
-            return acc | (scores[relIdx] > 0 ? score : 0b0);
-        }, 0);
-        return total;
-    });
+    const idx = scoreLookup[score];
+    if (!idx) {
+        return ' ';
+    }
+    return tiles[idx];
 };
-exports.drawMap = (map, viewshed) => {
-    const mapScores = getNeighborScores(map, viewshed.exploredTiles);
+const mapNoise = new ROT.Noise.Simplex(4);
+exports.drawMap = (map, viewshed, light) => {
+    const mapScores = _2.game.getState().scores;
     for (let idx = 0; idx < map.length; idx++) {
-        if (viewshed &&
-            viewshed.visibleTiles &&
-            viewshed.exploredTiles &&
-            (viewshed.visibleTiles.includes(idx) ||
-                viewshed.exploredTiles.has(idx))) {
-            const x = idx % _1.WIDTH;
-            const y = ~~(idx / _1.WIDTH);
-            const glyph = map[idx] === map_1.CellType.FLOOR ? '·' : getWallGlyph(mapScores, idx);
-            const fg = ROT.Color.interpolate(ROT.Color.fromString('#aaa'), ROT.Color.fromString('#222'), viewshed.visibleTiles.includes(idx) ? 0 : 0.9);
-            _1.display.draw(x, y, glyph, ROT.Color.toHex(fg), '#000');
+        const x = idx % _1.MAPWIDTH;
+        const y = ~~(idx / _1.MAPWIDTH);
+        const X = x + _2.game.cameraOffset[0];
+        const Y = y + _2.game.cameraOffset[1];
+        if (X < 0 || X >= _1.WIDTH || Y < 0 || Y >= _1.HEIGHT) {
+            continue;
+        }
+        if (window.clairvoyance === true ||
+            viewshed &&
+                viewshed.visibleTiles &&
+                viewshed.exploredTiles &&
+                (viewshed.visibleTiles.includes(idx) ||
+                    viewshed.exploredTiles.has(idx))) {
+            const ambientLight = [50, 50, 50];
+            const noise = mapNoise.get(x / 20, y / 20);
+            const noiseVal = (1 + noise / 2);
+            const fgWithNoise = ROT.Color.interpolate([255, 255, 255], [
+                130 + (noise > 0 ? 20 : 5) * noise,
+                130 + (noise > 0 ? 20 : 5) * noise,
+                130 + (noise < 0 ? 20 : 5) * noise
+            ], noiseVal);
+            let lightVal = ambientLight;
+            if (`${idx}` in light.tiles) {
+                lightVal = ROT.Color.add(lightVal, light.tiles[`${idx}`]);
+            }
+            const fgWithLight = ROT.Color.multiply(fgWithNoise, lightVal);
+            const glyph = map[idx] === map_1.CellType.FLOOR ? '·' : getWallGlyph(mapScores[idx]);
+            const LIGHT_AMT = 1;
+            const fg = ROT.Color.interpolate(fgWithLight, ROT.Color.fromString('#000'), viewshed.visibleTiles.includes(idx) ? 0 : 1 - LIGHT_AMT);
+            _1.display.draw(X, Y, glyph, ROT.Color.toHex(fg), '#000');
         }
     }
 };
 
 
 /***/ }),
-/* 10 */
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseGetTag = __webpack_require__(16),
+    isObjectLike = __webpack_require__(19);
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag(value) == symbolTag);
+}
+
+module.exports = isSymbol;
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Symbol = __webpack_require__(17),
+    getRawTag = __webpack_require__(39),
+    objectToString = __webpack_require__(40);
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag && symToStringTag in Object(value))
+    ? getRawTag(value)
+    : objectToString(value);
+}
+
+module.exports = baseGetTag;
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var root = __webpack_require__(18);
+
+/** Built-in value references. */
+var Symbol = root.Symbol;
+
+module.exports = Symbol;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var freeGlobal = __webpack_require__(37);
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+module.exports = root;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+module.exports = isObjectLike;
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Term; });
 /* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
-/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
 
 
 function clearToAnsi(bg) {
@@ -7694,10 +8140,10 @@ class Term extends _backend_js__WEBPACK_IMPORTED_MODULE_0__[/* default */ "a"] {
     computeSize() { return [process.stdout.columns, process.stdout.rows]; }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(25)))
 
 /***/ }),
-/* 11 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7706,9 +8152,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const immer_1 = __importDefault(__webpack_require__(17));
-const display_1 = __webpack_require__(9);
-const systems_1 = __webpack_require__(12);
+const immer_1 = __importDefault(__webpack_require__(29));
+const display_1 = __webpack_require__(14);
+const systems_1 = __webpack_require__(22);
 const ENABLE_LOGGING = false;
 var RunState;
 (function (RunState) {
@@ -7735,6 +8181,9 @@ class GameState {
             this.setState(state => { state.runState = nextRunState; });
             requestAnimationFrame(this.tick);
         };
+        this.render = (delta = 0, time = this.lastTime) => {
+            this.ecs.getSystem(systems_1.RenderingSystem).execute(delta, time);
+        };
         this.tick = () => {
             const time = performance.now();
             const delta = time - this.lastTime;
@@ -7742,7 +8191,7 @@ class GameState {
             const runState = this.getState(state => state.runState);
             if (runState !== RunState.MAINMENU) {
                 this.display.clear();
-                this.ecs.getSystem(systems_1.RenderingSystem).execute(delta, time);
+                this.render(delta, time);
                 display_1.drawGUI();
             }
             if (runState === RunState.PRERUN) {
@@ -7795,7 +8244,7 @@ exports.default = GameState;
 
 
 /***/ }),
-/* 12 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7804,16 +8253,76 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const rendering_1 = __importDefault(__webpack_require__(19));
+const rendering_1 = __importDefault(__webpack_require__(31));
 exports.RenderingSystem = rendering_1.default;
-const visibility_1 = __importDefault(__webpack_require__(24));
+const visibility_1 = __importDefault(__webpack_require__(83));
 exports.VisibilitySystem = visibility_1.default;
-const ai_1 = __importDefault(__webpack_require__(25));
+const ai_1 = __importDefault(__webpack_require__(84));
 exports.AISystem = ai_1.default;
 
 
 /***/ }),
-/* 13 */
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseIsNative = __webpack_require__(48),
+    getValue = __webpack_require__(53);
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = getValue(object, key);
+  return baseIsNative(value) ? value : undefined;
+}
+
+module.exports = getNative;
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports) {
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+module.exports = isObject;
+
+
+/***/ }),
+/* 25 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -8003,7 +8512,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 14 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8012,10 +8521,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const keymage_1 = __importDefault(__webpack_require__(15));
-const state_1 = __webpack_require__(11);
+const keymage_1 = __importDefault(__webpack_require__(27));
+const state_1 = __webpack_require__(21);
 const components_1 = __webpack_require__(5);
 const map_1 = __webpack_require__(6);
+const _1 = __webpack_require__(2);
 const tryMove = (dir) => (game) => () => {
     const { map, runState } = game.getState(state => ({ runState: state.runState, map: state.map }));
     const player = game.player;
@@ -8033,12 +8543,20 @@ const tryMove = (dir) => (game) => () => {
     const { x, y } = position;
     const destinationIdx = map_1.xyIdx(x + dx, y + dy);
     if (map_1.isPassable(map, destinationIdx)) {
+        game.cameraOffset[0] -= dx;
+        game.cameraOffset[1] -= dy;
         position.x += dx;
         position.y += dy;
         const viewshed = player.getMutableComponent(components_1.Viewshed);
         viewshed.dirty = true;
+        const light = player.getMutableComponent(components_1.Light);
+        light.dirty = true;
     }
     game.setState(state => { state.runState = state_1.RunState.PLAYERTURN; });
+};
+const idclip = () => {
+    window.clairvoyance = !(window.clairvoyance);
+    _1.game.render();
 };
 const setupKeys = (game) => {
     keymage_1.default('k', tryMove('N')(game));
@@ -8049,12 +8567,13 @@ const setupKeys = (game) => {
     keymage_1.default('down', tryMove('S')(game));
     keymage_1.default('h', tryMove('W')(game));
     keymage_1.default('left', tryMove('W')(game));
+    keymage_1.default('i d c l i p', idclip);
 };
 exports.default = setupKeys;
 
 
 /***/ }),
-/* 15 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings handling
@@ -8401,11 +8920,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings 
     return keymage;
 }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-})(__webpack_require__(16));
+})(__webpack_require__(28));
 
 
 /***/ }),
-/* 16 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = function() {
@@ -8414,7 +8933,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 17 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8443,7 +8962,7 @@ function n(n){for(var t=arguments.length,r=Array(t>1?t-1:0),e=1;e<t;e++)r[e-1]=a
 
 
 /***/ }),
-/* 18 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8710,7 +9229,7 @@ exports.default = tileMap;
 
 
 /***/ }),
-/* 19 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8718,20 +9237,21 @@ exports.default = tileMap;
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(3);
 const components_1 = __webpack_require__(5);
-const __1 = __webpack_require__(4);
-const display_1 = __webpack_require__(9);
+const __1 = __webpack_require__(2);
+const display_1 = __webpack_require__(14);
 const map_1 = __webpack_require__(6);
-const __2 = __webpack_require__(4);
+const __2 = __webpack_require__(2);
 class RenderingSystem extends ecsy_1.System {
     execute(delta, time) {
         const player = __2.game.player;
-        const viewshed = player.getMutableComponent(components_1.Viewshed);
-        display_1.drawMap(__2.game.getState().map, viewshed);
+        const viewshed = player.getComponent(components_1.Viewshed);
+        const light = player.getComponent(components_1.Light);
+        display_1.drawMap(__2.game.getState().map, viewshed, light);
         this.queries.renderables.results.forEach(entity => {
             const position = entity.getComponent(components_1.Position);
             const renderable = entity.getComponent(components_1.Renderable);
             if (viewshed.visibleTiles && viewshed.visibleTiles.includes(map_1.xyIdx(position.x, position.y))) {
-                __1.display.draw(position.x, position.y, renderable.glyph, renderable.fg, renderable.bg);
+                __1.display.draw(position.x + __2.game.cameraOffset[0], position.y + __2.game.cameraOffset[1], renderable.glyph, renderable.fg, renderable.bg);
             }
         });
     }
@@ -8743,13 +9263,17 @@ exports.default = RenderingSystem;
 
 
 /***/ }),
-/* 20 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(3);
+const has_1 = __importDefault(__webpack_require__(9));
 class Renderable extends ecsy_1.Component {
     constructor() {
         super();
@@ -8763,22 +9287,1471 @@ class Renderable extends ecsy_1.Component {
         this.bg = null;
     }
     copy(src) {
-        this.glyph = src.glyph;
-        this.fg = src.fg;
-        this.bg = src.bg;
+        const fields = [
+            'glyph',
+            'fg',
+            'bg',
+        ];
+        fields.forEach(field => {
+            if (has_1.default(src, field)) {
+                this[field] = src[field];
+            }
+        });
     }
 }
 exports.default = Renderable;
 
 
 /***/ }),
-/* 21 */
+/* 33 */
+/***/ (function(module, exports) {
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * The base implementation of `_.has` without support for deep paths.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {Array|string} key The key to check.
+ * @returns {boolean} Returns `true` if `key` exists, else `false`.
+ */
+function baseHas(object, key) {
+  return object != null && hasOwnProperty.call(object, key);
+}
+
+module.exports = baseHas;
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var castPath = __webpack_require__(35),
+    isArguments = __webpack_require__(74),
+    isArray = __webpack_require__(10),
+    isIndex = __webpack_require__(76),
+    isLength = __webpack_require__(77),
+    toKey = __webpack_require__(78);
+
+/**
+ * Checks if `path` exists on `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array|string} path The path to check.
+ * @param {Function} hasFunc The function to check properties.
+ * @returns {boolean} Returns `true` if `path` exists, else `false`.
+ */
+function hasPath(object, path, hasFunc) {
+  path = castPath(path, object);
+
+  var index = -1,
+      length = path.length,
+      result = false;
+
+  while (++index < length) {
+    var key = toKey(path[index]);
+    if (!(result = object != null && hasFunc(object, key))) {
+      break;
+    }
+    object = object[key];
+  }
+  if (result || ++index != length) {
+    return result;
+  }
+  length = object == null ? 0 : object.length;
+  return !!length && isLength(length) && isIndex(key, length) &&
+    (isArray(object) || isArguments(object));
+}
+
+module.exports = hasPath;
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isArray = __webpack_require__(10),
+    isKey = __webpack_require__(36),
+    stringToPath = __webpack_require__(41),
+    toString = __webpack_require__(71);
+
+/**
+ * Casts `value` to a path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {Array} Returns the cast property path array.
+ */
+function castPath(value, object) {
+  if (isArray(value)) {
+    return value;
+  }
+  return isKey(value, object) ? [value] : stringToPath(toString(value));
+}
+
+module.exports = castPath;
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isArray = __webpack_require__(10),
+    isSymbol = __webpack_require__(15);
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  if (isArray(value)) {
+    return false;
+  }
+  var type = typeof value;
+  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+      value == null || isSymbol(value)) {
+    return true;
+  }
+  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+    (object != null && value in Object(object));
+}
+
+module.exports = isKey;
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+module.exports = freeGlobal;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(38)))
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Symbol = __webpack_require__(17);
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/** Built-in value references. */
+var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
+  }
+  return result;
+}
+
+module.exports = getRawTag;
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports) {
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString.call(value);
+}
+
+module.exports = objectToString;
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var memoizeCapped = __webpack_require__(42);
+
+/** Used to match property names within property paths. */
+var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `string` to a property path array.
+ *
+ * @private
+ * @param {string} string The string to convert.
+ * @returns {Array} Returns the property path array.
+ */
+var stringToPath = memoizeCapped(function(string) {
+  var result = [];
+  if (string.charCodeAt(0) === 46 /* . */) {
+    result.push('');
+  }
+  string.replace(rePropName, function(match, number, quote, subString) {
+    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+});
+
+module.exports = stringToPath;
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var memoize = __webpack_require__(43);
+
+/** Used as the maximum memoize cache size. */
+var MAX_MEMOIZE_SIZE = 500;
+
+/**
+ * A specialized version of `_.memoize` which clears the memoized function's
+ * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+ *
+ * @private
+ * @param {Function} func The function to have its output memoized.
+ * @returns {Function} Returns the new memoized function.
+ */
+function memoizeCapped(func) {
+  var result = memoize(func, function(key) {
+    if (cache.size === MAX_MEMOIZE_SIZE) {
+      cache.clear();
+    }
+    return key;
+  });
+
+  var cache = result.cache;
+  return result;
+}
+
+module.exports = memoizeCapped;
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var MapCache = __webpack_require__(44);
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */
+function memoize(func, resolver) {
+  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  var memoized = function() {
+    var args = arguments,
+        key = resolver ? resolver.apply(this, args) : args[0],
+        cache = memoized.cache;
+
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    var result = func.apply(this, args);
+    memoized.cache = cache.set(key, result) || cache;
+    return result;
+  };
+  memoized.cache = new (memoize.Cache || MapCache);
+  return memoized;
+}
+
+// Expose `MapCache`.
+memoize.Cache = MapCache;
+
+module.exports = memoize;
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var mapCacheClear = __webpack_require__(45),
+    mapCacheDelete = __webpack_require__(66),
+    mapCacheGet = __webpack_require__(68),
+    mapCacheHas = __webpack_require__(69),
+    mapCacheSet = __webpack_require__(70);
+
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function MapCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype['delete'] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+
+module.exports = MapCache;
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Hash = __webpack_require__(46),
+    ListCache = __webpack_require__(58),
+    Map = __webpack_require__(65);
+
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */
+function mapCacheClear() {
+  this.size = 0;
+  this.__data__ = {
+    'hash': new Hash,
+    'map': new (Map || ListCache),
+    'string': new Hash
+  };
+}
+
+module.exports = mapCacheClear;
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var hashClear = __webpack_require__(47),
+    hashDelete = __webpack_require__(54),
+    hashGet = __webpack_require__(55),
+    hashHas = __webpack_require__(56),
+    hashSet = __webpack_require__(57);
+
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function Hash(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype['delete'] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+
+module.exports = Hash;
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var nativeCreate = __webpack_require__(11);
+
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */
+function hashClear() {
+  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+  this.size = 0;
+}
+
+module.exports = hashClear;
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isFunction = __webpack_require__(49),
+    isMasked = __webpack_require__(50),
+    isObject = __webpack_require__(24),
+    toSource = __webpack_require__(52);
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+/** Used to detect host constructors (Safari). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype,
+    objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */
+function baseIsNative(value) {
+  if (!isObject(value) || isMasked(value)) {
+    return false;
+  }
+  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+  return pattern.test(toSource(value));
+}
+
+module.exports = baseIsNative;
+
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseGetTag = __webpack_require__(16),
+    isObject = __webpack_require__(24);
+
+/** `Object#toString` result references. */
+var asyncTag = '[object AsyncFunction]',
+    funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    proxyTag = '[object Proxy]';
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  if (!isObject(value)) {
+    return false;
+  }
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  var tag = baseGetTag(value);
+  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+
+module.exports = isFunction;
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var coreJsData = __webpack_require__(51);
+
+/** Used to detect methods masquerading as native. */
+var maskSrcKey = (function() {
+  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+  return uid ? ('Symbol(src)_1.' + uid) : '';
+}());
+
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */
+function isMasked(func) {
+  return !!maskSrcKey && (maskSrcKey in func);
+}
+
+module.exports = isMasked;
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var root = __webpack_require__(18);
+
+/** Used to detect overreaching core-js shims. */
+var coreJsData = root['__core-js_shared__'];
+
+module.exports = coreJsData;
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports) {
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */
+function toSource(func) {
+  if (func != null) {
+    try {
+      return funcToString.call(func);
+    } catch (e) {}
+    try {
+      return (func + '');
+    } catch (e) {}
+  }
+  return '';
+}
+
+module.exports = toSource;
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports) {
+
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */
+function getValue(object, key) {
+  return object == null ? undefined : object[key];
+}
+
+module.exports = getValue;
+
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports) {
+
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function hashDelete(key) {
+  var result = this.has(key) && delete this.__data__[key];
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+module.exports = hashDelete;
+
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var nativeCreate = __webpack_require__(11);
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function hashGet(key) {
+  var data = this.__data__;
+  if (nativeCreate) {
+    var result = data[key];
+    return result === HASH_UNDEFINED ? undefined : result;
+  }
+  return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+
+module.exports = hashGet;
+
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var nativeCreate = __webpack_require__(11);
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function hashHas(key) {
+  var data = this.__data__;
+  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+}
+
+module.exports = hashHas;
+
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var nativeCreate = __webpack_require__(11);
+
+/** Used to stand-in for `undefined` hash values. */
+var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */
+function hashSet(key, value) {
+  var data = this.__data__;
+  this.size += this.has(key) ? 0 : 1;
+  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+  return this;
+}
+
+module.exports = hashSet;
+
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var listCacheClear = __webpack_require__(59),
+    listCacheDelete = __webpack_require__(60),
+    listCacheGet = __webpack_require__(62),
+    listCacheHas = __webpack_require__(63),
+    listCacheSet = __webpack_require__(64);
+
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */
+function ListCache(entries) {
+  var index = -1,
+      length = entries == null ? 0 : entries.length;
+
+  this.clear();
+  while (++index < length) {
+    var entry = entries[index];
+    this.set(entry[0], entry[1]);
+  }
+}
+
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype['delete'] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+
+module.exports = ListCache;
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports) {
+
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */
+function listCacheClear() {
+  this.__data__ = [];
+  this.size = 0;
+}
+
+module.exports = listCacheClear;
+
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var assocIndexOf = __webpack_require__(12);
+
+/** Used for built-in method references. */
+var arrayProto = Array.prototype;
+
+/** Built-in value references. */
+var splice = arrayProto.splice;
+
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function listCacheDelete(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    return false;
+  }
+  var lastIndex = data.length - 1;
+  if (index == lastIndex) {
+    data.pop();
+  } else {
+    splice.call(data, index, 1);
+  }
+  --this.size;
+  return true;
+}
+
+module.exports = listCacheDelete;
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports) {
+
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */
+function eq(value, other) {
+  return value === other || (value !== value && other !== other);
+}
+
+module.exports = eq;
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var assocIndexOf = __webpack_require__(12);
+
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function listCacheGet(key) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  return index < 0 ? undefined : data[index][1];
+}
+
+module.exports = listCacheGet;
+
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var assocIndexOf = __webpack_require__(12);
+
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function listCacheHas(key) {
+  return assocIndexOf(this.__data__, key) > -1;
+}
+
+module.exports = listCacheHas;
+
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var assocIndexOf = __webpack_require__(12);
+
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */
+function listCacheSet(key, value) {
+  var data = this.__data__,
+      index = assocIndexOf(data, key);
+
+  if (index < 0) {
+    ++this.size;
+    data.push([key, value]);
+  } else {
+    data[index][1] = value;
+  }
+  return this;
+}
+
+module.exports = listCacheSet;
+
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getNative = __webpack_require__(23),
+    root = __webpack_require__(18);
+
+/* Built-in method references that are verified to be native. */
+var Map = getNative(root, 'Map');
+
+module.exports = Map;
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getMapData = __webpack_require__(13);
+
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */
+function mapCacheDelete(key) {
+  var result = getMapData(this, key)['delete'](key);
+  this.size -= result ? 1 : 0;
+  return result;
+}
+
+module.exports = mapCacheDelete;
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports) {
+
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */
+function isKeyable(value) {
+  var type = typeof value;
+  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+    ? (value !== '__proto__')
+    : (value === null);
+}
+
+module.exports = isKeyable;
+
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getMapData = __webpack_require__(13);
+
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */
+function mapCacheGet(key) {
+  return getMapData(this, key).get(key);
+}
+
+module.exports = mapCacheGet;
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getMapData = __webpack_require__(13);
+
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */
+function mapCacheHas(key) {
+  return getMapData(this, key).has(key);
+}
+
+module.exports = mapCacheHas;
+
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getMapData = __webpack_require__(13);
+
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */
+function mapCacheSet(key, value) {
+  var data = getMapData(this, key),
+      size = data.size;
+
+  data.set(key, value);
+  this.size += data.size == size ? 0 : 1;
+  return this;
+}
+
+module.exports = mapCacheSet;
+
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseToString = __webpack_require__(72);
+
+/**
+ * Converts `value` to a string. An empty string is returned for `null`
+ * and `undefined` values. The sign of `-0` is preserved.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ * @example
+ *
+ * _.toString(null);
+ * // => ''
+ *
+ * _.toString(-0);
+ * // => '-0'
+ *
+ * _.toString([1, 2, 3]);
+ * // => '1,2,3'
+ */
+function toString(value) {
+  return value == null ? '' : baseToString(value);
+}
+
+module.exports = toString;
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Symbol = __webpack_require__(17),
+    arrayMap = __webpack_require__(73),
+    isArray = __webpack_require__(10),
+    isSymbol = __webpack_require__(15);
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/** Used to convert symbols to primitives and strings. */
+var symbolProto = Symbol ? Symbol.prototype : undefined,
+    symbolToString = symbolProto ? symbolProto.toString : undefined;
+
+/**
+ * The base implementation of `_.toString` which doesn't convert nullish
+ * values to empty strings.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  // Exit early for strings to avoid a performance hit in some environments.
+  if (typeof value == 'string') {
+    return value;
+  }
+  if (isArray(value)) {
+    // Recursively convert values (susceptible to call stack limits).
+    return arrayMap(value, baseToString) + '';
+  }
+  if (isSymbol(value)) {
+    return symbolToString ? symbolToString.call(value) : '';
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+module.exports = baseToString;
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports) {
+
+/**
+ * A specialized version of `_.map` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array == null ? 0 : array.length,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+module.exports = arrayMap;
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseIsArguments = __webpack_require__(75),
+    isObjectLike = __webpack_require__(19);
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Built-in value references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Checks if `value` is likely an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ *  else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+  return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
+    !propertyIsEnumerable.call(value, 'callee');
+};
+
+module.exports = isArguments;
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseGetTag = __webpack_require__(16),
+    isObjectLike = __webpack_require__(19);
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]';
+
+/**
+ * The base implementation of `_.isArguments`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ */
+function baseIsArguments(value) {
+  return isObjectLike(value) && baseGetTag(value) == argsTag;
+}
+
+module.exports = baseIsArguments;
+
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports) {
+
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  var type = typeof value;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+
+  return !!length &&
+    (type == 'number' ||
+      (type != 'symbol' && reIsUint.test(value))) &&
+        (value > -1 && value % 1 == 0 && value < length);
+}
+
+module.exports = isIndex;
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports) {
+
+/** Used as references for various `Number` constants. */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This method is loosely based on
+ * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ * @example
+ *
+ * _.isLength(3);
+ * // => true
+ *
+ * _.isLength(Number.MIN_VALUE);
+ * // => false
+ *
+ * _.isLength(Infinity);
+ * // => false
+ *
+ * _.isLength('3');
+ * // => false
+ */
+function isLength(value) {
+  return typeof value == 'number' &&
+    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+module.exports = isLength;
+
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isSymbol = __webpack_require__(15);
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0;
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+module.exports = toKey;
+
+
+/***/ }),
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(3);
+const has_1 = __importDefault(__webpack_require__(9));
 class Position extends ecsy_1.Component {
     constructor() {
         super();
@@ -8790,21 +10763,32 @@ class Position extends ecsy_1.Component {
         this.y = 0;
     }
     copy(src) {
-        this.x = src.x;
-        this.y = src.y;
+        const fields = [
+            'x',
+            'y',
+        ];
+        fields.forEach(field => {
+            if (has_1.default(src, field)) {
+                this[field] = src[field];
+            }
+        });
     }
 }
 exports.default = Position;
 
 
 /***/ }),
-/* 22 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(3);
+const has_1 = __importDefault(__webpack_require__(9));
 class Viewshed extends ecsy_1.Component {
     constructor() {
         super();
@@ -8820,17 +10804,24 @@ class Viewshed extends ecsy_1.Component {
         this.dirty = true;
     }
     copy(src) {
-        this.visibleTiles = src.visibleTiles;
-        this.exploredTiles = src.exploredTiles;
-        this.range = src.range;
-        this.dirty = src.dirty;
+        const fields = [
+            'visibleTiles',
+            'exploredTiles',
+            'range',
+            'dirty'
+        ];
+        fields.forEach(field => {
+            if (has_1.default(src, field)) {
+                this[field] = src[field];
+            }
+        });
     }
 }
 exports.default = Viewshed;
 
 
 /***/ }),
-/* 23 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8843,7 +10834,50 @@ exports.default = Monster;
 
 
 /***/ }),
-/* 24 */
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecsy_1 = __webpack_require__(3);
+const has_1 = __importDefault(__webpack_require__(9));
+class Light extends ecsy_1.Component {
+    constructor() {
+        super();
+        this.range = 6;
+        this.color = [150, 150, 120];
+        this.tiles = {};
+        this.dirty = true;
+    }
+    reset() {
+        this.range = 6;
+        this.color = [150, 150, 120];
+        this.tiles = {};
+        this.dirty = true;
+    }
+    copy(src) {
+        const fields = [
+            'range',
+            'color',
+            'tiles',
+            'dirty'
+        ];
+        fields.forEach(field => {
+            if (has_1.default(src, field)) {
+                this[field] = src[field];
+            }
+        });
+    }
+}
+exports.default = Light;
+
+
+/***/ }),
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8859,13 +10893,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(8));
 const ecsy_1 = __webpack_require__(3);
 const components_1 = __webpack_require__(5);
-const __1 = __webpack_require__(4);
+const __1 = __webpack_require__(2);
 const map_1 = __webpack_require__(6);
-const FOV = new ROT.FOV.DiscreteShadowcasting((x, y) => {
+const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
     const map = __1.game.getState().map;
     const idx = map_1.xyIdx(x, y);
     return map_1.lightPasses(map, idx);
+}, {
+    topology: 4
 });
+const getLighting = (range, color, x, y) => {
+    const lighting = new ROT.Lighting((x, y) => {
+        const map = __1.game.getState().map;
+        const idx = map_1.xyIdx(x, y);
+        return map_1.lightPasses(map, idx) ? 0.3 : 0;
+    }, { range, passes: 2 });
+    lighting.setFOV(FOV);
+    lighting.setLight(x, y, color);
+    return lighting;
+};
 class VisibilitySystem extends ecsy_1.System {
     execute(delta, time) {
         this.queries.visibles.results.forEach(entity => {
@@ -8879,6 +10925,20 @@ class VisibilitySystem extends ecsy_1.System {
                 });
                 viewshed.dirty = false;
                 viewshed.visibleTiles = visibleTiles;
+                if (entity.id === __1.game.player.id) {
+                }
+            }
+            if (entity.hasComponent(components_1.Light)) {
+                const light = entity.getMutableComponent(components_1.Light);
+                if (light.dirty) {
+                    const lighting = getLighting(light.range, light.color, x, y);
+                    const tiles = {};
+                    lighting.compute((x, y, color) => {
+                        tiles[`${map_1.xyIdx(x, y)}`] = color;
+                    });
+                    light.tiles = tiles;
+                    light.dirty = false;
+                }
             }
         });
     }
@@ -8890,25 +10950,44 @@ exports.default = VisibilitySystem;
 
 
 /***/ }),
-/* 25 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const ROT = __importStar(__webpack_require__(8));
 const ecsy_1 = __webpack_require__(3);
 const components_1 = __webpack_require__(5);
 const map_1 = __webpack_require__(6);
-const __1 = __webpack_require__(4);
+const __1 = __webpack_require__(2);
 class AISystem extends ecsy_1.System {
+    init() {
+    }
     execute(delta, time) {
         const player = __1.game.player;
+        const map = __1.game.getState().map;
         const playerPos = player.getComponent(components_1.Position);
         const playerIdx = map_1.xyIdx(playerPos.x, playerPos.y);
+        const astar = new ROT.Path.AStar(playerPos.x, playerPos.y, (x, y) => map_1.isPassable(map, map_1.xyIdx(x, y)), { topology: 4 });
         this.queries.monsters.results.forEach(mob => {
-            const viewshed = mob.getComponent(components_1.Viewshed);
+            const viewshed = mob.getMutableComponent(components_1.Viewshed);
             if (viewshed.visibleTiles.includes(playerIdx)) {
-                console.log(mob['name'], 'exclaims!');
+                const position = mob.getMutableComponent(components_1.Position);
+                const path = [];
+                astar.compute(position.x, position.y, (x, y) => path.push([x, y]));
+                if (path[1] && !(path[1][0] === playerPos.x && path[1][1] === playerPos.y)) {
+                    position.x = path[1][0];
+                    position.y = path[1][1];
+                    viewshed.dirty = true;
+                }
             }
         });
     }
@@ -8920,7 +10999,7 @@ exports.default = AISystem;
 
 
 /***/ }),
-/* 26 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8929,14 +11008,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const player_1 = __importDefault(__webpack_require__(27));
+const player_1 = __importDefault(__webpack_require__(86));
 exports.createPlayer = player_1.default;
-const mobs_1 = __webpack_require__(28);
+const mobs_1 = __webpack_require__(87);
 exports.createOrc = mobs_1.createOrc;
 
 
 /***/ }),
-/* 27 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8946,16 +11025,17 @@ const components_1 = __webpack_require__(5);
 const createPlayer = (ecs, x, y) => {
     const player = ecs
         .createEntity('player')
-        .addComponent(components_1.Viewshed)
+        .addComponent(components_1.Viewshed, { range: 12 })
         .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0' })
-        .addComponent(components_1.Position, { x, y });
+        .addComponent(components_1.Position, { x, y })
+        .addComponent(components_1.Light, { range: 12, color: [155, 155, 105] });
     return player;
 };
 exports.default = createPlayer;
 
 
 /***/ }),
-/* 28 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8974,7 +11054,7 @@ exports.createOrc = (ecs, x, y) => {
 
 
 /***/ }),
-/* 29 */
+/* 88 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8982,7 +11062,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
-/* 30 */
+/* 89 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8990,7 +11070,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
 
 /***/ }),
-/* 31 */
+/* 90 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8998,7 +11078,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
 
 /***/ }),
-/* 32 */
+/* 91 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9006,7 +11086,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
 
 /***/ }),
-/* 33 */
+/* 92 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

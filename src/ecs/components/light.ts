@@ -1,32 +1,34 @@
 import { Component } from 'ecsy';
 import has from 'lodash/has';
 
-class Viewshed extends Component {
-  visibleTiles: number[];
+class Light extends Component {
   range: number;
+  color: [number, number, number];
+  tiles: {
+    [idx: string]: [number, number, number];
+  };
   dirty: boolean;
-  exploredTiles: Set<number>;
 
   constructor() {
     super();
-    this.visibleTiles = [];
-    this.exploredTiles = new Set();
     this.range = 6;
+    this.color = [150, 150, 120];
+    this.tiles = {};
     this.dirty = true;
   }
 
-  reset() {
-    this.visibleTiles = [];
-    this.exploredTiles = new Set();
+  reset(): void {
     this.range = 6;
+    this.color = [150, 150, 120];
+    this.tiles = {};
     this.dirty = true;
   }
 
-  copy(src) {
+  copy(src): void {
     const fields = [
-      'visibleTiles',
-      'exploredTiles',
       'range',
+      'color',
+      'tiles',
       'dirty'
     ];
     fields.forEach(field => {
@@ -37,4 +39,4 @@ class Viewshed extends Component {
   }
 }
 
-export default Viewshed;
+export default Light;

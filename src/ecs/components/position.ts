@@ -1,4 +1,5 @@
 import { Component } from 'ecsy';
+import has from 'lodash/has';
 
 class Position extends Component {
   x: number;
@@ -17,8 +18,15 @@ class Position extends Component {
   }
 
   copy(src): void {
-    this.x = src.x;
-    this.y = src.y;
+    const fields = [
+      'x',
+      'y',
+    ];
+    fields.forEach(field => {
+      if (has(src, field)) {
+        this[field] = src[field];
+      }
+    });
   }
 }
 

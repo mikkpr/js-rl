@@ -1,4 +1,5 @@
 import { Component } from 'ecsy';
+import has from 'lodash/has';
 
 class Renderable extends Component {
   glyph: string;
@@ -18,10 +19,17 @@ class Renderable extends Component {
     this.bg = null;
   }
 
-  copy(src) {
-    this.glyph = src.glyph;
-    this.fg = src.fg;
-    this.bg = src.bg;
+  copy(src): void {
+    const fields = [
+      'glyph',
+      'fg',
+      'bg',
+    ];
+    fields.forEach(field => {
+      if (has(src, field)) {
+        this[field] = src[field];
+      }
+    });
   }
 }
 

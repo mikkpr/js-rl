@@ -30,7 +30,6 @@ class AISystem extends System {
         const position = mob.getMutableComponent(Position);
         const path = [];
         astar.compute(position.x, position.y, (x, y) => path.push([x, y]));
-        console.log(position, playerPos, path)
         if (path[1] && !(path[1][0] === playerPos.x && path[1][1] === playerPos.y)) {
           position.x = path[1][0];
           position.y = path[1][1];
