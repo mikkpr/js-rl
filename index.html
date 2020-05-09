@@ -4,46 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>JS RL</title>
-
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: monospace;
-        font-weight: 400;
-        font-size: 16px;
-        background: black;
-        color: white;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      .main {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-      .main .loading {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-      .main + img {
-        opacity: 0.01;
-      }
-      canvas {
-        outline: 1px solid rgba(255, 255, 255, 0.15);
-	    image-rendering: -webkit-optimize-contrast; /* historic fallback */
-        image-rendering: crisp-edges; /* standard property */
-      }
-    </style>
+    <link rel="stylesheet" href="dist/styles/main.css">
   </head>
   <body>
-    <section class="main"><div class="loading">Loading...</div></section>
+    <section class="main scanlines"><div class="loading">Loading...</div></section>
     <script type="text/javascript" src="dist/bundle.js"></script>
   </body>
 </html>

@@ -4,6 +4,7 @@ import { CellType, Map, xyIdx } from './map';
 import { display, WIDTH, HEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
 import tileMap from './utils/tileMap';
 import { Light, Viewshed } from './ecs/components';
+import { RenderingSystem } from './ecs/systems';
 import { game } from '.';
 
 export const setupDisplay = (options: { width: number; height: number }): ROT.Display => {
@@ -100,7 +101,27 @@ const getWallGlyph = (score) => {
 
 const mapNoise = new ROT.Noise.Simplex(4);
 
-export const drawMap = (map: Map, viewshed: Viewshed, light: Light) => {
+export const addLight = (lights: Light[], idx: number, fg: Color, ambientLight = [80, 80, 80]) => {
+  let lightVal: Color = ambientLight.slice() as Color;
+  for (const light of lights) {
+    if (light.tiles && `${idx}` in light.tiles) {
+      lightVal = ROT.Color.add(lightVal, light.tiles[`${idx}`] as Color);
+    }
+  }
+  const fgWithLights = ROT.Color.multiply(fg, lightVal as Color);
+
+  return fgWithLights;
+};
+
+const addStaticLight = (light: Color, idx: number, fg: Color): Color => {
+  const fgWithLights = ROT.Color.multiply(fg, light as Color);
+  return fgWithLights;
+};
+
+export const drawMap = (map: Map): void => {
+  const player = game.player;
+  const viewshed = player.getComponent(Viewshed);
+  const light = player.getComponent(Light);
   const mapScores = game.getState().scores;
   for (let idx = 0; idx < map.length; idx++) {
     const x = idx % MAPWIDTH;
@@ -118,7 +139,6 @@ export const drawMap = (map: Map, viewshed: Viewshed, light: Light) => {
       (viewshed.visibleTiles.includes(idx) ||
         viewshed.exploredTiles.has(idx))
     ) {
-      const ambientLight: [number, number, number]= [50, 50, 50];
       const noise = mapNoise.get(x / 20, y / 20);
       const noiseVal = (1 + noise / 2);
       const fgWithNoise = ROT.Color.interpolate(
@@ -129,18 +149,15 @@ export const drawMap = (map: Map, viewshed: Viewshed, light: Light) => {
           130 + (noise < 0 ? 20 : 5) * noise],
         noiseVal
       );
-      let lightVal = ambientLight;
-      if (`${idx}` in light.tiles) {
-        lightVal = ROT.Color.add(lightVal, light.tiles[`${idx}`] as [number, number, number]);
-      }
-      const fgWithLight = ROT.Color.multiply(fgWithNoise, lightVal as [number, number, number]);
       const glyph = map[idx] === CellType.FLOOR ? '·' : getWallGlyph(mapScores[idx]);
-      const LIGHT_AMT = 1;
-      const fg = ROT.Color.interpolate(
-        (fgWithLight as [number, number, number]),
-        (ROT.Color.fromString('#000') as [number, number, number]),
-        viewshed.visibleTiles.includes(idx) ? 0 : 1 - LIGHT_AMT
-      );
+      const lights = game.ecs.getSystem(RenderingSystem).queries.lights.results.map(r => r.getComponent(Light));
+      const fgWithLight = addLight(lights, idx, fgWithNoise);
+      const ambient: Color = [20, 20, 20];
+      const fgWithAmbientLight = addStaticLight(ambient, idx, fgWithNoise);
+
+      const fg = viewshed.visibleTiles.includes(idx)
+        ? fgWithLight as Color
+        : ROT.Color.interpolate(fgWithAmbientLight, ROT.Color.fromString('#000') as Color, 0.5);
 
       display.draw(X, Y, glyph, ROT.Color.toHex(fg), '#000');
     }

@@ -3,7 +3,7 @@ import * as ROT from 'rot-js';
 import { World, Entity } from 'ecsy';
 import { CellType } from './map';
 import { drawGUI } from './display';
-import { RenderingSystem } from './ecs/systems';
+import { VisibilitySystem, RenderingSystem } from './ecs/systems';
 
 const ENABLE_LOGGING = false;
 
@@ -62,17 +62,18 @@ class GameState {
   }
 
   executeSystemsAndProceed = (nextRunState: RunState, delta: number, time: number): void => {
-    this.ecs.execute(delta, time);
+    requestAnimationFrame(() => this.ecs.execute(delta, time));
     this.setState(state => {state.runState = nextRunState; });
-    requestAnimationFrame(this.tick);
   }
 
   proceed = (nextRunState) => {
     this.setState(state => {state.runState = nextRunState; });
-    requestAnimationFrame(this.tick);
   }
 
-  render = (delta = 0, time = this.lastTime): void => {
+  render = (delta, time) => {
+    this.display.clear();
+
+    this.ecs.getSystem(VisibilitySystem).execute(delta, time);
     this.ecs.getSystem(RenderingSystem).execute(delta, time);
   }
 
@@ -80,21 +81,16 @@ class GameState {
     const time = performance.now();
     const delta = time - this.lastTime;
     this.lastTime = time;
-
     const runState = this.getState(state => state.runState);
     if (runState !== RunState.MAINMENU) {
-      this.display.clear();
-
       this.render(delta, time);
 
       drawGUI();
     }
-
     if (runState === RunState.PRERUN) {
       this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
     } else if (runState === RunState.AWAITINGINPUT) {
       // poll for input
-      requestAnimationFrame(this.tick);
     } else if (runState === RunState.PLAYERTURN) {
       this.proceed(RunState.MONSTERTURN);
     } else if (runState === RunState.MONSTERTURN) {
@@ -116,7 +112,7 @@ class GameState {
     } else if (runState === RunState.PAUSED) {
     }
 
-
+    requestAnimationFrame(this.tick);
   }
 
   gameLoop = () => {

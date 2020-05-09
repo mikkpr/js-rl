@@ -5,18 +5,21 @@ class Renderable extends Component {
   glyph: string;
   fg: string;
   bg: string;
+  z: number;
 
   constructor() {
     super();
     this.glyph = null;
     this.fg = null;
     this.bg = null;
+    this.z = 0;
   }
 
   reset() {
     this.glyph = null;
     this.fg = null;
     this.bg = null;
+    this.z = 0;
   }
 
   copy(src): void {
@@ -24,6 +27,7 @@ class Renderable extends Component {
       'glyph',
       'fg',
       'bg',
+      'z'
     ];
     fields.forEach(field => {
       if (has(src, field)) {

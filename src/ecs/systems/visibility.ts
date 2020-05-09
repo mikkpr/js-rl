@@ -16,7 +16,7 @@ const getLighting = (range, color, x, y) => {
   const lighting = new ROT.Lighting((x, y) => {
     const map = game.getState().map;
     const idx = xyIdx(x, y);
-    return lightPasses(map, idx) ? 0.3 : 0;
+    return lightPasses(map, idx) ? 0.15 : 0;
   }, { range, passes: 2 });
   lighting.setFOV(FOV);
   lighting.setLight(x, y, color);

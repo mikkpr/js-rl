@@ -11,8 +11,8 @@ export const createOrc = (ecs, x, y) => {
   const orc = ecs
     .createEntity('Orc')
     .addComponent(Viewshed)
-    .addComponent(Renderable, { glyph: 'o', fg: '#f00' })
+    .addComponent(Renderable, { glyph: 'o', fg: '#a00', z: 1 })
     .addComponent(Position, { x, y })
     .addComponent(Monster);
   return orc;
-}
+};

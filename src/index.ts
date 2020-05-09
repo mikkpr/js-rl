@@ -11,7 +11,7 @@ import {
   RenderingSystem,
   VisibilitySystem
 } from './ecs/systems';
-import { createPlayer, createOrc } from './ecs/entities';
+import { createPlayer, createOrc, createLight } from './ecs/entities';
 import { Light, Renderable, Viewshed, Position, Monster } from './ecs/components';
 
 import './assets/VGA8x16.png';
@@ -19,18 +19,21 @@ import './assets/ibm_vga8.eot';
 import './assets/ibm_vga8.woff';
 import './assets/ibm_vga8.woff2';
 import './assets/ibm_vga8.ttf';
+import './assets/main.css';
 
 declare global {
   interface Window {
     clairvoyance?: boolean;
     game?: GameState;
   }
+
+  type Color = [number, number, number];
 }
 
 const WIDTH = 64;
 const HEIGHT = 32;
-const MAPWIDTH = WIDTH * 2;
-const MAPHEIGHT = HEIGHT * 2;
+const MAPWIDTH = WIDTH;
+const MAPHEIGHT = HEIGHT;
 
 const display = setupDisplay({
   width: WIDTH,
@@ -45,9 +48,9 @@ ECS.registerComponent(Renderable);
 ECS.registerComponent(Monster);
 ECS.registerComponent(Light);
 
-ECS.registerSystem(RenderingSystem);
 ECS.registerSystem(VisibilitySystem);
 ECS.registerSystem(AISystem);
+ECS.registerSystem(RenderingSystem);
 
 const map = createMap(MAPWIDTH, MAPHEIGHT);
 
@@ -72,6 +75,21 @@ const main = (): void => {
 
   const randomCenter2 = ROT.RNG.getItem(map.centers);
   createOrc(ECS, randomCenter2[0], randomCenter2[1]);
+
+  const numLights = ROT.RNG.getUniformInt(3, map.centers.length);
+  for (let n = 3; n < numLights; n++) {
+    const range = ROT.RNG.getUniformInt(5, 10);
+    const color: Color = ROT.RNG.getItem([
+      [255, 200, 200],
+      [200, 255, 200],
+      [200, 200, 255],
+      [255, 255, 200],
+      [200, 255, 255],
+      [255, 200, 255]
+    ]);
+    const c = ROT.RNG.getItem(map.centers);
+    createLight(ECS, c[0] + 1, c[1], range, color);
+  }
 
   setupKeys(game);
 

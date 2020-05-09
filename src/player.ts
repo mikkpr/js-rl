@@ -27,9 +27,9 @@ const tryMove = (dir: Direction) => (game) => (): void => {
     position.x += dx;
     position.y += dy;
     const viewshed = player.getMutableComponent(Viewshed);
-    viewshed.dirty = true;
+    if (viewshed) viewshed.dirty = true;
     const light = player.getMutableComponent(Light);
-    light.dirty = true;
+    if (light) light.dirty = true;
   }
 
   game.setState(state => { state.runState = RunState.PLAYERTURN; });
@@ -37,8 +37,16 @@ const tryMove = (dir: Direction) => (game) => (): void => {
 
 const idclip = () => {
   window.clairvoyance = !(window.clairvoyance);
+};
 
-  game.render();
+const toggleLight = () => {
+  const player = game.player;
+  if (player.hasComponent(Light)) {
+    player.removeComponent(Light);
+  } else {
+    player.addComponent(Light, { range: 20, color: [255, 255, 225] });
+  }
+  game.render(0, game.lastTime);
 };
 
 const setupKeys = (game): void => {
@@ -51,6 +59,7 @@ const setupKeys = (game): void => {
   keymage('h', tryMove('W')(game));
   keymage('left', tryMove('W')(game));
   keymage('i d c l i p', idclip);
+  keymage('t', toggleLight);
 };
 
 export default setupKeys;

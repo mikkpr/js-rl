@@ -3,9 +3,9 @@ import has from 'lodash/has';
 
 class Light extends Component {
   range: number;
-  color: [number, number, number];
+  color: Color;
   tiles: {
-    [idx: string]: [number, number, number];
+    [idx: string]: Color;
   };
   dirty: boolean;
 
