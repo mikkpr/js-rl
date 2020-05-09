@@ -310,27 +310,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
+const ROT = __importStar(__webpack_require__(7));
 const player_1 = __importDefault(__webpack_require__(26));
-const ecsy_1 = __webpack_require__(3);
-const state_1 = __importStar(__webpack_require__(21));
+const ecsy_1 = __webpack_require__(4);
+const state_1 = __importStar(__webpack_require__(22));
 const display_1 = __webpack_require__(14);
 const map_1 = __webpack_require__(6);
-const systems_1 = __webpack_require__(22);
+const systems_1 = __webpack_require__(20);
 const entities_1 = __webpack_require__(85);
-const components_1 = __webpack_require__(5);
-__webpack_require__(88);
+const components_1 = __webpack_require__(3);
 __webpack_require__(89);
 __webpack_require__(90);
 __webpack_require__(91);
 __webpack_require__(92);
+__webpack_require__(93);
+__webpack_require__(94);
 const WIDTH = 64;
 exports.WIDTH = WIDTH;
 const HEIGHT = 32;
 exports.HEIGHT = HEIGHT;
-const MAPWIDTH = WIDTH * 2;
+const MAPWIDTH = WIDTH;
 exports.MAPWIDTH = MAPWIDTH;
-const MAPHEIGHT = HEIGHT * 2;
+const MAPHEIGHT = HEIGHT;
 exports.MAPHEIGHT = MAPHEIGHT;
 const display = display_1.setupDisplay({
     width: WIDTH,
@@ -344,9 +345,9 @@ ECS.registerComponent(components_1.Viewshed);
 ECS.registerComponent(components_1.Renderable);
 ECS.registerComponent(components_1.Monster);
 ECS.registerComponent(components_1.Light);
-ECS.registerSystem(systems_1.RenderingSystem);
 ECS.registerSystem(systems_1.VisibilitySystem);
 ECS.registerSystem(systems_1.AISystem);
+ECS.registerSystem(systems_1.RenderingSystem);
 const map = map_1.createMap(MAPWIDTH, MAPHEIGHT);
 const game = new state_1.default({
     runState: state_1.RunState.PRERUN,
@@ -366,6 +367,20 @@ const main = () => {
     game.cameraOffset = cameraOffset;
     const randomCenter2 = ROT.RNG.getItem(map.centers);
     entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
+    const numLights = ROT.RNG.getUniformInt(3, map.centers.length);
+    for (let n = 3; n < numLights; n++) {
+        const range = ROT.RNG.getUniformInt(5, 10);
+        const color = ROT.RNG.getItem([
+            [255, 200, 200],
+            [200, 255, 200],
+            [200, 200, 255],
+            [255, 255, 200],
+            [200, 255, 255],
+            [255, 200, 255]
+        ]);
+        const c = ROT.RNG.getItem(map.centers);
+        entities_1.createLight(ECS, c[0] + 1, c[1], range, color);
+    }
     player_1.default(game);
     game.setState(state => { state.runState = state_1.RunState.PRERUN; });
     game.gameLoop();
@@ -378,6 +393,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const renderable_1 = __importDefault(__webpack_require__(31));
+exports.Renderable = renderable_1.default;
+const position_1 = __importDefault(__webpack_require__(78));
+exports.Position = position_1.default;
+const viewshed_1 = __importDefault(__webpack_require__(79));
+exports.Viewshed = viewshed_1.default;
+const monster_1 = __importDefault(__webpack_require__(80));
+exports.Monster = monster_1.default;
+const light_1 = __importDefault(__webpack_require__(81));
+exports.Light = light_1.default;
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2144,7 +2181,7 @@ if (urlParams.has("enable-remote-devtools")) {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2504,28 +2541,6 @@ const CACHE = {
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const renderable_1 = __importDefault(__webpack_require__(32));
-exports.Renderable = renderable_1.default;
-const position_1 = __importDefault(__webpack_require__(79));
-exports.Position = position_1.default;
-const viewshed_1 = __importDefault(__webpack_require__(80));
-exports.Viewshed = viewshed_1.default;
-const monster_1 = __importDefault(__webpack_require__(81));
-exports.Monster = monster_1.default;
-const light_1 = __importDefault(__webpack_require__(82));
-exports.Light = light_1.default;
-
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2539,7 +2554,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
+const ROT = __importStar(__webpack_require__(7));
 const _1 = __webpack_require__(2);
 const MIN_SIZE = 3;
 const MAX_SIZE = 8;
@@ -2778,22 +2793,6 @@ exports.createMap = (w, h) => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
-/**
- * @class Abstract display backend module
- * @private
- */
-class Backend {
-    getContainer() { return null; }
-    setOptions(options) { this._options = options; }
-}
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
@@ -2831,7 +2830,7 @@ __webpack_require__.d(text_namespaceObject, "tokenize", function() { return toke
 var rng = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/backend.js
-var backend = __webpack_require__(7);
+var backend = __webpack_require__(8);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/canvas.js
 
@@ -3199,7 +3198,7 @@ class tile_Tile extends canvas_Canvas {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/color.js
-var lib_color = __webpack_require__(4);
+var lib_color = __webpack_require__(5);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/tile-gl.js
 
@@ -3478,7 +3477,7 @@ function parseColor(color) {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/term.js
-var term = __webpack_require__(20);
+var term = __webpack_require__(21);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/text.js
 /**
@@ -7630,11 +7629,27 @@ const Text = text_namespaceObject;
 
 
 /***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
+/**
+ * @class Abstract display backend module
+ * @private
+ */
+class Backend {
+    getContainer() { return null; }
+    setOptions(options) { this._options = options; }
+}
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseHas = __webpack_require__(33),
-    hasPath = __webpack_require__(34);
+var baseHas = __webpack_require__(32),
+    hasPath = __webpack_require__(33);
 
 /**
  * Checks if `path` is a direct property of `object`.
@@ -7718,7 +7733,7 @@ module.exports = nativeCreate;
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var eq = __webpack_require__(61);
+var eq = __webpack_require__(60);
 
 /**
  * Gets the index at which the `key` is found in `array` of key-value pairs.
@@ -7745,7 +7760,7 @@ module.exports = assocIndexOf;
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isKeyable = __webpack_require__(67);
+var isKeyable = __webpack_require__(66);
 
 /**
  * Gets the data for `map`.
@@ -7782,10 +7797,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
+const ROT = __importStar(__webpack_require__(7));
 const map_1 = __webpack_require__(6);
 const _1 = __webpack_require__(2);
 const tileMap_1 = __importDefault(__webpack_require__(30));
+const components_1 = __webpack_require__(3);
+const systems_1 = __webpack_require__(20);
 const _2 = __webpack_require__(2);
 exports.setupDisplay = (options) => {
     const tileSet = document.createElement("img");
@@ -7875,7 +7892,24 @@ const getWallGlyph = (score) => {
     return tiles[idx];
 };
 const mapNoise = new ROT.Noise.Simplex(4);
-exports.drawMap = (map, viewshed, light) => {
+exports.addLight = (lights, idx, fg, ambientLight = [80, 80, 80]) => {
+    let lightVal = ambientLight.slice();
+    for (const light of lights) {
+        if (light.tiles && `${idx}` in light.tiles) {
+            lightVal = ROT.Color.add(lightVal, light.tiles[`${idx}`]);
+        }
+    }
+    const fgWithLights = ROT.Color.multiply(fg, lightVal);
+    return fgWithLights;
+};
+const addStaticLight = (light, idx, fg) => {
+    const fgWithLights = ROT.Color.multiply(fg, light);
+    return fgWithLights;
+};
+exports.drawMap = (map) => {
+    const player = _2.game.player;
+    const viewshed = player.getComponent(components_1.Viewshed);
+    const light = player.getComponent(components_1.Light);
     const mapScores = _2.game.getState().scores;
     for (let idx = 0; idx < map.length; idx++) {
         const x = idx % _1.MAPWIDTH;
@@ -7891,7 +7925,6 @@ exports.drawMap = (map, viewshed, light) => {
                 viewshed.exploredTiles &&
                 (viewshed.visibleTiles.includes(idx) ||
                     viewshed.exploredTiles.has(idx))) {
-            const ambientLight = [50, 50, 50];
             const noise = mapNoise.get(x / 20, y / 20);
             const noiseVal = (1 + noise / 2);
             const fgWithNoise = ROT.Color.interpolate([255, 255, 255], [
@@ -7899,14 +7932,14 @@ exports.drawMap = (map, viewshed, light) => {
                 130 + (noise > 0 ? 20 : 5) * noise,
                 130 + (noise < 0 ? 20 : 5) * noise
             ], noiseVal);
-            let lightVal = ambientLight;
-            if (`${idx}` in light.tiles) {
-                lightVal = ROT.Color.add(lightVal, light.tiles[`${idx}`]);
-            }
-            const fgWithLight = ROT.Color.multiply(fgWithNoise, lightVal);
             const glyph = map[idx] === map_1.CellType.FLOOR ? '·' : getWallGlyph(mapScores[idx]);
-            const LIGHT_AMT = 1;
-            const fg = ROT.Color.interpolate(fgWithLight, ROT.Color.fromString('#000'), viewshed.visibleTiles.includes(idx) ? 0 : 1 - LIGHT_AMT);
+            const lights = _2.game.ecs.getSystem(systems_1.RenderingSystem).queries.lights.results.map(r => r.getComponent(components_1.Light));
+            const fgWithLight = exports.addLight(lights, idx, fgWithNoise);
+            const ambient = [20, 20, 20];
+            const fgWithAmbientLight = addStaticLight(ambient, idx, fgWithNoise);
+            const fg = viewshed.visibleTiles.includes(idx)
+                ? fgWithLight
+                : ROT.Color.interpolate(fgWithAmbientLight, ROT.Color.fromString('#000'), 0.5);
             _1.display.draw(X, Y, glyph, ROT.Color.toHex(fg), '#000');
         }
     }
@@ -7953,8 +7986,8 @@ module.exports = isSymbol;
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(17),
-    getRawTag = __webpack_require__(39),
-    objectToString = __webpack_require__(40);
+    getRawTag = __webpack_require__(38),
+    objectToString = __webpack_require__(39);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -7998,7 +8031,7 @@ module.exports = Symbol;
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var freeGlobal = __webpack_require__(37);
+var freeGlobal = __webpack_require__(36);
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -8046,12 +8079,30 @@ module.exports = isObjectLike;
 
 /***/ }),
 /* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const rendering_1 = __importDefault(__webpack_require__(82));
+exports.RenderingSystem = rendering_1.default;
+const visibility_1 = __importDefault(__webpack_require__(83));
+exports.VisibilitySystem = visibility_1.default;
+const ai_1 = __importDefault(__webpack_require__(84));
+exports.AISystem = ai_1.default;
+
+
+/***/ }),
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Term; });
-/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
-/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
+/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
+/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
 
 
 function clearToAnsi(bg) {
@@ -8143,7 +8194,7 @@ class Term extends _backend_js__WEBPACK_IMPORTED_MODULE_0__[/* default */ "a"] {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(25)))
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8154,7 +8205,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const immer_1 = __importDefault(__webpack_require__(29));
 const display_1 = __webpack_require__(14);
-const systems_1 = __webpack_require__(22);
+const systems_1 = __webpack_require__(20);
 const ENABLE_LOGGING = false;
 var RunState;
 (function (RunState) {
@@ -8173,15 +8224,15 @@ var RunState;
 class GameState {
     constructor(initialState, display, ecs) {
         this.executeSystemsAndProceed = (nextRunState, delta, time) => {
-            this.ecs.execute(delta, time);
+            requestAnimationFrame(() => this.ecs.execute(delta, time));
             this.setState(state => { state.runState = nextRunState; });
-            requestAnimationFrame(this.tick);
         };
         this.proceed = (nextRunState) => {
             this.setState(state => { state.runState = nextRunState; });
-            requestAnimationFrame(this.tick);
         };
-        this.render = (delta = 0, time = this.lastTime) => {
+        this.render = (delta, time) => {
+            this.display.clear();
+            this.ecs.getSystem(systems_1.VisibilitySystem).execute(delta, time);
             this.ecs.getSystem(systems_1.RenderingSystem).execute(delta, time);
         };
         this.tick = () => {
@@ -8190,7 +8241,6 @@ class GameState {
             this.lastTime = time;
             const runState = this.getState(state => state.runState);
             if (runState !== RunState.MAINMENU) {
-                this.display.clear();
                 this.render(delta, time);
                 display_1.drawGUI();
             }
@@ -8198,7 +8248,6 @@ class GameState {
                 this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
             }
             else if (runState === RunState.AWAITINGINPUT) {
-                requestAnimationFrame(this.tick);
             }
             else if (runState === RunState.PLAYERTURN) {
                 this.proceed(RunState.MONSTERTURN);
@@ -8220,6 +8269,7 @@ class GameState {
             }
             else if (runState === RunState.PAUSED) {
             }
+            requestAnimationFrame(this.tick);
         };
         this.gameLoop = () => {
             this.tick();
@@ -8244,29 +8294,11 @@ exports.default = GameState;
 
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const rendering_1 = __importDefault(__webpack_require__(31));
-exports.RenderingSystem = rendering_1.default;
-const visibility_1 = __importDefault(__webpack_require__(83));
-exports.VisibilitySystem = visibility_1.default;
-const ai_1 = __importDefault(__webpack_require__(84));
-exports.AISystem = ai_1.default;
-
-
-/***/ }),
 /* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsNative = __webpack_require__(48),
-    getValue = __webpack_require__(53);
+var baseIsNative = __webpack_require__(47),
+    getValue = __webpack_require__(52);
 
 /**
  * Gets the native function at `key` of `object`.
@@ -8522,8 +8554,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const keymage_1 = __importDefault(__webpack_require__(27));
-const state_1 = __webpack_require__(21);
-const components_1 = __webpack_require__(5);
+const state_1 = __webpack_require__(22);
+const components_1 = __webpack_require__(3);
 const map_1 = __webpack_require__(6);
 const _1 = __webpack_require__(2);
 const tryMove = (dir) => (game) => () => {
@@ -8548,15 +8580,26 @@ const tryMove = (dir) => (game) => () => {
         position.x += dx;
         position.y += dy;
         const viewshed = player.getMutableComponent(components_1.Viewshed);
-        viewshed.dirty = true;
+        if (viewshed)
+            viewshed.dirty = true;
         const light = player.getMutableComponent(components_1.Light);
-        light.dirty = true;
+        if (light)
+            light.dirty = true;
     }
     game.setState(state => { state.runState = state_1.RunState.PLAYERTURN; });
 };
 const idclip = () => {
     window.clairvoyance = !(window.clairvoyance);
-    _1.game.render();
+};
+const toggleLight = () => {
+    const player = _1.game.player;
+    if (player.hasComponent(components_1.Light)) {
+        player.removeComponent(components_1.Light);
+    }
+    else {
+        player.addComponent(components_1.Light, { range: 20, color: [255, 255, 225] });
+    }
+    _1.game.render(0, _1.game.lastTime);
 };
 const setupKeys = (game) => {
     keymage_1.default('k', tryMove('N')(game));
@@ -8568,6 +8611,7 @@ const setupKeys = (game) => {
     keymage_1.default('h', tryMove('W')(game));
     keymage_1.default('left', tryMove('W')(game));
     keymage_1.default('i d c l i p', idclip);
+    keymage_1.default('t', toggleLight);
 };
 exports.default = setupKeys;
 
@@ -9234,45 +9278,11 @@ exports.default = tileMap;
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
-const components_1 = __webpack_require__(5);
-const __1 = __webpack_require__(2);
-const display_1 = __webpack_require__(14);
-const map_1 = __webpack_require__(6);
-const __2 = __webpack_require__(2);
-class RenderingSystem extends ecsy_1.System {
-    execute(delta, time) {
-        const player = __2.game.player;
-        const viewshed = player.getComponent(components_1.Viewshed);
-        const light = player.getComponent(components_1.Light);
-        display_1.drawMap(__2.game.getState().map, viewshed, light);
-        this.queries.renderables.results.forEach(entity => {
-            const position = entity.getComponent(components_1.Position);
-            const renderable = entity.getComponent(components_1.Renderable);
-            if (viewshed.visibleTiles && viewshed.visibleTiles.includes(map_1.xyIdx(position.x, position.y))) {
-                __1.display.draw(position.x + __2.game.cameraOffset[0], position.y + __2.game.cameraOffset[1], renderable.glyph, renderable.fg, renderable.bg);
-            }
-        });
-    }
-}
-RenderingSystem.queries = {
-    renderables: { components: [components_1.Position, components_1.Renderable] }
-};
-exports.default = RenderingSystem;
-
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(4);
 const has_1 = __importDefault(__webpack_require__(9));
 class Renderable extends ecsy_1.Component {
     constructor() {
@@ -9280,17 +9290,20 @@ class Renderable extends ecsy_1.Component {
         this.glyph = null;
         this.fg = null;
         this.bg = null;
+        this.z = 0;
     }
     reset() {
         this.glyph = null;
         this.fg = null;
         this.bg = null;
+        this.z = 0;
     }
     copy(src) {
         const fields = [
             'glyph',
             'fg',
             'bg',
+            'z'
         ];
         fields.forEach(field => {
             if (has_1.default(src, field)) {
@@ -9303,7 +9316,7 @@ exports.default = Renderable;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -9328,15 +9341,15 @@ module.exports = baseHas;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(35),
-    isArguments = __webpack_require__(74),
+var castPath = __webpack_require__(34),
+    isArguments = __webpack_require__(73),
     isArray = __webpack_require__(10),
-    isIndex = __webpack_require__(76),
-    isLength = __webpack_require__(77),
-    toKey = __webpack_require__(78);
+    isIndex = __webpack_require__(75),
+    isLength = __webpack_require__(76),
+    toKey = __webpack_require__(77);
 
 /**
  * Checks if `path` exists on `object`.
@@ -9373,13 +9386,13 @@ module.exports = hasPath;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(10),
-    isKey = __webpack_require__(36),
-    stringToPath = __webpack_require__(41),
-    toString = __webpack_require__(71);
+    isKey = __webpack_require__(35),
+    stringToPath = __webpack_require__(40),
+    toString = __webpack_require__(70);
 
 /**
  * Casts `value` to a path array if it's not one.
@@ -9400,7 +9413,7 @@ module.exports = castPath;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(10),
@@ -9435,7 +9448,7 @@ module.exports = isKey;
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
@@ -9443,10 +9456,10 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 
 module.exports = freeGlobal;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(38)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports) {
 
 var g;
@@ -9472,7 +9485,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(17);
@@ -9524,7 +9537,7 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -9552,10 +9565,10 @@ module.exports = objectToString;
 
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoizeCapped = __webpack_require__(42);
+var memoizeCapped = __webpack_require__(41);
 
 /** Used to match property names within property paths. */
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
@@ -9585,10 +9598,10 @@ module.exports = stringToPath;
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoize = __webpack_require__(43);
+var memoize = __webpack_require__(42);
 
 /** Used as the maximum memoize cache size. */
 var MAX_MEMOIZE_SIZE = 500;
@@ -9617,10 +9630,10 @@ module.exports = memoizeCapped;
 
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var MapCache = __webpack_require__(44);
+var MapCache = __webpack_require__(43);
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -9696,14 +9709,14 @@ module.exports = memoize;
 
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mapCacheClear = __webpack_require__(45),
-    mapCacheDelete = __webpack_require__(66),
-    mapCacheGet = __webpack_require__(68),
-    mapCacheHas = __webpack_require__(69),
-    mapCacheSet = __webpack_require__(70);
+var mapCacheClear = __webpack_require__(44),
+    mapCacheDelete = __webpack_require__(65),
+    mapCacheGet = __webpack_require__(67),
+    mapCacheHas = __webpack_require__(68),
+    mapCacheSet = __webpack_require__(69);
 
 /**
  * Creates a map cache object to store key-value pairs.
@@ -9734,12 +9747,12 @@ module.exports = MapCache;
 
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Hash = __webpack_require__(46),
-    ListCache = __webpack_require__(58),
-    Map = __webpack_require__(65);
+var Hash = __webpack_require__(45),
+    ListCache = __webpack_require__(57),
+    Map = __webpack_require__(64);
 
 /**
  * Removes all key-value entries from the map.
@@ -9761,14 +9774,14 @@ module.exports = mapCacheClear;
 
 
 /***/ }),
-/* 46 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var hashClear = __webpack_require__(47),
-    hashDelete = __webpack_require__(54),
-    hashGet = __webpack_require__(55),
-    hashHas = __webpack_require__(56),
-    hashSet = __webpack_require__(57);
+var hashClear = __webpack_require__(46),
+    hashDelete = __webpack_require__(53),
+    hashGet = __webpack_require__(54),
+    hashHas = __webpack_require__(55),
+    hashSet = __webpack_require__(56);
 
 /**
  * Creates a hash object.
@@ -9799,7 +9812,7 @@ module.exports = Hash;
 
 
 /***/ }),
-/* 47 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(11);
@@ -9820,13 +9833,13 @@ module.exports = hashClear;
 
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(49),
-    isMasked = __webpack_require__(50),
+var isFunction = __webpack_require__(48),
+    isMasked = __webpack_require__(49),
     isObject = __webpack_require__(24),
-    toSource = __webpack_require__(52);
+    toSource = __webpack_require__(51);
 
 /**
  * Used to match `RegExp`
@@ -9873,7 +9886,7 @@ module.exports = baseIsNative;
 
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGetTag = __webpack_require__(16),
@@ -9916,10 +9929,10 @@ module.exports = isFunction;
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var coreJsData = __webpack_require__(51);
+var coreJsData = __webpack_require__(50);
 
 /** Used to detect methods masquerading as native. */
 var maskSrcKey = (function() {
@@ -9942,7 +9955,7 @@ module.exports = isMasked;
 
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var root = __webpack_require__(18);
@@ -9954,7 +9967,7 @@ module.exports = coreJsData;
 
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -9986,7 +9999,7 @@ module.exports = toSource;
 
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, exports) {
 
 /**
@@ -10005,7 +10018,7 @@ module.exports = getValue;
 
 
 /***/ }),
-/* 54 */
+/* 53 */
 /***/ (function(module, exports) {
 
 /**
@@ -10028,7 +10041,7 @@ module.exports = hashDelete;
 
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(11);
@@ -10064,7 +10077,7 @@ module.exports = hashGet;
 
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(11);
@@ -10093,7 +10106,7 @@ module.exports = hashHas;
 
 
 /***/ }),
-/* 57 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var nativeCreate = __webpack_require__(11);
@@ -10122,14 +10135,14 @@ module.exports = hashSet;
 
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var listCacheClear = __webpack_require__(59),
-    listCacheDelete = __webpack_require__(60),
-    listCacheGet = __webpack_require__(62),
-    listCacheHas = __webpack_require__(63),
-    listCacheSet = __webpack_require__(64);
+var listCacheClear = __webpack_require__(58),
+    listCacheDelete = __webpack_require__(59),
+    listCacheGet = __webpack_require__(61),
+    listCacheHas = __webpack_require__(62),
+    listCacheSet = __webpack_require__(63);
 
 /**
  * Creates an list cache object.
@@ -10160,7 +10173,7 @@ module.exports = ListCache;
 
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports) {
 
 /**
@@ -10179,7 +10192,7 @@ module.exports = listCacheClear;
 
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(12);
@@ -10220,7 +10233,7 @@ module.exports = listCacheDelete;
 
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, exports) {
 
 /**
@@ -10263,7 +10276,7 @@ module.exports = eq;
 
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(12);
@@ -10288,7 +10301,7 @@ module.exports = listCacheGet;
 
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(12);
@@ -10310,7 +10323,7 @@ module.exports = listCacheHas;
 
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var assocIndexOf = __webpack_require__(12);
@@ -10342,7 +10355,7 @@ module.exports = listCacheSet;
 
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getNative = __webpack_require__(23),
@@ -10355,7 +10368,7 @@ module.exports = Map;
 
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(13);
@@ -10379,7 +10392,7 @@ module.exports = mapCacheDelete;
 
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports) {
 
 /**
@@ -10400,7 +10413,7 @@ module.exports = isKeyable;
 
 
 /***/ }),
-/* 68 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(13);
@@ -10422,7 +10435,7 @@ module.exports = mapCacheGet;
 
 
 /***/ }),
-/* 69 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(13);
@@ -10444,7 +10457,7 @@ module.exports = mapCacheHas;
 
 
 /***/ }),
-/* 70 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getMapData = __webpack_require__(13);
@@ -10472,10 +10485,10 @@ module.exports = mapCacheSet;
 
 
 /***/ }),
-/* 71 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseToString = __webpack_require__(72);
+var baseToString = __webpack_require__(71);
 
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -10506,11 +10519,11 @@ module.exports = toString;
 
 
 /***/ }),
-/* 72 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(17),
-    arrayMap = __webpack_require__(73),
+    arrayMap = __webpack_require__(72),
     isArray = __webpack_require__(10),
     isSymbol = __webpack_require__(15);
 
@@ -10549,7 +10562,7 @@ module.exports = baseToString;
 
 
 /***/ }),
-/* 73 */
+/* 72 */
 /***/ (function(module, exports) {
 
 /**
@@ -10576,10 +10589,10 @@ module.exports = arrayMap;
 
 
 /***/ }),
-/* 74 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsArguments = __webpack_require__(75),
+var baseIsArguments = __webpack_require__(74),
     isObjectLike = __webpack_require__(19);
 
 /** Used for built-in method references. */
@@ -10618,7 +10631,7 @@ module.exports = isArguments;
 
 
 /***/ }),
-/* 75 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseGetTag = __webpack_require__(16),
@@ -10642,7 +10655,7 @@ module.exports = baseIsArguments;
 
 
 /***/ }),
-/* 76 */
+/* 75 */
 /***/ (function(module, exports) {
 
 /** Used as references for various `Number` constants. */
@@ -10673,7 +10686,7 @@ module.exports = isIndex;
 
 
 /***/ }),
-/* 77 */
+/* 76 */
 /***/ (function(module, exports) {
 
 /** Used as references for various `Number` constants. */
@@ -10714,7 +10727,7 @@ module.exports = isLength;
 
 
 /***/ }),
-/* 78 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isSymbol = __webpack_require__(15);
@@ -10741,7 +10754,7 @@ module.exports = toKey;
 
 
 /***/ }),
-/* 79 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10750,7 +10763,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(4);
 const has_1 = __importDefault(__webpack_require__(9));
 class Position extends ecsy_1.Component {
     constructor() {
@@ -10778,7 +10791,7 @@ exports.default = Position;
 
 
 /***/ }),
-/* 80 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10787,7 +10800,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(4);
 const has_1 = __importDefault(__webpack_require__(9));
 class Viewshed extends ecsy_1.Component {
     constructor() {
@@ -10821,20 +10834,20 @@ exports.default = Viewshed;
 
 
 /***/ }),
-/* 81 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(4);
 class Monster extends ecsy_1.TagComponent {
 }
 exports.default = Monster;
 
 
 /***/ }),
-/* 82 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10843,7 +10856,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(3);
+const ecsy_1 = __webpack_require__(4);
 const has_1 = __importDefault(__webpack_require__(9));
 class Light extends ecsy_1.Component {
     constructor() {
@@ -10877,6 +10890,52 @@ exports.default = Light;
 
 
 /***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(3);
+const __1 = __webpack_require__(2);
+const display_1 = __webpack_require__(14);
+const map_1 = __webpack_require__(6);
+const __2 = __webpack_require__(2);
+const byZIndex = (a, b) => b.getComponent(components_1.Renderable).z - a.getComponent(components_1.Renderable).z;
+class RenderingSystem extends ecsy_1.System {
+    execute(delta, time) {
+        display_1.drawMap(__2.game.getState().map);
+        const viewshed = __2.game.player.getComponent(components_1.Viewshed);
+        this.queries.renderables.results.sort(byZIndex).forEach(entity => {
+            const position = entity.getComponent(components_1.Position);
+            const renderable = entity.getComponent(components_1.Renderable);
+            const idx = map_1.xyIdx(position.x, position.y);
+            if (viewshed.visibleTiles && viewshed.visibleTiles.includes(idx)) {
+                const lights = this.queries.lights.results.map(r => r.getComponent(components_1.Light));
+                const fg = ROT.Color.fromString(renderable.fg);
+                const fgWithLights = display_1.addLight(lights, idx, fg);
+                __1.display.draw(position.x + __2.game.cameraOffset[0], position.y + __2.game.cameraOffset[1], renderable.glyph, ROT.Color.toHex(fgWithLights), renderable.bg);
+            }
+        });
+    }
+}
+RenderingSystem.queries = {
+    renderables: { components: [components_1.Position, components_1.Renderable] },
+    lights: { components: [components_1.Light] }
+};
+exports.default = RenderingSystem;
+
+
+/***/ }),
 /* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10890,9 +10949,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
-const ecsy_1 = __webpack_require__(3);
-const components_1 = __webpack_require__(5);
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(3);
 const __1 = __webpack_require__(2);
 const map_1 = __webpack_require__(6);
 const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
@@ -10906,7 +10965,7 @@ const getLighting = (range, color, x, y) => {
     const lighting = new ROT.Lighting((x, y) => {
         const map = __1.game.getState().map;
         const idx = map_1.xyIdx(x, y);
-        return map_1.lightPasses(map, idx) ? 0.3 : 0;
+        return map_1.lightPasses(map, idx) ? 0.15 : 0;
     }, { range, passes: 2 });
     lighting.setFOV(FOV);
     lighting.setLight(x, y, color);
@@ -10963,9 +11022,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(8));
-const ecsy_1 = __webpack_require__(3);
-const components_1 = __webpack_require__(5);
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(3);
 const map_1 = __webpack_require__(6);
 const __1 = __webpack_require__(2);
 class AISystem extends ecsy_1.System {
@@ -11012,6 +11071,8 @@ const player_1 = __importDefault(__webpack_require__(86));
 exports.createPlayer = player_1.default;
 const mobs_1 = __webpack_require__(87);
 exports.createOrc = mobs_1.createOrc;
+const lights_1 = __webpack_require__(88);
+exports.createLight = lights_1.createLight;
 
 
 /***/ }),
@@ -11021,14 +11082,14 @@ exports.createOrc = mobs_1.createOrc;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(5);
+const components_1 = __webpack_require__(3);
 const createPlayer = (ecs, x, y) => {
     const player = ecs
         .createEntity('player')
-        .addComponent(components_1.Viewshed, { range: 12 })
-        .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0' })
+        .addComponent(components_1.Viewshed, { range: 20 })
+        .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0', z: 2 })
         .addComponent(components_1.Position, { x, y })
-        .addComponent(components_1.Light, { range: 12, color: [155, 155, 105] });
+        .addComponent(components_1.Light, { range: 20, color: [255, 255, 255] });
     return player;
 };
 exports.default = createPlayer;
@@ -11041,12 +11102,12 @@ exports.default = createPlayer;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(5);
+const components_1 = __webpack_require__(3);
 exports.createOrc = (ecs, x, y) => {
     const orc = ecs
         .createEntity('Orc')
         .addComponent(components_1.Viewshed)
-        .addComponent(components_1.Renderable, { glyph: 'o', fg: '#f00' })
+        .addComponent(components_1.Renderable, { glyph: 'o', fg: '#a00', z: 1 })
         .addComponent(components_1.Position, { x, y })
         .addComponent(components_1.Monster);
     return orc;
@@ -11055,11 +11116,21 @@ exports.createOrc = (ecs, x, y) => {
 
 /***/ }),
 /* 88 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const components_1 = __webpack_require__(3);
+exports.createLight = (ECS, x, y, range = 7, color = [255, 255, 235]) => {
+    return ECS
+        .createEntity()
+        .addComponent(components_1.Light, { range, color })
+        .addComponent(components_1.Renderable, { glyph: '!', fg: '#aa0' })
+        .addComponent(components_1.Viewshed, { range: 7 })
+        .addComponent(components_1.Position, { x, y });
+};
+
 
 /***/ }),
 /* 89 */
@@ -11067,7 +11138,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
 /* 90 */
@@ -11075,7 +11146,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
 
 /***/ }),
 /* 91 */
@@ -11083,7 +11154,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
 
 /***/ }),
 /* 92 */
@@ -11091,7 +11162,23 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
+
+/***/ }),
+/* 93 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.ttf");
+
+/***/ }),
+/* 94 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "styles/main.css");
 
 /***/ })
 /******/ ]);
