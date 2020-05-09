@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import { System } from 'ecsy';
 import { Light, Position, Viewshed } from '../components';
 import { game } from '../..';
-import { getNeighborScores, xyIdx, lightPasses } from '../../map';
+import { xyIdx, lightPasses } from '../../map';
 
 const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
   const map = game.getState().map;

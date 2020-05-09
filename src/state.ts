@@ -1,11 +1,8 @@
+import { Entity, World } from 'ecsy';
 import produce from 'immer';
 import * as ROT from 'rot-js';
-import { World, Entity } from 'ecsy';
+import { RenderingSystem, VisibilitySystem } from './ecs/systems';
 import { CellType } from './map';
-import { drawGUI } from './display';
-import { VisibilitySystem, RenderingSystem } from './ecs/systems';
-
-const ENABLE_LOGGING = false;
 
 export enum RunState {
   PRERUN = 'PRERUN',
@@ -66,11 +63,11 @@ class GameState {
     this.setState(state => {state.runState = nextRunState; });
   }
 
-  proceed = (nextRunState) => {
+  proceed = (nextRunState): void => {
     this.setState(state => {state.runState = nextRunState; });
   }
 
-  render = (delta, time) => {
+  render = (delta, time): void => {
     this.display.clear();
 
     this.ecs.getSystem(VisibilitySystem).execute(delta, time);
@@ -84,8 +81,6 @@ class GameState {
     const runState = this.getState(state => state.runState);
     if (runState !== RunState.MAINMENU) {
       this.render(delta, time);
-
-      drawGUI();
     }
     if (runState === RunState.PRERUN) {
       this.executeSystemsAndProceed(RunState.AWAITINGINPUT, delta, time);
@@ -115,7 +110,7 @@ class GameState {
     requestAnimationFrame(this.tick);
   }
 
-  gameLoop = () => {
+  gameLoop = (): void => {
     this.tick();
   }
 }

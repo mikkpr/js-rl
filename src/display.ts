@@ -1,11 +1,10 @@
 import * as ROT from 'rot-js';
-
-import { CellType, Map, xyIdx } from './map';
-import { display, WIDTH, HEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
-import tileMap from './utils/tileMap';
+import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
 import { Light, Viewshed } from './ecs/components';
 import { RenderingSystem } from './ecs/systems';
-import { game } from '.';
+import { CellType, Map } from './map';
+import tileMap from './utils/tileMap';
+
 
 export const setupDisplay = (options: { width: number; height: number }): ROT.Display => {
   const tileSet = document.createElement("img");
@@ -28,9 +27,7 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
   return display;
 };
 
-export const drawGUI = (): void => { };
-
-const getWallGlyph = (score) => {
+const getWallGlyph = (score: number): string => {
   const pillar = '○';
   const wallN = '▀';
   const wallW = '▌';
@@ -101,7 +98,12 @@ const getWallGlyph = (score) => {
 
 const mapNoise = new ROT.Noise.Simplex(4);
 
-export const addLight = (lights: Light[], idx: number, fg: Color, ambientLight = [80, 80, 80]) => {
+export const addLight = (
+  lights: Light[],
+  idx: number,
+  fg: Color,
+  ambientLight = [80, 80, 80]
+): Color => {
   let lightVal: Color = ambientLight.slice() as Color;
   for (const light of lights) {
     if (light.tiles && `${idx}` in light.tiles) {
@@ -113,7 +115,7 @@ export const addLight = (lights: Light[], idx: number, fg: Color, ambientLight =
   return fgWithLights;
 };
 
-const addStaticLight = (light: Color, idx: number, fg: Color): Color => {
+const addStaticLight = (light: Color, fg: Color): Color => {
   const fgWithLights = ROT.Color.multiply(fg, light as Color);
   return fgWithLights;
 };
@@ -121,7 +123,6 @@ const addStaticLight = (light: Color, idx: number, fg: Color): Color => {
 export const drawMap = (map: Map): void => {
   const player = game.player;
   const viewshed = player.getComponent(Viewshed);
-  const light = player.getComponent(Light);
   const mapScores = game.getState().scores;
   for (let idx = 0; idx < map.length; idx++) {
     const x = idx % MAPWIDTH;
@@ -153,7 +154,7 @@ export const drawMap = (map: Map): void => {
       const lights = game.ecs.getSystem(RenderingSystem).queries.lights.results.map(r => r.getComponent(Light));
       const fgWithLight = addLight(lights, idx, fgWithNoise);
       const ambient: Color = [20, 20, 20];
-      const fgWithAmbientLight = addStaticLight(ambient, idx, fgWithNoise);
+      const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
 
       const fg = viewshed.visibleTiles.includes(idx)
         ? fgWithLight as Color
