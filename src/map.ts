@@ -1,5 +1,5 @@
 import * as ROT from 'rot-js';
-import { WIDTH, HEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
+import { MAPHEIGHT, MAPWIDTH } from '.';
 
 // Map generation parameters
 const MIN_SIZE = 3;
@@ -10,6 +10,8 @@ const CA_ALIVE = 4;
 const CA_DEAD = 6;
 const CA_ITER = 10;
 
+export type Rect = [number, number, number, number];
+
 export enum CellType {
   FLOOR,
   WALL
@@ -19,15 +21,15 @@ export type Map = CellType[];
 
 export const xyIdx = (x: number, y: number): number => y * MAPWIDTH + x;
 
-export const lightPasses = (map, idx) => {
+export const lightPasses = (map: Map, idx: number): boolean => {
   return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
 
-export const isPassable = (map, idx) => {
+export const isPassable = (map: Map, idx: number): boolean => {
   return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
 };
 
-const fillSquare = (map, x, y, w, h, type) => {
+const fillSquare = (map: Map, x: number, y: number, w: number, h: number, type: CellType = CellType.FLOOR): void => {
   for (let _x = x; _x < x + w; _x++) {
     for (let _y = y; _y < y + h; _y++) {
       const idx = xyIdx(_x, _y);
@@ -36,27 +38,39 @@ const fillSquare = (map, x, y, w, h, type) => {
   }
 };
 
-const overlaps = (rect1, rect2) => {
+const overlaps = (rect1: Rect, rect2: Rect): boolean => {
   const [rect1x, rect1y, rect1w, rect1h] = rect1;
   const [rect2x, rect2y, rect2w, rect2h] = rect2;
 
   return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
 };
 
-const getCenter = (rect): number[] => {
+const getCenter = (rect: Rect): number[] => {
   const [x, y, w, h] = rect;
 
   return [~~((x + x + w)/2), ~~((y + y + h)/2)];
 };
 
-const drawHorizontalLine = (map, x1, x2, y, type = CellType.FLOOR) => {
+const drawHorizontalLine = (
+  map: Map,
+  x1: number,
+  x2: number,
+  y: number,
+  type: CellType = CellType.FLOOR
+): void => {
   for (let _x = Math.min(x1, x2); _x <= Math.max(x1, x2); _x++) {
     const idx = xyIdx(_x, y);
     map[idx] = type;
   }
 };
 
-const drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR) => {
+const drawVerticalLine = (
+  map: Map,
+  y1: number,
+  y2: number,
+  x: number,
+  type: CellType = CellType.FLOOR
+): void => {
   for (let _y = Math.min(y1, y2); _y <= Math.max(y1, y2); _y++) {
     const idx = xyIdx(x, _y);
     map[idx] = type;
@@ -64,21 +78,10 @@ const drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR) => {
 };
 
 // only look at cardinal directions as corner tiles don't affect the center tile
-export const getNeighborScores = (map) => {
-  const relScores = {
-    '-1,-1' : 0b0001,
-    '0,-1'  : 0b0010,
-    '1,-1' : 0b0100,
-    '-1,0'  : 0b1000,
-    '1,0': 0b00010000,
-    '-1,1' : 0b00100000,
-    '0,1' : 0b01000000,
-    '1,1'  : 0b10000000,
-  };
+export const getNeighborScores = (map: Map): number[] => {
   return map
     // discard tiles that are not visible
-    .map((c, idx) => c === CellType.WALL ? 1 : 0)
-    .map((s, idx, scores) => {
+    .map((_s, idx, scores) => {
       let total = 0;
       const [x, y] = [idx % MAPWIDTH, ~~(idx / MAPWIDTH)];
 
@@ -127,14 +130,36 @@ export const getNeighborScores = (map) => {
       }
 
       return total;
-    })
+    });
 };
 
-const applyCellularAutomataToArea = (map, x, y, w, h, params = {
-  alive: CA_ALIVE,
-  dead: CA_DEAD,
-  iterations: CA_ITER
-}) => {
+/**
+ * applyCellularAutomataToArea
+ *
+ * @param {Map} map   input map
+ * @param {number} x  area's x coordinate
+ * @param {number} y  area's y coordinate
+ * @param {number} w  area's width
+ * @param {number} h  area's height
+ * @param {} params   parameters to tweak the cellular automaton
+ * @returns {Map}     output map
+ */
+const applyCellularAutomataToArea = (
+  map: Map,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  params: {
+    alive: number;
+    dead: number;
+    iterations: number;
+  } = {
+    alive: CA_ALIVE,
+    dead: CA_DEAD,
+    iterations: CA_ITER
+  }
+): Map => {
   const initial = (new Array(map.length)).fill(null);
   for (let _x = x; _x < x + w; _x++) {
     for (let _y = y; _y < y + h; _y++) {
@@ -143,7 +168,7 @@ const applyCellularAutomataToArea = (map, x, y, w, h, params = {
       initial[idx] = map[idx];
     }
   }
-  const simulateCells = cells => {
+  const simulateCells = (cells: number[]): number[] => {
     const out = [...cells];
     for (let i = 0; i < cells.length; i++) {
       const cellX = i % MAPWIDTH;
@@ -169,8 +194,8 @@ const applyCellularAutomataToArea = (map, x, y, w, h, params = {
   let cells = initial.slice(0);
   for (let i = 0; i < params.iterations; i++) {
     cells = simulateCells(cells);
-    // ???
   }
+
   const out = map.slice(0);
   for (let i = 0; i < cells.length; i++) {
     if (cells[i] != null) {
@@ -195,7 +220,7 @@ export const createMap = (w: number, h: number): {
   }
 
   // create random rooms
-  let rooms = [];
+  const rooms: Rect[] = [];
   const nRooms = ROT.RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
   let i = 0;
   while (rooms.length < nRooms || i++ > 300) {
@@ -203,7 +228,7 @@ export const createMap = (w: number, h: number): {
     const height = ROT.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
     const x = ROT.RNG.getUniformInt(1, MAPWIDTH - 1 - MAX_SIZE);
     const y = ROT.RNG.getUniformInt(1, MAPHEIGHT - 1 - MAX_SIZE);
-    const room = [x, y, width, height];
+    const room: Rect = [x, y, width, height];
     if (rooms.length === 0) {
       rooms.push(room);
     } else {
@@ -232,7 +257,9 @@ export const createMap = (w: number, h: number): {
     finalMap = applyCellularAutomataToArea(finalMap, x, y, w, h);
   }
 
-  centers.forEach((center, idx) => {
+  centers.sort((a, b) => {
+    return b[0] + b[1] - a[0] - a[1];
+  }).forEach((center, idx) => {
     if (idx === centers.length - 1) { return; }
     const c1 = center;
     const c2 = centers[idx + 1];
