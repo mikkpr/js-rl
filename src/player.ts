@@ -1,6 +1,7 @@
 import keymage from 'keymage';
 import { RunState } from './state';
 import { Light, Position, Viewshed } from './ecs/components';
+import { VisibilitySystem } from './ecs/systems';
 import { getNeighborScores, CellType, xyIdx, isPassable } from './map';
 import { game } from '.';
 
@@ -49,6 +50,37 @@ const toggleLight = () => {
   game.render(0, game.lastTime);
 };
 
+const dwim = () => {
+  const map = game.getState().map;
+  const pos = game.player.getComponent(Position);
+
+  const cardinalNeighbors = [
+    [0, -1],
+    [1, 0],
+    [0, 1],
+    [-1, 0]
+  ];
+  for (const N of cardinalNeighbors) {
+    const idx = xyIdx(pos.x + N[0], pos.y + N[1]);
+    if (idx in map) {
+      if (map[idx] === CellType.DOOR_CLOSED) {
+        game.setState(state => {
+          state.map[idx] = CellType.DOOR_OPEN;
+        });
+        game.player.getMutableComponent(Viewshed).dirty = true;
+        break;
+      } else if (map[idx] === CellType.DOOR_OPEN) {
+        game.setState(state => {
+          state.map[idx] = CellType.DOOR_CLOSED;
+        });
+        game.player.getMutableComponent(Viewshed).dirty = true;
+        break;
+      }
+    }
+  }
+  game.ecs.getSystem(VisibilitySystem).execute(0, game.lastTime)
+};
+
 const setupKeys = (game): void => {
   keymage('k', tryMove('N')(game));
   keymage('up', tryMove('N')(game));
@@ -60,6 +92,7 @@ const setupKeys = (game): void => {
   keymage('left', tryMove('W')(game));
   keymage('i d c l i p', idclip);
   keymage('t', toggleLight);
+  keymage('space', dwim);
 };
 
 export default setupKeys;

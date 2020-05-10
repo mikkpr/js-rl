@@ -120,10 +120,23 @@ const addStaticLight = (light: Color, fg: Color): Color => {
   return fgWithLights;
 };
 
+const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): string => {
+  const glyphs = {
+    [CellType.FLOOR]: '∙',
+    [CellType.DOOR_OPEN]: '\'',
+    [CellType.DOOR_CLOSED]: '+',
+    [CellType.DOOR_LOCKED]: '+',
+  };
+  return map[idx] === CellType.WALL
+    ? getWallGlyph(scores[idx])
+    : glyphs[map[idx]];
+};
+
 export const drawMap = (map: Map): void => {
   const player = game.player;
   const viewshed = player.getComponent(Viewshed);
   const mapScores = game.getState().scores;
+  const getTile = getGlyphForCellType(map, mapScores);
   for (let idx = 0; idx < map.length; idx++) {
     const x = idx % MAPWIDTH;
     const y = ~~(idx / MAPWIDTH);
@@ -150,7 +163,7 @@ export const drawMap = (map: Map): void => {
           130 + (noise < 0 ? 20 : 5) * noise],
         noiseVal
       );
-      const glyph = map[idx] === CellType.FLOOR ? '·' : getWallGlyph(mapScores[idx]);
+      const glyph = getTile(idx);
       const lights = game.ecs.getSystem(RenderingSystem).queries.lights.results.map(r => r.getComponent(Light));
       const fgWithLight = addLight(lights, idx, fgWithNoise);
       const ambient: Color = [20, 20, 20];

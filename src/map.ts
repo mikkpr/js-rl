@@ -1,11 +1,13 @@
 import * as ROT from 'rot-js';
 import { MAPHEIGHT, MAPWIDTH } from '.';
+import isEqual from 'lodash/isEqual';
 
 // Map generation parameters
 const MIN_SIZE = 3;
 const MAX_SIZE = 8;
 const MAX_ROOMS = 20;
 const MIN_ROOMS = 10;
+const DOOR_CHANCE = 0.5;
 const CA_ALIVE = 4;
 const CA_DEAD = 6;
 const CA_ITER = 10;
@@ -14,7 +16,10 @@ export type Rect = [number, number, number, number];
 
 export enum CellType {
   FLOOR,
-  WALL
+  WALL,
+  DOOR_OPEN,
+  DOOR_CLOSED,
+  DOOR_LOCKED
 }
 
 export type Map = CellType[];
@@ -22,11 +27,11 @@ export type Map = CellType[];
 export const xyIdx = (x: number, y: number): number => y * MAPWIDTH + x;
 
 export const lightPasses = (map: Map, idx: number): boolean => {
-  return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
+  return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
 };
 
 export const isPassable = (map: Map, idx: number): boolean => {
-  return !!(idx >= 0 && idx < map.length && map[idx] === CellType.FLOOR);
+  return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
 };
 
 const fillSquare = (map: Map, x: number, y: number, w: number, h: number, type: CellType = CellType.FLOOR): void => {
@@ -257,6 +262,7 @@ export const createMap = (w: number, h: number): {
     finalMap = applyCellularAutomataToArea(finalMap, x, y, w, h);
   }
 
+  const doors = [];
   centers.sort((a, b) => {
     return b[0] + b[1] - a[0] - a[1];
   }).forEach((center, idx) => {
@@ -266,12 +272,40 @@ export const createMap = (w: number, h: number): {
     const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
     const turn = ROT.RNG.getItem(turns);
 
+    const room = rooms.find(r => isEqual(getCenter(r), c1));
+
+    let possibleDoorLocation: [number, number];
+
+    if (c1[0] === turn[0]) { // if on same Y axis as center
+      if (c1[1] > turn[1]) { // below the center
+        possibleDoorLocation = [c1[0], c1[1] - ~~(room[3]/2) - 1];
+      } else { // above the center
+        possibleDoorLocation = [c1[0], c1[1] + ~~(room[3]/2) + 1];
+      }
+    } else { // on same X axis as center
+      if (c1[0] > turn[0]) { // left of center
+        possibleDoorLocation = [c1[0] - ~~(room[2]/2) - 1, c1[1]];
+      } else { // right of center
+        possibleDoorLocation = [c1[0] + ~~(room[2]/2) + 1, c1[1]];
+      }
+    }
+
+    const type = ROT.RNG.getItem([CellType.DOOR_OPEN, CellType.DOOR_CLOSED]);
+    doors.push([possibleDoorLocation, type])
+
     if (c1[0] === turn[0]) {
       drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
       drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
     } else {
       drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
       drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
+    }
+
+    for (const [loc, type] of doors) {
+      if (ROT.RNG.getUniform() < DOOR_CHANCE) {
+        const idx = xyIdx(loc[0], loc[1]);
+        finalMap[idx] = type;
+      }
     }
   });
 
