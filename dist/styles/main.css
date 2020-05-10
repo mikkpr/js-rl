@@ -1,15 +1,27 @@
+@font-face {
+  font-family: 'IBMVGA8';
+  src: url(/dist/fonts/ibm_vga8.eot);
+  src: url(/dist/fonts/ibm_vga8.eot?#iefix) format('embedded-opentype'),
+       url(/dist/fonts/ibm_vga8.woff2) format('woff2'),
+       url(/dist/fonts/ibm_vga8.woff) format('woff'),
+       url(/dist/fonts/ibm_vga8.ttf) format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: monospace;
+    font-family: 'IBMVGA8', monospace;
     font-weight: 400;
     font-size: 16px;
     background: black;
-    color: white;
+    color: rgba(255,255,255,0.85);
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
 }
 * {
     box-sizing: border-box;
@@ -33,6 +45,10 @@ body {
     justify-content: center;
     align-items: center;
 }
+.help {
+
+}
+
 canvas {
     image-rendering: -webkit-optimize-contrast; /* historic fallback */
     image-rendering: crisp-edges; /* standard property */

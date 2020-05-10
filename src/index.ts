@@ -32,8 +32,8 @@ declare global {
 
 const WIDTH = 64;
 const HEIGHT = 32;
-const MAPWIDTH = WIDTH;
-const MAPHEIGHT = HEIGHT;
+const MAPWIDTH = WIDTH * 2;
+const MAPHEIGHT = HEIGHT * 2;
 
 const display = setupDisplay({
   width: WIDTH,
