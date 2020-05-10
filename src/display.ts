@@ -164,7 +164,16 @@ export const drawMap = (map: Map): void => {
         noiseVal
       );
       const glyph = getTile(idx);
-      const lights = game.ecs.getSystem(RenderingSystem).queries.lights.results.map(r => r.getComponent(Light));
+      const lights = game.ecs
+        .getSystem(RenderingSystem)
+        .queries.lights.results
+        .map(r => r.getComponent(Light))
+        .filter(l => {
+          return Object.keys(l.tiles)
+            .reduce((acc, idx) => {
+              return acc || viewshed.visibleTiles.indexOf(+idx) > -1 && map[+idx] === CellType.FLOOR;
+            }, false);
+        });
       const fgWithLight = addLight(lights, idx, fgWithNoise);
       const ambient: Color = [20, 20, 20];
       const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
