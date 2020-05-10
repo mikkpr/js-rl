@@ -8704,7 +8704,16 @@ exports.drawMap = (map) => {
                 130 + (noise < 0 ? 20 : 5) * noise
             ], noiseVal);
             const glyph = getTile(idx);
-            const lights = _1.game.ecs.getSystem(systems_1.RenderingSystem).queries.lights.results.map(r => r.getComponent(components_1.Light));
+            const lights = _1.game.ecs
+                .getSystem(systems_1.RenderingSystem)
+                .queries.lights.results
+                .map(r => r.getComponent(components_1.Light))
+                .filter(l => {
+                return Object.keys(l.tiles)
+                    .reduce((acc, idx) => {
+                    return acc || viewshed.visibleTiles.indexOf(+idx) > -1 && map[+idx] === map_1.CellType.FLOOR;
+                }, false);
+            });
             const fgWithLight = exports.addLight(lights, idx, fgWithNoise);
             const ambient = [20, 20, 20];
             const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
