@@ -172,7 +172,7 @@ export const drawHoveredInfo = () => {
   const TILEWIDTH = 8;
   const TILEHEIGHT = 16;
   const y = HEIGHT - 1;
-  const x = WIDTH - 1 - hoveredItems.reduce((len, item) => Math.max(len, item.length), 0);
+  const x = WIDTH - 1 - hoveredItems.filter(x => x).reduce((len, item) => Math.max(len, item.length), 0);
 
   for (let idx = 0; idx < hoveredItems.length; idx++) {
     display.drawText(x, y - idx, hoveredItems[idx]);
