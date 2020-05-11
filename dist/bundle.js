@@ -2548,6 +2548,10 @@ const main = () => {
     player_1.default(game);
     game.setState(state => { state.runState = state_1.RunState.PRERUN; });
     game.gameLoop();
+    game.player.getMutableComponent(components_1.Viewshed).dirty = true;
+    const light = game.player.getMutableComponent(components_1.Light);
+    if (light)
+        game.player.getMutableComponent(components_1.Light).dirty = true;
 };
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.main .loading').remove();
@@ -2645,13 +2649,22 @@ var CellType;
     CellType[CellType["DOOR_OPEN"] = 2] = "DOOR_OPEN";
     CellType[CellType["DOOR_CLOSED"] = 3] = "DOOR_CLOSED";
     CellType[CellType["DOOR_LOCKED"] = 4] = "DOOR_LOCKED";
+    CellType[CellType["GRASS"] = 5] = "GRASS";
 })(CellType = exports.CellType || (exports.CellType = {}));
 exports.xyIdx = (x, y) => y * _1.MAPWIDTH + x;
 exports.lightPasses = (map, idx) => {
-    return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
+    return !!(idx >= 0 && idx < map.length && [
+        CellType.DOOR_OPEN,
+        CellType.FLOOR,
+        CellType.GRASS
+    ].includes(map[idx]));
 };
 exports.isPassable = (map, idx) => {
-    return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
+    return !!(idx >= 0 && idx < map.length && [
+        CellType.DOOR_OPEN,
+        CellType.FLOOR,
+        CellType.GRASS
+    ].includes(map[idx]));
 };
 const fillSquare = (map, x, y, w, h, type = CellType.FLOOR) => {
     for (let _x = x; _x < x + w; _x++) {
@@ -2685,6 +2698,10 @@ const drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR) => {
 exports.getNeighborScores = (map) => {
     return map
         .map((_s, idx, scores) => {
+        const floorTiles = [
+            CellType.FLOOR,
+            CellType.GRASS
+        ];
         let total = 0;
         const [x, y] = [idx % _1.MAPWIDTH, ~~(idx / _1.MAPWIDTH)];
         const NIdx = exports.xyIdx(x, y - 1);
@@ -2696,14 +2713,14 @@ exports.getNeighborScores = (map) => {
         const SEIdx = exports.xyIdx(x + 1, y + 1);
         const SWIdx = exports.xyIdx(x - 1, y + 1);
         const neighbors = {
-            N: !!(NIdx >= 0 && NIdx < map.length && scores[NIdx]),
-            E: !!(EIdx >= 0 && EIdx < map.length && scores[EIdx]),
-            S: !!(SIdx >= 0 && SIdx < map.length && scores[SIdx]),
-            W: !!(WIdx >= 0 && WIdx < map.length && scores[WIdx]),
-            NW: !!(NWIdx >= 0 && NWIdx < map.length && scores[NWIdx]),
-            NE: !!(NEIdx >= 0 && NEIdx < map.length && scores[NEIdx]),
-            SE: !!(SEIdx >= 0 && SEIdx < map.length && scores[SEIdx]),
-            SW: !!(SWIdx >= 0 && SWIdx < map.length && scores[SWIdx])
+            N: !!(NIdx >= 0 && NIdx < map.length && !floorTiles.includes(scores[NIdx])),
+            E: !!(EIdx >= 0 && EIdx < map.length && !floorTiles.includes(scores[EIdx])),
+            S: !!(SIdx >= 0 && SIdx < map.length && !floorTiles.includes(scores[SIdx])),
+            W: !!(WIdx >= 0 && WIdx < map.length && !floorTiles.includes(scores[WIdx])),
+            NW: !!(NWIdx >= 0 && NWIdx < map.length && !floorTiles.includes(scores[NWIdx])),
+            NE: !!(NEIdx >= 0 && NEIdx < map.length && !floorTiles.includes(scores[NEIdx])),
+            SE: !!(SEIdx >= 0 && SEIdx < map.length && !floorTiles.includes(scores[SEIdx])),
+            SW: !!(SWIdx >= 0 && SWIdx < map.length && !floorTiles.includes(scores[SWIdx]))
         };
         if (neighbors.N) {
             total += 2;
@@ -2786,6 +2803,7 @@ const applyCellularAutomataToArea = (map, x, y, w, h, params = {
     }
     return out;
 };
+exports.grassNoise = new ROT.Noise.Simplex(8);
 exports.createMap = (w, h) => {
     const map = (new Array(w * h)).fill(CellType.WALL);
     for (let y = 0; y < _1.MAPHEIGHT; y++) {
@@ -2880,6 +2898,15 @@ exports.createMap = (w, h) => {
     drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
     drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
     drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
+    for (let idx = 0; idx < finalMap.length; idx++) {
+        if (finalMap[idx] === CellType.FLOOR) {
+            const x = idx % _1.MAPWIDTH;
+            const y = ~~(idx / _1.MAPWIDTH);
+            if (exports.grassNoise.get(x / 100, y / 100) > 0.25) {
+                finalMap[idx] = CellType.GRASS;
+            }
+        }
+    }
     return { map: finalMap, rooms, centers, scores: exports.getNeighborScores(finalMap) };
 };
 
@@ -8672,10 +8699,22 @@ const getGlyphForCellType = (map, scores) => (idx) => {
         [map_1.CellType.DOOR_OPEN]: '\'',
         [map_1.CellType.DOOR_CLOSED]: '+',
         [map_1.CellType.DOOR_LOCKED]: '+',
+        [map_1.CellType.GRASS]: '≈',
     };
-    return map[idx] === map_1.CellType.WALL
-        ? getWallGlyph(scores[idx])
-        : glyphs[map[idx]];
+    if (map[idx] === map_1.CellType.WALL) {
+        return getWallGlyph(scores[idx]);
+    }
+    else {
+        return glyphs[map[idx]];
+    }
+};
+const tileColors = {
+    [map_1.CellType.FLOOR]: [200, 200, 200],
+    [map_1.CellType.WALL]: [255, 255, 255],
+    [map_1.CellType.DOOR_OPEN]: [255, 255, 255],
+    [map_1.CellType.DOOR_CLOSED]: [255, 255, 255],
+    [map_1.CellType.DOOR_LOCKED]: [255, 255, 255],
+    [map_1.CellType.GRASS]: [150, 255, 150],
 };
 exports.drawMap = (map) => {
     const player = _1.game.player;
@@ -8690,37 +8729,36 @@ exports.drawMap = (map) => {
         if (X < 0 || X >= _1.WIDTH || Y < 0 || Y >= _1.HEIGHT) {
             continue;
         }
+        const tileVisible = viewshed && viewshed.visibleTiles && viewshed.visibleTiles.has(idx);
+        const tileExplored = viewshed && viewshed.exploredTiles && viewshed.exploredTiles.has(idx);
         if (window.clairvoyance === true ||
-            viewshed &&
-                viewshed.visibleTiles &&
-                viewshed.exploredTiles &&
-                (viewshed.visibleTiles.includes(idx) ||
-                    viewshed.exploredTiles.has(idx))) {
-            const noise = mapNoise.get(x / 20, y / 20);
+            tileVisible || tileExplored) {
+            const noise = mapNoise.get(x / 100, y / 100);
             const noiseVal = (1 + noise / 2);
-            const fgWithNoise = ROT.Color.interpolate([255, 255, 255], [
-                130 + (noise > 0 ? 20 : 5) * noise,
-                130 + (noise > 0 ? 20 : 5) * noise,
-                130 + (noise < 0 ? 20 : 5) * noise
+            const fgColor = tileColors[map[idx]];
+            const fgColorWithNoise = ROT.Color.multiply(fgColor, [80, 80, 80]);
+            const fgWithNoise = ROT.Color.interpolate(fgColor, [
+                fgColorWithNoise[0] + (noise > 0 ? 20 : 5) * noise,
+                fgColorWithNoise[1] + (noise > 0 ? 20 : 5) * noise,
+                fgColorWithNoise[2] + (noise < 0 ? 20 : 5) * noise
             ], noiseVal);
             const glyph = getTile(idx);
             const lights = _1.game.ecs
                 .getSystem(systems_1.RenderingSystem)
                 .queries.lights.results
                 .map(r => r.getComponent(components_1.Light))
-                .filter(l => {
-                return Object.keys(l.tiles)
-                    .reduce((acc, idx) => {
-                    return acc || viewshed.visibleTiles.indexOf(+idx) > -1 && map[+idx] === map_1.CellType.FLOOR;
-                }, false);
-            });
+                .filter(l => l.applicable);
             const fgWithLight = exports.addLight(lights, idx, fgWithNoise);
             const ambient = [20, 20, 20];
             const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
-            const fg = viewshed.visibleTiles.includes(idx)
+            const fg = tileVisible
                 ? fgWithLight
                 : ROT.Color.interpolate(fgWithAmbientLight, ROT.Color.fromString('#000'), 0.5);
-            _1.display.draw(X, Y, glyph, ROT.Color.toHex(fg), '#000');
+            const bgColor = map_1.grassNoise.get(x / 100, y / 100) > 0.25 ? '#010' : '#000';
+            const bg = tileVisible
+                ? bgColor
+                : '#000';
+            _1.display.draw(X, Y, glyph, ROT.Color.toHex(fg), bg);
         }
     }
 };
@@ -9187,6 +9225,9 @@ const dwim = () => {
                     state.map[idx] = map_1.CellType.DOOR_OPEN;
                 });
                 _1.game.player.getMutableComponent(components_1.Viewshed).dirty = true;
+                const light = _1.game.player.getMutableComponent(components_1.Light);
+                if (light)
+                    _1.game.player.getMutableComponent(components_1.Light).dirty = true;
                 break;
             }
             else if (map[idx] === map_1.CellType.DOOR_OPEN) {
@@ -9194,6 +9235,9 @@ const dwim = () => {
                     state.map[idx] = map_1.CellType.DOOR_CLOSED;
                 });
                 _1.game.player.getMutableComponent(components_1.Viewshed).dirty = true;
+                const light = _1.game.player.getMutableComponent(components_1.Light);
+                if (light)
+                    _1.game.player.getMutableComponent(components_1.Light).dirty = true;
                 break;
             }
         }
@@ -9635,7 +9679,7 @@ class RenderingSystem extends ecsy_1.System {
             const position = entity.getComponent(components_1.Position);
             const renderable = entity.getComponent(components_1.Renderable);
             const idx = map_1.xyIdx(position.x, position.y);
-            if (viewshed.visibleTiles && viewshed.visibleTiles.includes(idx)) {
+            if (viewshed.visibleTiles && viewshed.visibleTiles.has(idx)) {
                 const lights = this.queries.lights.results.map(r => r.getComponent(components_1.Light));
                 const fg = ROT.Color.fromString(renderable.fg);
                 const fgWithLights = display_1.addLight(lights, idx, fg);
@@ -10852,13 +10896,13 @@ const has_1 = __importDefault(__webpack_require__(15));
 class Viewshed extends ecsy_1.Component {
     constructor() {
         super();
-        this.visibleTiles = [];
+        this.visibleTiles = new Set();
         this.exploredTiles = new Set();
         this.range = 6;
         this.dirty = true;
     }
     reset() {
-        this.visibleTiles = [];
+        this.visibleTiles = new Set();
         this.exploredTiles = new Set();
         this.range = 6;
         this.dirty = true;
@@ -10912,19 +10956,22 @@ class Light extends ecsy_1.Component {
         this.color = [150, 150, 120];
         this.tiles = {};
         this.dirty = true;
+        this.applicable = false;
     }
     reset() {
         this.range = 6;
         this.color = [150, 150, 120];
         this.tiles = {};
         this.dirty = true;
+        this.applicable = false;
     }
     copy(src) {
         const fields = [
             'range',
             'color',
             'tiles',
-            'dirty'
+            'dirty',
+            'applicable'
         ];
         fields.forEach(field => {
             if (has_1.default(src, field)) {
@@ -12644,44 +12691,66 @@ const getLighting = (range, color, x, y) => {
         const map = __1.game.getState().map;
         const idx = map_1.xyIdx(x, y);
         return map_1.lightPasses(map, idx) ? 0.15 : 0;
-    }, { range, passes: 2 });
+    }, { range, passes: 1 });
     lighting.setFOV(FOV);
     lighting.setLight(x, y, color);
     return lighting;
 };
 class VisibilitySystem extends ecsy_1.System {
     execute(delta, time) {
+        const player = __1.game.player;
+        const playerViewshed = player.getComponent(components_1.Viewshed);
+        const map = __1.game.getState().map;
+        const tileTypes = [map_1.CellType.FLOOR, map_1.CellType.DOOR_OPEN, map_1.CellType.GRASS];
+        const visibleFloors = [...playerViewshed.visibleTiles]
+            .filter(idx => {
+            return tileTypes.includes(map[idx]);
+        });
         this.queries.visibles.results.forEach(entity => {
             const { x, y } = entity.getComponent(components_1.Position);
             const viewshed = entity.getMutableComponent(components_1.Viewshed);
             if (viewshed.dirty) {
-                const visibleTiles = [];
+                const visibleTiles = new Set();
                 FOV.compute(x, y, viewshed.range, (x, y, r, visibility) => {
-                    visibleTiles.push(map_1.xyIdx(x, y));
+                    visibleTiles.add(map_1.xyIdx(x, y));
                     viewshed.exploredTiles.add(map_1.xyIdx(x, y));
                 });
                 viewshed.dirty = false;
                 viewshed.visibleTiles = visibleTiles;
-                if (entity.id === __1.game.player.id) {
-                }
             }
             if (entity.hasComponent(components_1.Light)) {
                 const light = entity.getMutableComponent(components_1.Light);
                 if (light.dirty) {
                     const lighting = getLighting(light.range, light.color, x, y);
                     const tiles = {};
+                    light.applicable = false;
                     lighting.compute((x, y, color) => {
-                        tiles[`${map_1.xyIdx(x, y)}`] = color;
+                        const tileIdx = map_1.xyIdx(x, y);
+                        if (visibleFloors.includes(tileIdx)) {
+                            light.applicable = true;
+                        }
+                        tiles[`${tileIdx}`] = color;
                     });
                     light.tiles = tiles;
                     light.dirty = false;
                 }
             }
         });
+        this.queries.lights.results.forEach(entity => {
+            const light = entity.getMutableComponent(components_1.Light);
+            light.applicable = false;
+            for (const tile of Object.keys(light.tiles)) {
+                if (visibleFloors.includes(+tile)) {
+                    light.applicable = true;
+                    break;
+                }
+            }
+        });
     }
 }
 VisibilitySystem.queries = {
-    visibles: { components: [components_1.Position, components_1.Viewshed] }
+    visibles: { components: [components_1.Position, components_1.Viewshed] },
+    lights: { components: [components_1.Light] }
 };
 exports.default = VisibilitySystem;
 
@@ -12706,8 +12775,6 @@ const components_1 = __webpack_require__(3);
 const map_1 = __webpack_require__(9);
 const __1 = __webpack_require__(6);
 class AISystem extends ecsy_1.System {
-    init() {
-    }
     execute(delta, time) {
         const player = __1.game.player;
         const map = __1.game.getState().map;
@@ -12716,7 +12783,7 @@ class AISystem extends ecsy_1.System {
         const astar = new ROT.Path.AStar(playerPos.x, playerPos.y, (x, y) => map_1.isPassable(map, map_1.xyIdx(x, y)), { topology: 4 });
         this.queries.monsters.results.forEach(mob => {
             const viewshed = mob.getMutableComponent(components_1.Viewshed);
-            if (viewshed.visibleTiles.includes(playerIdx)) {
+            if (viewshed.visibleTiles.has(playerIdx)) {
                 const position = mob.getMutableComponent(components_1.Position);
                 const path = [];
                 astar.compute(position.x, position.y, (x, y) => path.push([x, y]));
@@ -12764,10 +12831,10 @@ const components_1 = __webpack_require__(3);
 const createPlayer = (ecs, x, y) => {
     const player = ecs
         .createEntity('player')
-        .addComponent(components_1.Viewshed, { range: 20 })
+        .addComponent(components_1.Viewshed, { range: 20, dirty: true })
         .addComponent(components_1.Renderable, { glyph: '@', fg: '#ff0', z: 2 })
         .addComponent(components_1.Position, { x, y })
-        .addComponent(components_1.Light, { range: 20, color: [255, 255, 255] });
+        .addComponent(components_1.Light, { range: 20, color: [255, 255, 255], applicable: true, dirty: true });
     return player;
 };
 exports.default = createPlayer;
