@@ -8749,7 +8749,7 @@ exports.drawMap = (map) => {
                 .map(r => r.getComponent(components_1.Light))
                 .filter(l => l.applicable);
             const fgWithLight = exports.addLight(lights, idx, fgWithNoise);
-            const ambient = [20, 20, 20];
+            const ambient = [80, 80, 80];
             const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
             const fg = tileVisible
                 ? fgWithLight
@@ -9247,12 +9247,16 @@ const dwim = () => {
 const setupKeys = (game) => {
     keymage_1.default('k', tryMove('N')(game));
     keymage_1.default('up', tryMove('N')(game));
+    keymage_1.default('w', tryMove('N')(game));
     keymage_1.default('l', tryMove('E')(game));
     keymage_1.default('right', tryMove('E')(game));
+    keymage_1.default('d', tryMove('E')(game));
     keymage_1.default('j', tryMove('S')(game));
     keymage_1.default('down', tryMove('S')(game));
+    keymage_1.default('s', tryMove('S')(game));
     keymage_1.default('h', tryMove('W')(game));
     keymage_1.default('left', tryMove('W')(game));
+    keymage_1.default('a', tryMove('W')(game));
     keymage_1.default('i d c l i p', idclip);
     keymage_1.default('t', toggleLight);
     keymage_1.default('space', dwim);
@@ -12679,22 +12683,48 @@ const ecsy_1 = __webpack_require__(2);
 const components_1 = __webpack_require__(3);
 const __1 = __webpack_require__(6);
 const map_1 = __webpack_require__(9);
+const DIR_NORTH = 0;
+const DIR_EAST = 2;
+const DIR_SOUTH = 4;
+const DIR_WEST = 6;
 const FOV = new ROT.FOV.RecursiveShadowcasting((x, y) => {
     const map = __1.game.getState().map;
     const idx = map_1.xyIdx(x, y);
     return map_1.lightPasses(map, idx);
 }, {
-    topology: 4
+    topology: 4,
 });
 const getLighting = (range, color, x, y) => {
     const lighting = new ROT.Lighting((x, y) => {
         const map = __1.game.getState().map;
         const idx = map_1.xyIdx(x, y);
-        return map_1.lightPasses(map, idx) ? 0.15 : 0;
-    }, { range, passes: 1 });
+        return map_1.lightPasses(map, idx) ? 0.15 : 0.0;
+    }, { range, passes: 2 });
     lighting.setFOV(FOV);
     lighting.setLight(x, y, color);
     return lighting;
+};
+const getLimitedRange = (dir, range, origin, map) => {
+    const dirs = {
+        [DIR_NORTH]: [0, -1],
+        [DIR_EAST]: [1, 0],
+        [DIR_SOUTH]: [0, 1],
+        [DIR_WEST]: [-1, 0]
+    };
+    for (let i = 1; i <= range; i++) {
+        const X = origin[0] + dirs[dir][0] * i;
+        const Y = origin[1] + dirs[dir][1] * i;
+        const idx = map_1.xyIdx(X, Y);
+        if ([
+            map_1.CellType.GRASS,
+            map_1.CellType.WALL,
+            map_1.CellType.DOOR_CLOSED,
+            map_1.CellType.DOOR_LOCKED
+        ].includes(map[idx])) {
+            return Math.max(3, i + 1);
+        }
+    }
+    return range;
 };
 class VisibilitySystem extends ecsy_1.System {
     execute(delta, time) {
@@ -12702,16 +12732,28 @@ class VisibilitySystem extends ecsy_1.System {
         const playerViewshed = player.getComponent(components_1.Viewshed);
         const map = __1.game.getState().map;
         const tileTypes = [map_1.CellType.FLOOR, map_1.CellType.DOOR_OPEN, map_1.CellType.GRASS];
-        const visibleFloors = [...playerViewshed.visibleTiles]
-            .filter(idx => {
-            return tileTypes.includes(map[idx]);
-        });
         this.queries.visibles.results.forEach(entity => {
             const { x, y } = entity.getComponent(components_1.Position);
             const viewshed = entity.getMutableComponent(components_1.Viewshed);
             if (viewshed.dirty) {
+                const northLimitedRange = getLimitedRange(DIR_NORTH, viewshed.range, [x, y], map);
+                const eastLimitedRange = getLimitedRange(DIR_EAST, viewshed.range, [x, y], map);
+                const southLimitedRange = getLimitedRange(DIR_SOUTH, viewshed.range, [x, y], map);
+                const westLimitedRange = getLimitedRange(DIR_WEST, viewshed.range, [x, y], map);
                 const visibleTiles = new Set();
-                FOV.compute(x, y, viewshed.range, (x, y, r, visibility) => {
+                FOV.compute90(x, y, northLimitedRange, DIR_NORTH, (x, y, r, visibility) => {
+                    visibleTiles.add(map_1.xyIdx(x, y));
+                    viewshed.exploredTiles.add(map_1.xyIdx(x, y));
+                });
+                FOV.compute90(x, y, eastLimitedRange, DIR_EAST, (x, y, r, visibility) => {
+                    visibleTiles.add(map_1.xyIdx(x, y));
+                    viewshed.exploredTiles.add(map_1.xyIdx(x, y));
+                });
+                FOV.compute90(x, y, southLimitedRange, DIR_SOUTH, (x, y, r, visibility) => {
+                    visibleTiles.add(map_1.xyIdx(x, y));
+                    viewshed.exploredTiles.add(map_1.xyIdx(x, y));
+                });
+                FOV.compute90(x, y, westLimitedRange, DIR_WEST, (x, y, r, visibility) => {
                     visibleTiles.add(map_1.xyIdx(x, y));
                     viewshed.exploredTiles.add(map_1.xyIdx(x, y));
                 });
@@ -12721,6 +12763,10 @@ class VisibilitySystem extends ecsy_1.System {
             if (entity.hasComponent(components_1.Light)) {
                 const light = entity.getMutableComponent(components_1.Light);
                 if (light.dirty) {
+                    const visibleFloors = [...player.getComponent(components_1.Viewshed).visibleTiles]
+                        .filter(idx => {
+                        return tileTypes.includes(map[idx]);
+                    });
                     const lighting = getLighting(light.range, light.color, x, y);
                     const tiles = {};
                     light.applicable = false;
@@ -12737,6 +12783,10 @@ class VisibilitySystem extends ecsy_1.System {
             }
         });
         this.queries.lights.results.forEach(entity => {
+            const visibleFloors = [...player.getComponent(components_1.Viewshed).visibleTiles]
+                .filter(idx => {
+                return tileTypes.includes(map[idx]);
+            });
             const light = entity.getMutableComponent(components_1.Light);
             light.applicable = false;
             for (const tile of Object.keys(light.tiles)) {
