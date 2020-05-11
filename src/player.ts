@@ -68,12 +68,16 @@ const dwim = () => {
           state.map[idx] = CellType.DOOR_OPEN;
         });
         game.player.getMutableComponent(Viewshed).dirty = true;
+        const light = game.player.getMutableComponent(Light);
+        if (light) game.player.getMutableComponent(Light).dirty = true;
         break;
       } else if (map[idx] === CellType.DOOR_OPEN) {
         game.setState(state => {
           state.map[idx] = CellType.DOOR_CLOSED;
         });
         game.player.getMutableComponent(Viewshed).dirty = true;
+        const light = game.player.getMutableComponent(Light);
+        if (light) game.player.getMutableComponent(Light).dirty = true;
         break;
       }
     }

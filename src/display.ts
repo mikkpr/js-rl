@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
 import { Light, Viewshed } from './ecs/components';
 import { RenderingSystem } from './ecs/systems';
-import { CellType, Map } from './map';
+import { grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
 
 
@@ -126,10 +126,22 @@ const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): strin
     [CellType.DOOR_OPEN]: '\'',
     [CellType.DOOR_CLOSED]: '+',
     [CellType.DOOR_LOCKED]: '+',
+    [CellType.GRASS]: '≈',
   };
-  return map[idx] === CellType.WALL
-    ? getWallGlyph(scores[idx])
-    : glyphs[map[idx]];
+  if (map[idx] === CellType.WALL) {
+    return getWallGlyph(scores[idx]);
+  } else {
+    return glyphs[map[idx]];
+  }
+};
+
+const tileColors: { [type: string]: Color } = {
+  [CellType.FLOOR]: [200, 200, 200],
+  [CellType.WALL]: [255, 255, 255],
+  [CellType.DOOR_OPEN]: [255, 255, 255],
+  [CellType.DOOR_CLOSED]: [255, 255, 255],
+  [CellType.DOOR_LOCKED]: [255, 255, 255],
+  [CellType.GRASS]: [150, 255, 150],
 };
 
 export const drawMap = (map: Map): void => {
@@ -145,22 +157,22 @@ export const drawMap = (map: Map): void => {
     if (X < 0 || X >= WIDTH || Y < 0 || Y >= HEIGHT) {
       continue;
     }
+    const tileVisible = viewshed && viewshed.visibleTiles && viewshed.visibleTiles.has(idx);
+    const tileExplored = viewshed && viewshed.exploredTiles && viewshed.exploredTiles.has(idx);
     if (
       window.clairvoyance === true ||
-      viewshed &&
-      viewshed.visibleTiles &&
-      viewshed.exploredTiles &&
-      (viewshed.visibleTiles.includes(idx) ||
-        viewshed.exploredTiles.has(idx))
+      tileVisible || tileExplored
     ) {
-      const noise = mapNoise.get(x / 20, y / 20);
+      const noise = mapNoise.get(x / 100, y / 100);
       const noiseVal = (1 + noise / 2);
+      const fgColor = tileColors[map[idx]];
+      const fgColorWithNoise = ROT.Color.multiply(fgColor, [80, 80, 80]);
       const fgWithNoise = ROT.Color.interpolate(
-        [255, 255, 255],
+        fgColor,
         [
-          130 + (noise > 0 ? 20 : 5) * noise,
-          130 + (noise > 0 ? 20 : 5) * noise,
-          130 + (noise < 0 ? 20 : 5) * noise],
+          fgColorWithNoise[0] + (noise > 0 ? 20 : 5) * noise,
+          fgColorWithNoise[1] + (noise > 0 ? 20 : 5) * noise,
+          fgColorWithNoise[2] + (noise < 0 ? 20 : 5) * noise],
         noiseVal
       );
       const glyph = getTile(idx);
@@ -168,21 +180,20 @@ export const drawMap = (map: Map): void => {
         .getSystem(RenderingSystem)
         .queries.lights.results
         .map(r => r.getComponent(Light))
-        .filter(l => {
-          return Object.keys(l.tiles)
-            .reduce((acc, idx) => {
-              return acc || viewshed.visibleTiles.indexOf(+idx) > -1 && map[+idx] === CellType.FLOOR;
-            }, false);
-        });
+        .filter(l => l.applicable);
       const fgWithLight = addLight(lights, idx, fgWithNoise);
       const ambient: Color = [20, 20, 20];
       const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
 
-      const fg = viewshed.visibleTiles.includes(idx)
+      const fg = tileVisible
         ? fgWithLight as Color
         : ROT.Color.interpolate(fgWithAmbientLight, ROT.Color.fromString('#000') as Color, 0.5);
 
-      display.draw(X, Y, glyph, ROT.Color.toHex(fg), '#000');
+      const bgColor = grassNoise.get(x / 100, y / 100) > 0.25 ? '#010' : '#000';
+      const bg = tileVisible
+        ? bgColor
+        : '#000';
+      display.draw(X, Y, glyph, ROT.Color.toHex(fg), bg);
     }
   }
 };

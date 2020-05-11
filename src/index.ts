@@ -96,6 +96,11 @@ const main = (): void => {
   game.setState(state => { state.runState = RunState.PRERUN; });
 
   game.gameLoop();
+
+  game.player.getMutableComponent(Viewshed).dirty = true;
+  const light = game.player.getMutableComponent(Light);
+  if (light) game.player.getMutableComponent(Light).dirty = true;
+
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -20,7 +20,7 @@ class RenderingSystem extends System {
       const position = entity.getComponent(Position);
       const renderable = entity.getComponent(Renderable);
       const idx = xyIdx(position.x, position.y);
-      if (viewshed.visibleTiles && viewshed.visibleTiles.includes(idx)) {
+      if (viewshed.visibleTiles && viewshed.visibleTiles.has(idx)) {
         const lights = this.queries.lights.results.map(r => r.getComponent(Light));
         const fg = ROT.Color.fromString(renderable.fg) as Color;
         const fgWithLights = addLight(lights, idx, fg);

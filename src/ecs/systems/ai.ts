@@ -9,9 +9,6 @@ import { game } from '../..';
 class AISystem extends System {
   display: ROT.Display;
 
-  init() {
-  }
-
   execute(delta: number, time: number): void {
     const player = game.player;
     const map = game.getState().map;
@@ -26,7 +23,7 @@ class AISystem extends System {
 
     this.queries.monsters.results.forEach(mob => {
       const viewshed = mob.getMutableComponent(Viewshed);
-      if (viewshed.visibleTiles.includes(playerIdx)) {
+      if (viewshed.visibleTiles.has(playerIdx)) {
         const position = mob.getMutableComponent(Position);
         const path = [];
         astar.compute(position.x, position.y, (x, y) => path.push([x, y]));

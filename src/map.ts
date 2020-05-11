@@ -19,7 +19,8 @@ export enum CellType {
   WALL,
   DOOR_OPEN,
   DOOR_CLOSED,
-  DOOR_LOCKED
+  DOOR_LOCKED,
+  GRASS
 }
 
 export type Map = CellType[];
@@ -27,11 +28,19 @@ export type Map = CellType[];
 export const xyIdx = (x: number, y: number): number => y * MAPWIDTH + x;
 
 export const lightPasses = (map: Map, idx: number): boolean => {
-  return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
+  return !!(idx >= 0 && idx < map.length && [
+    CellType.DOOR_OPEN,
+    CellType.FLOOR,
+    CellType.GRASS
+  ].includes(map[idx]));
 };
 
 export const isPassable = (map: Map, idx: number): boolean => {
-  return !!(idx >= 0 && idx < map.length && [CellType.DOOR_OPEN, CellType.FLOOR].includes(map[idx]));
+  return !!(idx >= 0 && idx < map.length && [
+    CellType.DOOR_OPEN,
+    CellType.FLOOR,
+    CellType.GRASS
+  ].includes(map[idx]));
 };
 
 const fillSquare = (map: Map, x: number, y: number, w: number, h: number, type: CellType = CellType.FLOOR): void => {
@@ -82,11 +91,13 @@ const drawVerticalLine = (
   }
 };
 
-// only look at cardinal directions as corner tiles don't affect the center tile
 export const getNeighborScores = (map: Map): number[] => {
   return map
-    // discard tiles that are not visible
     .map((_s, idx, scores) => {
+      const floorTiles = [
+        CellType.FLOOR,
+        CellType.GRASS
+      ];
       let total = 0;
       const [x, y] = [idx % MAPWIDTH, ~~(idx / MAPWIDTH)];
 
@@ -99,14 +110,14 @@ export const getNeighborScores = (map: Map): number[] => {
       const SEIdx = xyIdx(x + 1, y + 1);
       const SWIdx = xyIdx(x - 1, y + 1);
       const neighbors = {
-        N: !!(NIdx >= 0 && NIdx < map.length && scores[NIdx]),
-        E: !!(EIdx >= 0 && EIdx < map.length && scores[EIdx]),
-        S: !!(SIdx >= 0 && SIdx < map.length && scores[SIdx]),
-        W: !!(WIdx >= 0 && WIdx < map.length && scores[WIdx]),
-        NW: !!(NWIdx >= 0 && NWIdx < map.length && scores[NWIdx]),
-        NE: !!(NEIdx >= 0 && NEIdx < map.length && scores[NEIdx]),
-        SE: !!(SEIdx >= 0 && SEIdx < map.length && scores[SEIdx]),
-        SW: !!(SWIdx >= 0 && SWIdx < map.length && scores[SWIdx])
+        N: !!(NIdx >= 0 && NIdx < map.length && !floorTiles.includes(scores[NIdx])),
+        E: !!(EIdx >= 0 && EIdx < map.length && !floorTiles.includes(scores[EIdx])),
+        S: !!(SIdx >= 0 && SIdx < map.length && !floorTiles.includes(scores[SIdx])),
+        W: !!(WIdx >= 0 && WIdx < map.length && !floorTiles.includes(scores[WIdx])),
+        NW: !!(NWIdx >= 0 && NWIdx < map.length && !floorTiles.includes(scores[NWIdx])),
+        NE: !!(NEIdx >= 0 && NEIdx < map.length && !floorTiles.includes(scores[NEIdx])),
+        SE: !!(SEIdx >= 0 && SEIdx < map.length && !floorTiles.includes(scores[SEIdx])),
+        SW: !!(SWIdx >= 0 && SWIdx < map.length && !floorTiles.includes(scores[SWIdx]))
       };
 
       if (neighbors.N) {
@@ -209,6 +220,8 @@ const applyCellularAutomataToArea = (
   }
   return out;
 };
+
+export const grassNoise = new ROT.Noise.Simplex(8);
 
 export const createMap = (w: number, h: number): {
   map: Map;
@@ -314,5 +327,15 @@ export const createMap = (w: number, h: number): {
   drawHorizontalLine(finalMap, 0, MAPWIDTH-1, 0, CellType.WALL);
   drawHorizontalLine(finalMap, 0, MAPWIDTH-1, MAPHEIGHT-1, CellType.WALL);
 
+  // generate grass
+  for (let idx = 0; idx < finalMap.length; idx++) {
+    if (finalMap[idx] === CellType.FLOOR) {
+      const x = idx % MAPWIDTH;
+      const y = ~~(idx / MAPWIDTH);
+      if (grassNoise.get(x / 100, y / 100) > 0.25) {
+        finalMap[idx] = CellType.GRASS;
+      }
+    }
+  }
   return {map: finalMap, rooms, centers, scores: getNeighborScores(finalMap)};
 };

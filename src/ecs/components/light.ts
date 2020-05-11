@@ -8,6 +8,7 @@ class Light extends Component {
     [idx: string]: Color;
   };
   dirty: boolean;
+  applicable: boolean;
 
   constructor() {
     super();
@@ -15,6 +16,7 @@ class Light extends Component {
     this.color = [150, 150, 120];
     this.tiles = {};
     this.dirty = true;
+    this.applicable = false;
   }
 
   reset(): void {
@@ -22,6 +24,7 @@ class Light extends Component {
     this.color = [150, 150, 120];
     this.tiles = {};
     this.dirty = true;
+    this.applicable = false;
   }
 
   copy(src): void {
@@ -29,7 +32,8 @@ class Light extends Component {
       'range',
       'color',
       'tiles',
-      'dirty'
+      'dirty',
+      'applicable'
     ];
     fields.forEach(field => {
       if (has(src, field)) {
