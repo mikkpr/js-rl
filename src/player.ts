@@ -88,12 +88,16 @@ const dwim = () => {
 const setupKeys = (game): void => {
   keymage('k', tryMove('N')(game));
   keymage('up', tryMove('N')(game));
+  keymage('w', tryMove('N')(game));
   keymage('l', tryMove('E')(game));
   keymage('right', tryMove('E')(game));
+  keymage('d', tryMove('E')(game));
   keymage('j', tryMove('S')(game));
   keymage('down', tryMove('S')(game));
+  keymage('s', tryMove('S')(game));
   keymage('h', tryMove('W')(game));
   keymage('left', tryMove('W')(game));
+  keymage('a', tryMove('W')(game));
   keymage('i d c l i p', idclip);
   keymage('t', toggleLight);
   keymage('space', dwim);
