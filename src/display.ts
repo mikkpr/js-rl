@@ -182,7 +182,7 @@ export const drawMap = (map: Map): void => {
         .map(r => r.getComponent(Light))
         .filter(l => l.applicable);
       const fgWithLight = addLight(lights, idx, fgWithNoise);
-      const ambient: Color = [20, 20, 20];
+      const ambient: Color = [80, 80, 80];
       const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
 
       const fg = tileVisible
