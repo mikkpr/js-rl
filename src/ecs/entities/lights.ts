@@ -1,5 +1,5 @@
 import { Entity, World } from 'ecsy';
-import { Light, Renderable, Viewshed, Position } from '../components';
+import { Name, Light, Renderable, Viewshed, Position } from '../components';
 
 export const createLight = (
   ECS: World,
@@ -13,5 +13,6 @@ export const createLight = (
     .addComponent(Light, { range, color })
     .addComponent(Renderable, { glyph: '!', fg: '#aa0' })
     .addComponent(Viewshed, { range: 7 })
-    .addComponent(Position, { x, y });
+    .addComponent(Position, { x, y })
+    .addComponent(Name, { name: 'Torch' });
 };

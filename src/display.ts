@@ -1,8 +1,8 @@
 import * as ROT from 'rot-js';
 import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
-import { Light, Viewshed } from './ecs/components';
-import { RenderingSystem } from './ecs/systems';
-import { grassNoise, CellType, Map } from './map';
+import { Name, Position, Light, Viewshed } from './ecs/components';
+import { InfoSystem, RenderingSystem } from './ecs/systems';
+import { xyIdx, grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
 
 
@@ -144,6 +144,41 @@ const tileColors: { [type: string]: Color } = {
   [CellType.GRASS]: [150, 255, 150],
 };
 
+export const drawHoveredInfo = () => {
+  const { hoveredTileIdx, map } = game.getState();
+  if (!hoveredTileIdx) { return; }
+
+  const tileNames = {
+    [CellType.FLOOR]: 'Floor',
+    [CellType.WALL]: 'Wall',
+    [CellType.DOOR_OPEN]: 'Door (open)',
+    [CellType.DOOR_CLOSED]: 'Door (closed)',
+    [CellType.DOOR_LOCKED]: 'Door (closed)',
+    [CellType.GRASS]: 'Grass'
+  }
+  const hoveredItems = [];
+  hoveredItems.push(tileNames[map[hoveredTileIdx]]);
+
+  game.ecs.getSystem(InfoSystem).queries.info.results.forEach(e => {
+    const pos = e.getComponent(Position);
+    const idx = xyIdx(pos.x, pos.y);
+    if (idx === hoveredTileIdx) {
+      const name = e.getComponent(Name);
+      if (!name) { return; }
+      hoveredItems.push(name.name);
+    }
+  });
+
+  const TILEWIDTH = 8;
+  const TILEHEIGHT = 16;
+  const y = HEIGHT - 1;
+  const x = WIDTH - 1 - hoveredItems.reduce((len, item) => Math.max(len, item.length), 0);
+
+  for (let idx = 0; idx < hoveredItems.length; idx++) {
+    display.drawText(x, y - idx, hoveredItems[idx]);
+  }
+}
+
 export const drawMap = (map: Map): void => {
   const player = game.player;
   const viewshed = player.getComponent(Viewshed);
@@ -163,6 +198,7 @@ export const drawMap = (map: Map): void => {
       window.clairvoyance === true ||
       tileVisible || tileExplored
     ) {
+      const tileHovered = game.getState().hoveredTileIdx === idx;
       const noise = mapNoise.get(x / 100, y / 100);
       const noiseVal = (1 + noise / 2);
       const fgColor = tileColors[map[idx]];
@@ -185,15 +221,17 @@ export const drawMap = (map: Map): void => {
       const ambient: Color = [80, 80, 80];
       const fgWithAmbientLight = addStaticLight(ambient, fgWithNoise);
 
-      const fg = tileVisible
+      const fgRGB = tileVisible
         ? fgWithLight as Color
         : ROT.Color.interpolate(fgWithAmbientLight, ROT.Color.fromString('#000') as Color, 0.5);
 
+      const fg = ROT.Color.toHex(fgRGB);
+
       const bgColor = grassNoise.get(x / 100, y / 100) > 0.25 ? '#010' : '#000';
       const bg = tileVisible
-        ? bgColor
-        : '#000';
-      display.draw(X, Y, glyph, ROT.Color.toHex(fg), bg);
+          ? bgColor
+          : '#000';
+      display.draw(X, Y, glyph, tileHovered ? bg : fg, tileHovered ? fg: bg);
     }
   }
 };

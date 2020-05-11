@@ -3,6 +3,7 @@ import produce from 'immer';
 import * as ROT from 'rot-js';
 import { RenderingSystem, VisibilitySystem } from './ecs/systems';
 import { CellType } from './map';
+import { drawHoveredInfo } from './display';
 
 export enum RunState {
   PRERUN = 'PRERUN',
@@ -24,6 +25,7 @@ export type State = {
   rooms: number[][];
   centers: number[][];
   scores: number[];
+  hoveredTileIdx?: number;
 }
 
 type StateGetter = (state: State) => any;
@@ -72,6 +74,8 @@ class GameState {
 
     this.ecs.getSystem(VisibilitySystem).execute(delta, time);
     this.ecs.getSystem(RenderingSystem).execute(delta, time);
+
+    drawHoveredInfo();
   }
 
   tick = (): void => {

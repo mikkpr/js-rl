@@ -1,18 +1,20 @@
 import * as ROT from 'rot-js';
 import setupKeys from './player';
 import { World } from 'ecsy';
+import throttle from 'lodash/throttle';
 
 import GameState, { RunState } from './state';
 import { setupDisplay } from './display';
-import { createMap } from './map';
+import { xyIdx, createMap } from './map';
 
 import {
   AISystem,
   RenderingSystem,
-  VisibilitySystem
+  VisibilitySystem,
+  InfoSystem
 } from './ecs/systems';
 import { createPlayer, createOrc, createLight } from './ecs/entities';
-import { Light, Renderable, Viewshed, Position, Monster } from './ecs/components';
+import { Name, Light, Renderable, Viewshed, Position, Monster } from './ecs/components';
 
 import './assets/VGA8x16.png';
 import './assets/ibm_vga8.eot';
@@ -35,6 +37,9 @@ const HEIGHT = 32;
 const MAPWIDTH = WIDTH * 2;
 const MAPHEIGHT = HEIGHT * 2;
 
+const TILEWIDTH = 8;
+const TILEHEIGHT = 16;
+
 const display = setupDisplay({
   width: WIDTH,
   height: HEIGHT
@@ -47,10 +52,12 @@ ECS.registerComponent(Viewshed);
 ECS.registerComponent(Renderable);
 ECS.registerComponent(Monster);
 ECS.registerComponent(Light);
+ECS.registerComponent(Name);
 
 ECS.registerSystem(VisibilitySystem);
 ECS.registerSystem(AISystem);
 ECS.registerSystem(RenderingSystem);
+ECS.registerSystem(InfoSystem);
 
 const map = createMap(MAPWIDTH, MAPHEIGHT);
 
@@ -63,7 +70,17 @@ const game = new GameState({
 }, display, ECS);
 
 eval('window.game = game;');
+const handleCanvasMouseMove = throttle((e) => {
+  if (display.getContainer().contains(e.target)) {
+    const { layerX, layerY } = e;
+    const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
+    const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
+    const tileIdx = xyIdx(X, Y);
+    game.setState(state => { state.hoveredTileIdx = tileIdx; });
+  }
+}, 30)
 
+document.addEventListener('mousemove', handleCanvasMouseMove);
 const main = (): void => {
   const randomCenter = ROT.RNG.getItem(map.centers);
   const mapCenter = [~~(WIDTH/2), ~~(HEIGHT/2)];

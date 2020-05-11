@@ -4,7 +4,8 @@ import {
   Position,
   Renderable,
   Viewshed,
-  Monster
+  Monster,
+  Name,
 } from '../components/';
 
 export const createOrc = (ecs, x, y) => {
@@ -13,6 +14,7 @@ export const createOrc = (ecs, x, y) => {
     .addComponent(Viewshed)
     .addComponent(Renderable, { glyph: 'o', fg: '#a00', z: 1 })
     .addComponent(Position, { x, y })
-    .addComponent(Monster);
+    .addComponent(Monster)
+    .addComponent(Name, { name: 'Orc' });
   return orc;
 };

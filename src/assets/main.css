@@ -45,8 +45,14 @@ body {
     justify-content: center;
     align-items: center;
 }
-.help {
 
+.help { margin-top: 1em; }
+.help p {
+  margin: 0;
+}
+
+.help p + p {
+  margin-top: 0.5em;
 }
 
 canvas {

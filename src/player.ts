@@ -33,7 +33,10 @@ const tryMove = (dir: Direction) => (game) => (): void => {
     if (light) light.dirty = true;
   }
 
-  game.setState(state => { state.runState = RunState.PLAYERTURN; });
+  game.setState(state => {
+    state.runState = RunState.PLAYERTURN;
+    state.hoveredTileIdx = null;
+  });
 };
 
 const idclip = () => {
