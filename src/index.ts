@@ -5,7 +5,7 @@ import throttle from 'lodash/throttle';
 
 import GameState, { RunState } from './state';
 import { setupDisplay } from './display';
-import { xyIdx, createMap } from './map';
+import { xyIdx, createNewMap } from './map';
 
 import {
   AISystem,
@@ -59,7 +59,7 @@ ECS.registerSystem(AISystem);
 ECS.registerSystem(RenderingSystem);
 ECS.registerSystem(InfoSystem);
 
-const map = createMap(MAPWIDTH, MAPHEIGHT);
+const map = createNewMap(MAPWIDTH, MAPHEIGHT);
 
 const game = new GameState({
   runState: RunState.PRERUN,
@@ -75,6 +75,7 @@ const handleCanvasMouseMove = throttle((e) => {
     const { layerX, layerY } = e;
     const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
     const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
+    if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) { return; }
     const tileIdx = xyIdx(X, Y);
     game.setState(state => { state.hoveredTileIdx = tileIdx; });
   }

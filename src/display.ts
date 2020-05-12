@@ -1,5 +1,4 @@
-import * as ROT from 'rot-js';
-import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
+import * as ROT from 'rot-js';import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
 import { Name, Position, Light, Viewshed } from './ecs/components';
 import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
@@ -126,7 +125,7 @@ const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): strin
     [CellType.DOOR_OPEN]: '\'',
     [CellType.DOOR_CLOSED]: '+',
     [CellType.DOOR_LOCKED]: '+',
-    [CellType.GRASS]: '≈',
+    [CellType.GRASS]: '"',
   };
   if (map[idx] === CellType.WALL) {
     return getWallGlyph(scores[idx]);
@@ -164,18 +163,19 @@ export const drawHoveredInfo = () => {
     const idx = xyIdx(pos.x, pos.y);
     if (idx === hoveredTileIdx) {
       const name = e.getComponent(Name);
-      if (!name) { return; }
+      if (!name || !name.name) { return; }
       hoveredItems.push(name.name);
     }
   });
 
-  const TILEWIDTH = 8;
-  const TILEHEIGHT = 16;
   const y = HEIGHT - 1;
   const x = WIDTH - 1 - hoveredItems.filter(x => x).reduce((len, item) => Math.max(len, item.length), 0);
 
-  for (let idx = 0; idx < hoveredItems.length; idx++) {
-    display.drawText(x, y - idx, hoveredItems[idx]);
+  const viewshed = game.player.getComponent(Viewshed);
+  if (viewshed.exploredTiles.has(hoveredTileIdx)) {
+    for (let idx = 0; idx < hoveredItems.length; idx++) {
+      display.drawText(x, y - idx, hoveredItems[idx]);
+    }
   }
 }
 
@@ -202,6 +202,7 @@ export const drawMap = (map: Map): void => {
       const noise = mapNoise.get(x / 100, y / 100);
       const noiseVal = (1 + noise / 2);
       const fgColor = tileColors[map[idx]];
+      if (!fgColor) { console.log(idx, map[idx]) }
       const fgColorWithNoise = ROT.Color.multiply(fgColor, [80, 80, 80]);
       const fgWithNoise = ROT.Color.interpolate(
         fgColor,
