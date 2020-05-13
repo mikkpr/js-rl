@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -229,6 +229,448 @@ class RNG {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mod", function() { return mod; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clamp", function() { return clamp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "capitalize", function() { return capitalize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "format", function() { return format; });
+/**
+ * Always positive modulus
+ * @param x Operand
+ * @param n Modulus
+ * @returns x modulo n
+ */
+function mod(x, n) {
+    return (x % n + n) % n;
+}
+function clamp(val, min = 0, max = 1) {
+    if (val < min)
+        return min;
+    if (val > max)
+        return max;
+    return val;
+}
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.substring(1);
+}
+/**
+ * Format a string in a flexible way. Scans for %s strings and replaces them with arguments. List of patterns is modifiable via String.format.map.
+ * @param {string} template
+ * @param {any} [argv]
+ */
+function format(template, ...args) {
+    let map = format.map;
+    let replacer = function (match, group1, group2, index) {
+        if (template.charAt(index - 1) == "%") {
+            return match.substring(1);
+        }
+        if (!args.length) {
+            return match;
+        }
+        let obj = args[0];
+        let group = group1 || group2;
+        let parts = group.split(",");
+        let name = parts.shift() || "";
+        let method = map[name.toLowerCase()];
+        if (!method) {
+            return match;
+        }
+        obj = args.shift();
+        let replaced = obj[method].apply(obj, parts);
+        let first = name.charAt(0);
+        if (first != first.toLowerCase()) {
+            replaced = capitalize(replaced);
+        }
+        return replaced;
+    };
+    return template.replace(/%(?:([a-z]+)|(?:{([^}]+)}))/gi, replacer);
+}
+format.map = {
+    "s": "toString"
+};
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fromString", function() { return fromString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add", function() { return add; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add_", function() { return add_; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply", function() { return multiply; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply_", function() { return multiply_; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolate", function() { return interpolate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerp", function() { return lerp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolateHSL", function() { return interpolateHSL; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerpHSL", function() { return lerpHSL; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomize", function() { return randomize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgb2hsl", function() { return rgb2hsl; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hsl2rgb", function() { return hsl2rgb; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRGB", function() { return toRGB; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHex", function() { return toHex; });
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
+
+
+function fromString(str) {
+    let cached, r;
+    if (str in CACHE) {
+        cached = CACHE[str];
+    }
+    else {
+        if (str.charAt(0) == "#") { // hex rgb
+            let matched = str.match(/[0-9a-f]/gi) || [];
+            let values = matched.map((x) => parseInt(x, 16));
+            if (values.length == 3) {
+                cached = values.map((x) => x * 17);
+            }
+            else {
+                for (let i = 0; i < 3; i++) {
+                    values[i + 1] += 16 * values[i];
+                    values.splice(i, 1);
+                }
+                cached = values;
+            }
+        }
+        else if ((r = str.match(/rgb\(([0-9, ]+)\)/i))) { // decimal rgb
+            cached = r[1].split(/\s*,\s*/).map((x) => parseInt(x));
+        }
+        else { // html name
+            cached = [0, 0, 0];
+        }
+        CACHE[str] = cached;
+    }
+    return cached.slice();
+}
+/**
+ * Add two or more colors
+ */
+function add(color1, ...colors) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            result[i] += colors[j][i];
+        }
+    }
+    return result;
+}
+/**
+ * Add two or more colors, MODIFIES FIRST ARGUMENT
+ */
+function add_(color1, ...colors) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            color1[i] += colors[j][i];
+        }
+    }
+    return color1;
+}
+/**
+ * Multiply (mix) two or more colors
+ */
+function multiply(color1, ...colors) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            result[i] *= colors[j][i] / 255;
+        }
+        result[i] = Math.round(result[i]);
+    }
+    return result;
+}
+/**
+ * Multiply (mix) two or more colors, MODIFIES FIRST ARGUMENT
+ */
+function multiply_(color1, ...colors) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < colors.length; j++) {
+            color1[i] *= colors[j][i] / 255;
+        }
+        color1[i] = Math.round(color1[i]);
+    }
+    return color1;
+}
+/**
+ * Interpolate (blend) two colors with a given factor
+ */
+function interpolate(color1, color2, factor = 0.5) {
+    let result = color1.slice();
+    for (let i = 0; i < 3; i++) {
+        result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
+    }
+    return result;
+}
+const lerp = interpolate;
+/**
+ * Interpolate (blend) two colors with a given factor in HSL mode
+ */
+function interpolateHSL(color1, color2, factor = 0.5) {
+    let hsl1 = rgb2hsl(color1);
+    let hsl2 = rgb2hsl(color2);
+    for (let i = 0; i < 3; i++) {
+        hsl1[i] += factor * (hsl2[i] - hsl1[i]);
+    }
+    return hsl2rgb(hsl1);
+}
+const lerpHSL = interpolateHSL;
+/**
+ * Create a new random color based on this one
+ * @param color
+ * @param diff Set of standard deviations
+ */
+function randomize(color, diff) {
+    if (!(diff instanceof Array)) {
+        diff = Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff));
+    }
+    let result = color.slice();
+    for (let i = 0; i < 3; i++) {
+        result[i] += (diff instanceof Array ? Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff[i])) : diff);
+    }
+    return result;
+}
+/**
+ * Converts an RGB color value to HSL. Expects 0..255 inputs, produces 0..1 outputs.
+ */
+function rgb2hsl(color) {
+    let r = color[0] / 255;
+    let g = color[1] / 255;
+    let b = color[2] / 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s, l = (max + min) / 2;
+    if (max == min) {
+        s = 0; // achromatic
+    }
+    else {
+        let d = max - min;
+        s = (l > 0.5 ? d / (2 - max - min) : d / (max + min));
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+        h /= 6;
+    }
+    return [h, s, l];
+}
+function hue2rgb(p, q, t) {
+    if (t < 0)
+        t += 1;
+    if (t > 1)
+        t -= 1;
+    if (t < 1 / 6)
+        return p + (q - p) * 6 * t;
+    if (t < 1 / 2)
+        return q;
+    if (t < 2 / 3)
+        return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+}
+/**
+ * Converts an HSL color value to RGB. Expects 0..1 inputs, produces 0..255 outputs.
+ */
+function hsl2rgb(color) {
+    let l = color[2];
+    if (color[1] == 0) {
+        l = Math.round(l * 255);
+        return [l, l, l];
+    }
+    else {
+        let s = color[1];
+        let q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
+        let p = 2 * l - q;
+        let r = hue2rgb(p, q, color[0] + 1 / 3);
+        let g = hue2rgb(p, q, color[0]);
+        let b = hue2rgb(p, q, color[0] - 1 / 3);
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+}
+function toRGB(color) {
+    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255));
+    return `rgb(${clamped.join(",")})`;
+}
+function toHex(color) {
+    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255).toString(16).padStart(2, "0"));
+    return `#${clamped.join("")}`;
+}
+const CACHE = {
+    "black": [0, 0, 0],
+    "navy": [0, 0, 128],
+    "darkblue": [0, 0, 139],
+    "mediumblue": [0, 0, 205],
+    "blue": [0, 0, 255],
+    "darkgreen": [0, 100, 0],
+    "green": [0, 128, 0],
+    "teal": [0, 128, 128],
+    "darkcyan": [0, 139, 139],
+    "deepskyblue": [0, 191, 255],
+    "darkturquoise": [0, 206, 209],
+    "mediumspringgreen": [0, 250, 154],
+    "lime": [0, 255, 0],
+    "springgreen": [0, 255, 127],
+    "aqua": [0, 255, 255],
+    "cyan": [0, 255, 255],
+    "midnightblue": [25, 25, 112],
+    "dodgerblue": [30, 144, 255],
+    "forestgreen": [34, 139, 34],
+    "seagreen": [46, 139, 87],
+    "darkslategray": [47, 79, 79],
+    "darkslategrey": [47, 79, 79],
+    "limegreen": [50, 205, 50],
+    "mediumseagreen": [60, 179, 113],
+    "turquoise": [64, 224, 208],
+    "royalblue": [65, 105, 225],
+    "steelblue": [70, 130, 180],
+    "darkslateblue": [72, 61, 139],
+    "mediumturquoise": [72, 209, 204],
+    "indigo": [75, 0, 130],
+    "darkolivegreen": [85, 107, 47],
+    "cadetblue": [95, 158, 160],
+    "cornflowerblue": [100, 149, 237],
+    "mediumaquamarine": [102, 205, 170],
+    "dimgray": [105, 105, 105],
+    "dimgrey": [105, 105, 105],
+    "slateblue": [106, 90, 205],
+    "olivedrab": [107, 142, 35],
+    "slategray": [112, 128, 144],
+    "slategrey": [112, 128, 144],
+    "lightslategray": [119, 136, 153],
+    "lightslategrey": [119, 136, 153],
+    "mediumslateblue": [123, 104, 238],
+    "lawngreen": [124, 252, 0],
+    "chartreuse": [127, 255, 0],
+    "aquamarine": [127, 255, 212],
+    "maroon": [128, 0, 0],
+    "purple": [128, 0, 128],
+    "olive": [128, 128, 0],
+    "gray": [128, 128, 128],
+    "grey": [128, 128, 128],
+    "skyblue": [135, 206, 235],
+    "lightskyblue": [135, 206, 250],
+    "blueviolet": [138, 43, 226],
+    "darkred": [139, 0, 0],
+    "darkmagenta": [139, 0, 139],
+    "saddlebrown": [139, 69, 19],
+    "darkseagreen": [143, 188, 143],
+    "lightgreen": [144, 238, 144],
+    "mediumpurple": [147, 112, 216],
+    "darkviolet": [148, 0, 211],
+    "palegreen": [152, 251, 152],
+    "darkorchid": [153, 50, 204],
+    "yellowgreen": [154, 205, 50],
+    "sienna": [160, 82, 45],
+    "brown": [165, 42, 42],
+    "darkgray": [169, 169, 169],
+    "darkgrey": [169, 169, 169],
+    "lightblue": [173, 216, 230],
+    "greenyellow": [173, 255, 47],
+    "paleturquoise": [175, 238, 238],
+    "lightsteelblue": [176, 196, 222],
+    "powderblue": [176, 224, 230],
+    "firebrick": [178, 34, 34],
+    "darkgoldenrod": [184, 134, 11],
+    "mediumorchid": [186, 85, 211],
+    "rosybrown": [188, 143, 143],
+    "darkkhaki": [189, 183, 107],
+    "silver": [192, 192, 192],
+    "mediumvioletred": [199, 21, 133],
+    "indianred": [205, 92, 92],
+    "peru": [205, 133, 63],
+    "chocolate": [210, 105, 30],
+    "tan": [210, 180, 140],
+    "lightgray": [211, 211, 211],
+    "lightgrey": [211, 211, 211],
+    "palevioletred": [216, 112, 147],
+    "thistle": [216, 191, 216],
+    "orchid": [218, 112, 214],
+    "goldenrod": [218, 165, 32],
+    "crimson": [220, 20, 60],
+    "gainsboro": [220, 220, 220],
+    "plum": [221, 160, 221],
+    "burlywood": [222, 184, 135],
+    "lightcyan": [224, 255, 255],
+    "lavender": [230, 230, 250],
+    "darksalmon": [233, 150, 122],
+    "violet": [238, 130, 238],
+    "palegoldenrod": [238, 232, 170],
+    "lightcoral": [240, 128, 128],
+    "khaki": [240, 230, 140],
+    "aliceblue": [240, 248, 255],
+    "honeydew": [240, 255, 240],
+    "azure": [240, 255, 255],
+    "sandybrown": [244, 164, 96],
+    "wheat": [245, 222, 179],
+    "beige": [245, 245, 220],
+    "whitesmoke": [245, 245, 245],
+    "mintcream": [245, 255, 250],
+    "ghostwhite": [248, 248, 255],
+    "salmon": [250, 128, 114],
+    "antiquewhite": [250, 235, 215],
+    "linen": [250, 240, 230],
+    "lightgoldenrodyellow": [250, 250, 210],
+    "oldlace": [253, 245, 230],
+    "red": [255, 0, 0],
+    "fuchsia": [255, 0, 255],
+    "magenta": [255, 0, 255],
+    "deeppink": [255, 20, 147],
+    "orangered": [255, 69, 0],
+    "tomato": [255, 99, 71],
+    "hotpink": [255, 105, 180],
+    "coral": [255, 127, 80],
+    "darkorange": [255, 140, 0],
+    "lightsalmon": [255, 160, 122],
+    "orange": [255, 165, 0],
+    "lightpink": [255, 182, 193],
+    "pink": [255, 192, 203],
+    "gold": [255, 215, 0],
+    "peachpuff": [255, 218, 185],
+    "navajowhite": [255, 222, 173],
+    "moccasin": [255, 228, 181],
+    "bisque": [255, 228, 196],
+    "mistyrose": [255, 228, 225],
+    "blanchedalmond": [255, 235, 205],
+    "papayawhip": [255, 239, 213],
+    "lavenderblush": [255, 240, 245],
+    "seashell": [255, 245, 238],
+    "cornsilk": [255, 248, 220],
+    "lemonchiffon": [255, 250, 205],
+    "floralwhite": [255, 250, 240],
+    "snow": [255, 250, 250],
+    "yellow": [255, 255, 0],
+    "lightyellow": [255, 255, 224],
+    "ivory": [255, 255, 240],
+    "white": [255, 255, 255]
+};
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
+/**
+ * @class Abstract display backend module
+ * @private
+ */
+class Backend {
+    getContainer() { return null; }
+    setOptions(options) { this._options = options; }
+}
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1995,7 +2437,7 @@ if (urlParams.has("enable-remote-devtools")) {
 
 
 /***/ }),
-/* 2 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2004,25 +2446,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const renderable_1 = __importDefault(__webpack_require__(45));
+const renderable_1 = __importDefault(__webpack_require__(46));
 exports.Renderable = renderable_1.default;
-const position_1 = __importDefault(__webpack_require__(82));
+const position_1 = __importDefault(__webpack_require__(83));
 exports.Position = position_1.default;
-const viewshed_1 = __importDefault(__webpack_require__(83));
+const viewshed_1 = __importDefault(__webpack_require__(84));
 exports.Viewshed = viewshed_1.default;
-const monster_1 = __importDefault(__webpack_require__(84));
+const monster_1 = __importDefault(__webpack_require__(85));
 exports.Monster = monster_1.default;
-const light_1 = __importDefault(__webpack_require__(85));
+const light_1 = __importDefault(__webpack_require__(86));
 exports.Light = light_1.default;
-const name_1 = __importDefault(__webpack_require__(86));
+const name_1 = __importDefault(__webpack_require__(87));
 exports.Name = name_1.default;
 
 
 /***/ }),
-/* 3 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var freeGlobal = __webpack_require__(29);
+var freeGlobal = __webpack_require__(30);
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -2034,973 +2476,7 @@ module.exports = root;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mod", function() { return mod; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clamp", function() { return clamp; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "capitalize", function() { return capitalize; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "format", function() { return format; });
-/**
- * Always positive modulus
- * @param x Operand
- * @param n Modulus
- * @returns x modulo n
- */
-function mod(x, n) {
-    return (x % n + n) % n;
-}
-function clamp(val, min = 0, max = 1) {
-    if (val < min)
-        return min;
-    if (val > max)
-        return max;
-    return val;
-}
-function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.substring(1);
-}
-/**
- * Format a string in a flexible way. Scans for %s strings and replaces them with arguments. List of patterns is modifiable via String.format.map.
- * @param {string} template
- * @param {any} [argv]
- */
-function format(template, ...args) {
-    let map = format.map;
-    let replacer = function (match, group1, group2, index) {
-        if (template.charAt(index - 1) == "%") {
-            return match.substring(1);
-        }
-        if (!args.length) {
-            return match;
-        }
-        let obj = args[0];
-        let group = group1 || group2;
-        let parts = group.split(",");
-        let name = parts.shift() || "";
-        let method = map[name.toLowerCase()];
-        if (!method) {
-            return match;
-        }
-        obj = args.shift();
-        let replaced = obj[method].apply(obj, parts);
-        let first = name.charAt(0);
-        if (first != first.toLowerCase()) {
-            replaced = capitalize(replaced);
-        }
-        return replaced;
-    };
-    return template.replace(/%(?:([a-z]+)|(?:{([^}]+)}))/gi, replacer);
-}
-format.map = {
-    "s": "toString"
-};
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fromString", function() { return fromString; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add", function() { return add; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "add_", function() { return add_; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply", function() { return multiply; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply_", function() { return multiply_; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolate", function() { return interpolate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerp", function() { return lerp; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolateHSL", function() { return interpolateHSL; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lerpHSL", function() { return lerpHSL; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomize", function() { return randomize; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgb2hsl", function() { return rgb2hsl; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hsl2rgb", function() { return hsl2rgb; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRGB", function() { return toRGB; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHex", function() { return toHex; });
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
-/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
-
-
-function fromString(str) {
-    let cached, r;
-    if (str in CACHE) {
-        cached = CACHE[str];
-    }
-    else {
-        if (str.charAt(0) == "#") { // hex rgb
-            let matched = str.match(/[0-9a-f]/gi) || [];
-            let values = matched.map((x) => parseInt(x, 16));
-            if (values.length == 3) {
-                cached = values.map((x) => x * 17);
-            }
-            else {
-                for (let i = 0; i < 3; i++) {
-                    values[i + 1] += 16 * values[i];
-                    values.splice(i, 1);
-                }
-                cached = values;
-            }
-        }
-        else if ((r = str.match(/rgb\(([0-9, ]+)\)/i))) { // decimal rgb
-            cached = r[1].split(/\s*,\s*/).map((x) => parseInt(x));
-        }
-        else { // html name
-            cached = [0, 0, 0];
-        }
-        CACHE[str] = cached;
-    }
-    return cached.slice();
-}
-/**
- * Add two or more colors
- */
-function add(color1, ...colors) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            result[i] += colors[j][i];
-        }
-    }
-    return result;
-}
-/**
- * Add two or more colors, MODIFIES FIRST ARGUMENT
- */
-function add_(color1, ...colors) {
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            color1[i] += colors[j][i];
-        }
-    }
-    return color1;
-}
-/**
- * Multiply (mix) two or more colors
- */
-function multiply(color1, ...colors) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            result[i] *= colors[j][i] / 255;
-        }
-        result[i] = Math.round(result[i]);
-    }
-    return result;
-}
-/**
- * Multiply (mix) two or more colors, MODIFIES FIRST ARGUMENT
- */
-function multiply_(color1, ...colors) {
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < colors.length; j++) {
-            color1[i] *= colors[j][i] / 255;
-        }
-        color1[i] = Math.round(color1[i]);
-    }
-    return color1;
-}
-/**
- * Interpolate (blend) two colors with a given factor
- */
-function interpolate(color1, color2, factor = 0.5) {
-    let result = color1.slice();
-    for (let i = 0; i < 3; i++) {
-        result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
-    }
-    return result;
-}
-const lerp = interpolate;
-/**
- * Interpolate (blend) two colors with a given factor in HSL mode
- */
-function interpolateHSL(color1, color2, factor = 0.5) {
-    let hsl1 = rgb2hsl(color1);
-    let hsl2 = rgb2hsl(color2);
-    for (let i = 0; i < 3; i++) {
-        hsl1[i] += factor * (hsl2[i] - hsl1[i]);
-    }
-    return hsl2rgb(hsl1);
-}
-const lerpHSL = interpolateHSL;
-/**
- * Create a new random color based on this one
- * @param color
- * @param diff Set of standard deviations
- */
-function randomize(color, diff) {
-    if (!(diff instanceof Array)) {
-        diff = Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff));
-    }
-    let result = color.slice();
-    for (let i = 0; i < 3; i++) {
-        result[i] += (diff instanceof Array ? Math.round(_rng_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getNormal(0, diff[i])) : diff);
-    }
-    return result;
-}
-/**
- * Converts an RGB color value to HSL. Expects 0..255 inputs, produces 0..1 outputs.
- */
-function rgb2hsl(color) {
-    let r = color[0] / 255;
-    let g = color[1] / 255;
-    let b = color[2] / 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s, l = (max + min) / 2;
-    if (max == min) {
-        s = 0; // achromatic
-    }
-    else {
-        let d = max - min;
-        s = (l > 0.5 ? d / (2 - max - min) : d / (max + min));
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            case b:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h /= 6;
-    }
-    return [h, s, l];
-}
-function hue2rgb(p, q, t) {
-    if (t < 0)
-        t += 1;
-    if (t > 1)
-        t -= 1;
-    if (t < 1 / 6)
-        return p + (q - p) * 6 * t;
-    if (t < 1 / 2)
-        return q;
-    if (t < 2 / 3)
-        return p + (q - p) * (2 / 3 - t) * 6;
-    return p;
-}
-/**
- * Converts an HSL color value to RGB. Expects 0..1 inputs, produces 0..255 outputs.
- */
-function hsl2rgb(color) {
-    let l = color[2];
-    if (color[1] == 0) {
-        l = Math.round(l * 255);
-        return [l, l, l];
-    }
-    else {
-        let s = color[1];
-        let q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
-        let p = 2 * l - q;
-        let r = hue2rgb(p, q, color[0] + 1 / 3);
-        let g = hue2rgb(p, q, color[0]);
-        let b = hue2rgb(p, q, color[0] - 1 / 3);
-        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-    }
-}
-function toRGB(color) {
-    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255));
-    return `rgb(${clamped.join(",")})`;
-}
-function toHex(color) {
-    let clamped = color.map(x => Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["clamp"])(x, 0, 255).toString(16).padStart(2, "0"));
-    return `#${clamped.join("")}`;
-}
-const CACHE = {
-    "black": [0, 0, 0],
-    "navy": [0, 0, 128],
-    "darkblue": [0, 0, 139],
-    "mediumblue": [0, 0, 205],
-    "blue": [0, 0, 255],
-    "darkgreen": [0, 100, 0],
-    "green": [0, 128, 0],
-    "teal": [0, 128, 128],
-    "darkcyan": [0, 139, 139],
-    "deepskyblue": [0, 191, 255],
-    "darkturquoise": [0, 206, 209],
-    "mediumspringgreen": [0, 250, 154],
-    "lime": [0, 255, 0],
-    "springgreen": [0, 255, 127],
-    "aqua": [0, 255, 255],
-    "cyan": [0, 255, 255],
-    "midnightblue": [25, 25, 112],
-    "dodgerblue": [30, 144, 255],
-    "forestgreen": [34, 139, 34],
-    "seagreen": [46, 139, 87],
-    "darkslategray": [47, 79, 79],
-    "darkslategrey": [47, 79, 79],
-    "limegreen": [50, 205, 50],
-    "mediumseagreen": [60, 179, 113],
-    "turquoise": [64, 224, 208],
-    "royalblue": [65, 105, 225],
-    "steelblue": [70, 130, 180],
-    "darkslateblue": [72, 61, 139],
-    "mediumturquoise": [72, 209, 204],
-    "indigo": [75, 0, 130],
-    "darkolivegreen": [85, 107, 47],
-    "cadetblue": [95, 158, 160],
-    "cornflowerblue": [100, 149, 237],
-    "mediumaquamarine": [102, 205, 170],
-    "dimgray": [105, 105, 105],
-    "dimgrey": [105, 105, 105],
-    "slateblue": [106, 90, 205],
-    "olivedrab": [107, 142, 35],
-    "slategray": [112, 128, 144],
-    "slategrey": [112, 128, 144],
-    "lightslategray": [119, 136, 153],
-    "lightslategrey": [119, 136, 153],
-    "mediumslateblue": [123, 104, 238],
-    "lawngreen": [124, 252, 0],
-    "chartreuse": [127, 255, 0],
-    "aquamarine": [127, 255, 212],
-    "maroon": [128, 0, 0],
-    "purple": [128, 0, 128],
-    "olive": [128, 128, 0],
-    "gray": [128, 128, 128],
-    "grey": [128, 128, 128],
-    "skyblue": [135, 206, 235],
-    "lightskyblue": [135, 206, 250],
-    "blueviolet": [138, 43, 226],
-    "darkred": [139, 0, 0],
-    "darkmagenta": [139, 0, 139],
-    "saddlebrown": [139, 69, 19],
-    "darkseagreen": [143, 188, 143],
-    "lightgreen": [144, 238, 144],
-    "mediumpurple": [147, 112, 216],
-    "darkviolet": [148, 0, 211],
-    "palegreen": [152, 251, 152],
-    "darkorchid": [153, 50, 204],
-    "yellowgreen": [154, 205, 50],
-    "sienna": [160, 82, 45],
-    "brown": [165, 42, 42],
-    "darkgray": [169, 169, 169],
-    "darkgrey": [169, 169, 169],
-    "lightblue": [173, 216, 230],
-    "greenyellow": [173, 255, 47],
-    "paleturquoise": [175, 238, 238],
-    "lightsteelblue": [176, 196, 222],
-    "powderblue": [176, 224, 230],
-    "firebrick": [178, 34, 34],
-    "darkgoldenrod": [184, 134, 11],
-    "mediumorchid": [186, 85, 211],
-    "rosybrown": [188, 143, 143],
-    "darkkhaki": [189, 183, 107],
-    "silver": [192, 192, 192],
-    "mediumvioletred": [199, 21, 133],
-    "indianred": [205, 92, 92],
-    "peru": [205, 133, 63],
-    "chocolate": [210, 105, 30],
-    "tan": [210, 180, 140],
-    "lightgray": [211, 211, 211],
-    "lightgrey": [211, 211, 211],
-    "palevioletred": [216, 112, 147],
-    "thistle": [216, 191, 216],
-    "orchid": [218, 112, 214],
-    "goldenrod": [218, 165, 32],
-    "crimson": [220, 20, 60],
-    "gainsboro": [220, 220, 220],
-    "plum": [221, 160, 221],
-    "burlywood": [222, 184, 135],
-    "lightcyan": [224, 255, 255],
-    "lavender": [230, 230, 250],
-    "darksalmon": [233, 150, 122],
-    "violet": [238, 130, 238],
-    "palegoldenrod": [238, 232, 170],
-    "lightcoral": [240, 128, 128],
-    "khaki": [240, 230, 140],
-    "aliceblue": [240, 248, 255],
-    "honeydew": [240, 255, 240],
-    "azure": [240, 255, 255],
-    "sandybrown": [244, 164, 96],
-    "wheat": [245, 222, 179],
-    "beige": [245, 245, 220],
-    "whitesmoke": [245, 245, 245],
-    "mintcream": [245, 255, 250],
-    "ghostwhite": [248, 248, 255],
-    "salmon": [250, 128, 114],
-    "antiquewhite": [250, 235, 215],
-    "linen": [250, 240, 230],
-    "lightgoldenrodyellow": [250, 250, 210],
-    "oldlace": [253, 245, 230],
-    "red": [255, 0, 0],
-    "fuchsia": [255, 0, 255],
-    "magenta": [255, 0, 255],
-    "deeppink": [255, 20, 147],
-    "orangered": [255, 69, 0],
-    "tomato": [255, 99, 71],
-    "hotpink": [255, 105, 180],
-    "coral": [255, 127, 80],
-    "darkorange": [255, 140, 0],
-    "lightsalmon": [255, 160, 122],
-    "orange": [255, 165, 0],
-    "lightpink": [255, 182, 193],
-    "pink": [255, 192, 203],
-    "gold": [255, 215, 0],
-    "peachpuff": [255, 218, 185],
-    "navajowhite": [255, 222, 173],
-    "moccasin": [255, 228, 181],
-    "bisque": [255, 228, 196],
-    "mistyrose": [255, 228, 225],
-    "blanchedalmond": [255, 235, 205],
-    "papayawhip": [255, 239, 213],
-    "lavenderblush": [255, 240, 245],
-    "seashell": [255, 245, 238],
-    "cornsilk": [255, 248, 220],
-    "lemonchiffon": [255, 250, 205],
-    "floralwhite": [255, 250, 240],
-    "snow": [255, 250, 250],
-    "yellow": [255, 255, 0],
-    "lightyellow": [255, 255, 224],
-    "ivory": [255, 255, 240],
-    "white": [255, 255, 255]
-};
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(9));
-const player_1 = __importDefault(__webpack_require__(40));
-const ecsy_1 = __webpack_require__(1);
-const throttle_1 = __importDefault(__webpack_require__(134));
-const state_1 = __importStar(__webpack_require__(28));
-const display_1 = __webpack_require__(26);
-const map_1 = __webpack_require__(8);
-const systems_1 = __webpack_require__(16);
-const entities_1 = __webpack_require__(138);
-const components_1 = __webpack_require__(2);
-__webpack_require__(142);
-__webpack_require__(143);
-__webpack_require__(144);
-__webpack_require__(145);
-__webpack_require__(146);
-__webpack_require__(147);
-const WIDTH = 64;
-exports.WIDTH = WIDTH;
-const HEIGHT = 32;
-exports.HEIGHT = HEIGHT;
-const MAPWIDTH = WIDTH * 2;
-exports.MAPWIDTH = MAPWIDTH;
-const MAPHEIGHT = HEIGHT * 2;
-exports.MAPHEIGHT = MAPHEIGHT;
-const TILEWIDTH = 8;
-const TILEHEIGHT = 16;
-const display = display_1.setupDisplay({
-    width: WIDTH,
-    height: HEIGHT
-});
-exports.display = display;
-const ECS = new ecsy_1.World();
-exports.ECS = ECS;
-ECS.registerComponent(components_1.Position);
-ECS.registerComponent(components_1.Viewshed);
-ECS.registerComponent(components_1.Renderable);
-ECS.registerComponent(components_1.Monster);
-ECS.registerComponent(components_1.Light);
-ECS.registerComponent(components_1.Name);
-ECS.registerSystem(systems_1.VisibilitySystem);
-ECS.registerSystem(systems_1.AISystem);
-ECS.registerSystem(systems_1.RenderingSystem);
-ECS.registerSystem(systems_1.InfoSystem);
-const map = map_1.createNewMap(MAPWIDTH, MAPHEIGHT);
-const game = new state_1.default({
-    runState: state_1.RunState.PRERUN,
-    map: map.map,
-    rooms: map.rooms,
-    centers: map.centers,
-    scores: map.scores
-}, display, ECS);
-exports.game = game;
-eval('window.game = game;');
-const handleCanvasMouseMove = throttle_1.default((e) => {
-    if (display.getContainer().contains(e.target)) {
-        const { layerX, layerY } = e;
-        const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
-        const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
-        if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) {
-            return;
-        }
-        const tileIdx = map_1.xyIdx(X, Y);
-        game.setState(state => { state.hoveredTileIdx = tileIdx; });
-    }
-}, 30);
-document.addEventListener('mousemove', handleCanvasMouseMove);
-const main = () => {
-    const randomCenter = ROT.RNG.getItem(map.centers);
-    const mapCenter = [~~(WIDTH / 2), ~~(HEIGHT / 2)];
-    const cameraOffset = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
-    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
-    game.player = game.ecs.entityManager.getEntityByName('player');
-    game.cameraOffset = cameraOffset;
-    const randomCenter2 = ROT.RNG.getItem(map.centers);
-    entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
-    const numLights = ROT.RNG.getUniformInt(3, map.centers.length);
-    for (let n = 3; n < numLights; n++) {
-        const range = ROT.RNG.getUniformInt(5, 10);
-        const color = ROT.RNG.getItem([
-            [255, 200, 200],
-            [200, 255, 200],
-            [200, 200, 255],
-            [255, 255, 200],
-            [200, 255, 255],
-            [255, 200, 255]
-        ]);
-        const c = ROT.RNG.getItem(map.centers);
-        entities_1.createLight(ECS, c[0] + 1, c[1], range, color);
-    }
-    player_1.default(game);
-    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
-    game.gameLoop();
-    game.player.getMutableComponent(components_1.Viewshed).dirty = true;
-    const light = game.player.getMutableComponent(components_1.Light);
-    if (light)
-        game.player.getMutableComponent(components_1.Light).dirty = true;
-};
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.main .loading').remove();
-    main();
-});
-
-
-/***/ }),
 /* 7 */
-/***/ (function(module, exports) {
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
-var isArray = Array.isArray;
-
-module.exports = isArray;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const rot_js_1 = __webpack_require__(9);
-const isEqual_1 = __importDefault(__webpack_require__(87));
-const _1 = __webpack_require__(6);
-const roomTemplates_1 = __webpack_require__(129);
-const MIN_SIZE = 3;
-const MAX_SIZE = 8;
-const MAX_ROOMS = 20;
-const MIN_ROOMS = 10;
-const DOOR_CHANCE = 0.5;
-const CA_ALIVE = 4;
-const CA_DEAD = 5;
-const CA_ITER = 5;
-var CellType;
-(function (CellType) {
-    CellType[CellType["FLOOR"] = 0] = "FLOOR";
-    CellType[CellType["WALL"] = 1] = "WALL";
-    CellType[CellType["DOOR_OPEN"] = 2] = "DOOR_OPEN";
-    CellType[CellType["DOOR_CLOSED"] = 3] = "DOOR_CLOSED";
-    CellType[CellType["DOOR_LOCKED"] = 4] = "DOOR_LOCKED";
-    CellType[CellType["GRASS"] = 5] = "GRASS";
-})(CellType = exports.CellType || (exports.CellType = {}));
-exports.xyIdx = (x, y, W = _1.MAPWIDTH) => y * W + x;
-exports.lightPasses = (map, idx) => {
-    return !!(idx >= 0 && idx < map.length && [
-        CellType.DOOR_OPEN,
-        CellType.FLOOR,
-        CellType.GRASS
-    ].includes(map[idx]));
-};
-exports.isPassable = (map, idx) => {
-    return !!(idx >= 0 && idx < map.length && [
-        CellType.DOOR_OPEN,
-        CellType.FLOOR,
-        CellType.GRASS
-    ].includes(map[idx]));
-};
-const fillSquare = (map, x, y, w, h, type = CellType.FLOOR) => {
-    for (let _x = x; _x < x + w; _x++) {
-        for (let _y = y; _y < y + h; _y++) {
-            const idx = exports.xyIdx(_x, _y);
-            if (idx < 0 || idx >= _1.MAPWIDTH * _1.MAPHEIGHT) {
-                continue;
-            }
-            map[idx] = type;
-        }
-    }
-};
-const overlaps = (rect1, rect2) => {
-    const [rect1x, rect1y, rect1w, rect1h] = rect1;
-    const [rect2x, rect2y, rect2w, rect2h] = rect2;
-    return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
-};
-const getCenter = (rect) => {
-    const [x, y, w, h] = rect;
-    return [~~((x + x + w) / 2), ~~((y + y + h) / 2)];
-};
-exports.drawHorizontalLine = (map, x1, x2, y, type = CellType.FLOOR, W = _1.MAPWIDTH) => {
-    for (let _x = Math.min(x1, x2); _x <= Math.max(x1, x2); _x++) {
-        const idx = exports.xyIdx(_x, y, W);
-        map[idx] = type;
-    }
-};
-exports.drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR, W = _1.MAPWIDTH) => {
-    for (let _y = Math.min(y1, y2); _y <= Math.max(y1, y2); _y++) {
-        const idx = exports.xyIdx(x, _y, W);
-        map[idx] = type;
-    }
-};
-exports.getNeighborScores = (map) => {
-    return map
-        .map((_s, idx, scores) => {
-        const floorTiles = [
-            CellType.FLOOR,
-            CellType.GRASS
-        ];
-        let total = 0;
-        const [x, y] = [idx % _1.MAPWIDTH, ~~(idx / _1.MAPWIDTH)];
-        const NIdx = exports.xyIdx(x, y - 1);
-        const EIdx = exports.xyIdx(x + 1, y);
-        const SIdx = exports.xyIdx(x, y + 1);
-        const WIdx = exports.xyIdx(x - 1, y);
-        const NWIdx = exports.xyIdx(x - 1, y - 1);
-        const NEIdx = exports.xyIdx(x + 1, y - 1);
-        const SEIdx = exports.xyIdx(x + 1, y + 1);
-        const SWIdx = exports.xyIdx(x - 1, y + 1);
-        const neighbors = {
-            N: !!(NIdx >= 0 && NIdx < map.length && !floorTiles.includes(scores[NIdx])),
-            E: !!(EIdx >= 0 && EIdx < map.length && !floorTiles.includes(scores[EIdx])),
-            S: !!(SIdx >= 0 && SIdx < map.length && !floorTiles.includes(scores[SIdx])),
-            W: !!(WIdx >= 0 && WIdx < map.length && !floorTiles.includes(scores[WIdx])),
-            NW: !!(NWIdx >= 0 && NWIdx < map.length && !floorTiles.includes(scores[NWIdx])),
-            NE: !!(NEIdx >= 0 && NEIdx < map.length && !floorTiles.includes(scores[NEIdx])),
-            SE: !!(SEIdx >= 0 && SEIdx < map.length && !floorTiles.includes(scores[SEIdx])),
-            SW: !!(SWIdx >= 0 && SWIdx < map.length && !floorTiles.includes(scores[SWIdx]))
-        };
-        if (neighbors.N) {
-            total += 2;
-        }
-        if (neighbors.E) {
-            total += 16;
-        }
-        if (neighbors.S) {
-            total += 64;
-        }
-        if (neighbors.W) {
-            total += 8;
-        }
-        if (neighbors.NW && neighbors.W && neighbors.N) {
-            total += 1;
-        }
-        if (neighbors.NE && neighbors.N && neighbors.E) {
-            total += 4;
-        }
-        if (neighbors.SE && neighbors.E && neighbors.S) {
-            total += 128;
-        }
-        if (neighbors.SW && neighbors.S && neighbors.W) {
-            total += 32;
-        }
-        return total;
-    });
-};
-exports.applyCellularAutomataToArea = (map, x, y, w, h, params = {
-    alive: CA_ALIVE,
-    dead: CA_DEAD,
-    iterations: CA_ITER
-}) => {
-    const initial = (new Array(map.length)).fill(null);
-    for (let _x = x; _x < x + w; _x++) {
-        for (let _y = y; _y < y + h; _y++) {
-            const idx = exports.xyIdx(_x, _y);
-            if (idx > _1.MAPWIDTH * _1.MAPHEIGHT) {
-                continue;
-            }
-            initial[idx] = map[idx];
-        }
-    }
-    const simulateCells = (cells) => {
-        const out = [...cells];
-        for (let i = 0; i < cells.length; i++) {
-            const cellX = i % _1.MAPWIDTH;
-            const cellY = ~~(i / _1.MAPWIDTH);
-            let count = 0;
-            for (let _x = -1; _x <= 1; _x++) {
-                for (let _y = -1; _y <= 1; _y++) {
-                    if (_x === 0 && _y === 0) {
-                        continue;
-                    }
-                    const nIdx = exports.xyIdx(cellX + _x, cellY + _y);
-                    if (nIdx < 0 || nIdx >= cells.length) {
-                        continue;
-                    }
-                    count += cells[nIdx];
-                }
-            }
-            if (cells[i] === CellType.FLOOR) {
-                out[i] = count <= params.dead ? CellType.FLOOR : CellType.WALL;
-            }
-            else if (cells[i] === CellType.WALL) {
-                out[i] = count >= params.alive ? CellType.WALL : CellType.FLOOR;
-            }
-        }
-        return out;
-    };
-    let cells = initial.slice(0);
-    for (let i = 0; i < params.iterations; i++) {
-        cells = simulateCells(cells);
-    }
-    const out = map.slice(0);
-    for (let i = 0; i < cells.length; i++) {
-        if (cells[i] != null) {
-            out[i] = cells[i];
-        }
-    }
-    return out;
-};
-const createRoom = (coordinates, minWidth, maxWidth, minHeight, maxHeight) => {
-    const size = [
-        rot_js_1.RNG.getUniformInt(minWidth, maxWidth),
-        rot_js_1.RNG.getUniformInt(minHeight, maxHeight),
-    ];
-    return [coordinates[0] - ~~(size[0] / 2), coordinates[1] - ~~(size[1] / 2), size[0], size[1]];
-};
-const drawMapBorders = map => {
-    exports.drawVerticalLine(map, 0, _1.MAPHEIGHT - 1, 0, CellType.WALL);
-    exports.drawVerticalLine(map, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
-    exports.drawHorizontalLine(map, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
-    exports.drawHorizontalLine(map, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
-};
-exports.grassNoise = new rot_js_1.Noise.Simplex(8);
-exports.createNewMap = (w, h) => {
-    const map = new Array(w * h).fill(CellType.WALL);
-    const mapCenter = [
-        ~~(w / 2),
-        ~~(h / 2)
-    ];
-    const caCreator = roomTemplates_1.createRoomTemplate(roomTemplates_1.RoomType.CELLULAR_AUTOMATA);
-    const initialRoomTemplate = caCreator({
-        minWidth: 7,
-        maxWidth: 11,
-        minHeight: 7,
-        maxHeight: 11
-    });
-    const initialRoom = [
-        mapCenter[0] - initialRoomTemplate[1].centerOffset[0],
-        mapCenter[1] - initialRoomTemplate[1].centerOffset[1],
-        initialRoomTemplate[1].width,
-        initialRoomTemplate[1].height,
-    ];
-    roomTemplates_1.applyRoomTemplate(map, mapCenter, initialRoomTemplate);
-    console.log(mapCenter);
-    let prevCenter = mapCenter;
-    let centers = [mapCenter];
-    let rooms = [initialRoom];
-    let tries = 0;
-    while (rooms.length < 15 && tries++ < 100) {
-        const dirs = {
-            's': [0, 10],
-            'n': [0, -10],
-            'e': [10, 0],
-            'w': [-10, 0]
-        };
-        const dir = rot_js_1.RNG.getItem(Object.keys(dirs));
-        const offset = dirs[dir];
-        const newCenter = [prevCenter[0] + offset[0], prevCenter[1] + offset[1]];
-        if (newCenter[0] <= 0 || newCenter[0] > w || newCenter[1] <= 0 || newCenter[1] > h) {
-            continue;
-        }
-        const room = createRoom(newCenter, 5, 9, 5, 9);
-        let ok = true;
-        for (const other of rooms) {
-            if (overlaps(room, other)) {
-                ok = false;
-                break;
-            }
-        }
-        if (ok) {
-            fillSquare(map, room[0], room[1], room[2], room[3], CellType.FLOOR);
-            if (dir === 'n' || dir === 's') {
-                exports.drawVerticalLine(map, prevCenter[1], newCenter[1], prevCenter[0], CellType.FLOOR);
-            }
-            else {
-                exports.drawHorizontalLine(map, prevCenter[0], newCenter[0], prevCenter[1], CellType.FLOOR);
-            }
-            centers.push(newCenter);
-            rooms.push(room);
-            prevCenter = rot_js_1.RNG.getItem(centers);
-        }
-    }
-    for (let idx = 0; idx < map.length; idx++) {
-        if (typeof map[idx] === 'undefined') {
-            map[idx] = CellType.FLOOR;
-        }
-    }
-    drawMapBorders(map);
-    for (let idx = 0; idx < map.length; idx++) {
-        if (map[idx] === CellType.FLOOR) {
-            const x = idx % _1.MAPWIDTH;
-            const y = ~~(idx / _1.MAPWIDTH);
-            if (exports.grassNoise.get(x / 10, y / 10) > 0.25) {
-                map[idx] = CellType.GRASS;
-            }
-        }
-    }
-    return {
-        map,
-        rooms,
-        centers,
-        scores: exports.getNeighborScores(map)
-    };
-};
-exports.createMap = (w, h) => {
-    const map = (new Array(w * h)).fill(CellType.WALL);
-    for (let y = 0; y < _1.MAPHEIGHT; y++) {
-        for (let x = 0; x < _1.MAPWIDTH; x++) {
-            map[exports.xyIdx(x, y)] = CellType.WALL;
-        }
-    }
-    const rooms = [];
-    const nRooms = rot_js_1.RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
-    let i = 0;
-    while (rooms.length < nRooms || i++ > 300) {
-        const width = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-        const height = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-        const x = rot_js_1.RNG.getUniformInt(1, _1.MAPWIDTH - 1 - MAX_SIZE);
-        const y = rot_js_1.RNG.getUniformInt(1, _1.MAPHEIGHT - 1 - MAX_SIZE);
-        const room = [x, y, width, height];
-        if (rooms.length === 0) {
-            rooms.push(room);
-        }
-        else {
-            let ok = true;
-            rooms.forEach(other => {
-                if (overlaps(room, other)) {
-                    ok = false;
-                }
-            });
-            if (ok) {
-                rooms.push(room);
-            }
-        }
-    }
-    rooms.forEach(([x, y, width, height]) => fillSquare(map, x, y, width, height, CellType.FLOOR));
-    const centers = rooms.map(getCenter);
-    let finalMap = map.slice(0);
-    for (const center of centers) {
-        const [cx, cy] = center;
-        const hpad = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-        const vpad = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-        const x = cx - hpad;
-        const y = cy - vpad;
-        const w = hpad * 2;
-        const h = vpad * 2;
-        finalMap = exports.applyCellularAutomataToArea(finalMap, x, y, w, h);
-    }
-    const doors = [];
-    centers.sort((a, b) => {
-        return b[0] + b[1] - a[0] - a[1];
-    }).forEach((center, idx) => {
-        if (idx === centers.length - 1) {
-            return;
-        }
-        const c1 = center;
-        const c2 = centers[idx + 1];
-        const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
-        const turn = rot_js_1.RNG.getItem(turns);
-        const room = rooms.find(r => isEqual_1.default(getCenter(r), c1));
-        let possibleDoorLocation;
-        if (c1[0] === turn[0]) {
-            if (c1[1] > turn[1]) {
-                possibleDoorLocation = [c1[0], c1[1] - ~~(room[3] / 2) - 1];
-            }
-            else {
-                possibleDoorLocation = [c1[0], c1[1] + ~~(room[3] / 2) + 1];
-            }
-        }
-        else {
-            if (c1[0] > turn[0]) {
-                possibleDoorLocation = [c1[0] - ~~(room[2] / 2) - 1, c1[1]];
-            }
-            else {
-                possibleDoorLocation = [c1[0] + ~~(room[2] / 2) + 1, c1[1]];
-            }
-        }
-        const type = rot_js_1.RNG.getItem([CellType.DOOR_OPEN, CellType.DOOR_CLOSED]);
-        doors.push([possibleDoorLocation, type]);
-        if (c1[0] === turn[0]) {
-            exports.drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
-            exports.drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
-        }
-        else {
-            exports.drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
-            exports.drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
-        }
-        for (const [loc, type] of doors) {
-            if (rot_js_1.RNG.getUniform() < DOOR_CHANCE) {
-                const idx = exports.xyIdx(loc[0], loc[1]);
-                finalMap[idx] = type;
-            }
-        }
-    });
-    exports.drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, 0, CellType.WALL);
-    exports.drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
-    exports.drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
-    exports.drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
-    for (let idx = 0; idx < finalMap.length; idx++) {
-        if (finalMap[idx] === CellType.FLOOR) {
-            const x = idx % _1.MAPWIDTH;
-            const y = ~~(idx / _1.MAPWIDTH);
-            if (exports.grassNoise.get(x / 100, y / 100) > 0.25) {
-                finalMap[idx] = CellType.GRASS;
-            }
-        }
-    }
-    return { map: finalMap, rooms, centers, scores: exports.getNeighborScores(finalMap) };
-};
-
-
-/***/ }),
-/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3041,7 +2517,7 @@ __webpack_require__.d(text_namespaceObject, "tokenize", function() { return toke
 var rng = __webpack_require__(0);
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/backend.js
-var backend = __webpack_require__(11);
+var backend = __webpack_require__(3);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/canvas.js
 
@@ -3081,7 +2557,7 @@ class canvas_Canvas extends backend["a" /* default */] {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/util.js
-var util = __webpack_require__(4);
+var util = __webpack_require__(1);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/hex.js
 
@@ -3409,7 +2885,7 @@ class tile_Tile extends canvas_Canvas {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/color.js
-var lib_color = __webpack_require__(5);
+var lib_color = __webpack_require__(2);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/tile-gl.js
 
@@ -3688,7 +3164,7 @@ function parseColor(color) {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/display/term.js
-var term = __webpack_require__(27);
+var term = __webpack_require__(11);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/text.js
 /**
@@ -7840,11 +7316,650 @@ const Text = text_namespaceObject;
 
 
 /***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ROT = __importStar(__webpack_require__(7));
+const player_1 = __importDefault(__webpack_require__(41));
+const ecsy_1 = __webpack_require__(4);
+const throttle_1 = __importDefault(__webpack_require__(135));
+const state_1 = __importStar(__webpack_require__(29));
+const display_1 = __webpack_require__(28);
+const map_1 = __webpack_require__(10);
+const systems_1 = __webpack_require__(17);
+const entities_1 = __webpack_require__(139);
+const components_1 = __webpack_require__(5);
+__webpack_require__(143);
+__webpack_require__(144);
+__webpack_require__(145);
+__webpack_require__(146);
+__webpack_require__(147);
+__webpack_require__(148);
+const WIDTH = 64;
+exports.WIDTH = WIDTH;
+const HEIGHT = 32;
+exports.HEIGHT = HEIGHT;
+const MAPWIDTH = WIDTH * 2;
+exports.MAPWIDTH = MAPWIDTH;
+const MAPHEIGHT = HEIGHT * 2;
+exports.MAPHEIGHT = MAPHEIGHT;
+const TILEWIDTH = 8;
+const TILEHEIGHT = 16;
+let display;
+exports.display = display;
+let ECS;
+exports.ECS = ECS;
+let map;
+let game;
+exports.game = game;
+const main = () => {
+    exports.ECS = ECS = new ecsy_1.World();
+    ECS.registerComponent(components_1.Position);
+    ECS.registerComponent(components_1.Viewshed);
+    ECS.registerComponent(components_1.Renderable);
+    ECS.registerComponent(components_1.Monster);
+    ECS.registerComponent(components_1.Light);
+    ECS.registerComponent(components_1.Name);
+    ECS.registerSystem(systems_1.VisibilitySystem);
+    ECS.registerSystem(systems_1.AISystem);
+    ECS.registerSystem(systems_1.RenderingSystem);
+    ECS.registerSystem(systems_1.InfoSystem);
+    exports.display = display = display_1.setupDisplay({
+        width: WIDTH,
+        height: HEIGHT
+    });
+    map = map_1.createNewMap(MAPWIDTH, MAPHEIGHT);
+    const handleCanvasMouseMove = throttle_1.default((e) => {
+        if (display.getContainer().contains(e.target)) {
+            const { layerX, layerY } = e;
+            const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
+            const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
+            if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) {
+                return;
+            }
+            const tileIdx = map_1.xyIdx(X, Y);
+            game.setState(state => { state.hoveredTileIdx = tileIdx; });
+        }
+    }, 30);
+    exports.game = game = new state_1.default({
+        runState: state_1.RunState.PRERUN,
+        map: map.map,
+        rooms: map.rooms,
+        centers: map.centers,
+        scores: map.scores
+    }, display, ECS);
+    eval('window.game = game;');
+    document.addEventListener('mousemove', handleCanvasMouseMove);
+    const randomCenter = ROT.RNG.getItem(map.centers);
+    const mapCenter = [~~(WIDTH / 2), ~~(HEIGHT / 2)];
+    const cameraOffset = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
+    entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
+    game.player = game.ecs.entityManager.getEntityByName('player');
+    game.cameraOffset = cameraOffset;
+    const randomCenter2 = ROT.RNG.getItem(map.centers);
+    entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
+    const numLights = ROT.RNG.getUniformInt(3, map.centers.length);
+    for (let n = 3; n < numLights; n++) {
+        const range = ROT.RNG.getUniformInt(5, 10);
+        const color = ROT.RNG.getItem([
+            [255, 200, 200],
+            [200, 255, 200],
+            [200, 200, 255],
+            [255, 255, 200],
+            [200, 255, 255],
+            [255, 200, 255]
+        ]);
+        const c = ROT.RNG.getItem(map.centers);
+        entities_1.createLight(ECS, c[0] + 1, c[1], range, color);
+    }
+    player_1.default(game);
+    game.setState(state => { state.runState = state_1.RunState.PRERUN; });
+    game.gameLoop();
+    game.player.getMutableComponent(components_1.Viewshed).dirty = true;
+    const light = game.player.getMutableComponent(components_1.Light);
+    if (light)
+        game.player.getMutableComponent(components_1.Light).dirty = true;
+};
+eval('window.main = main;');
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+module.exports = isArray;
+
+
+/***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsNative = __webpack_require__(59),
-    getValue = __webpack_require__(62);
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const rot_js_1 = __webpack_require__(7);
+const isEqual_1 = __importDefault(__webpack_require__(88));
+const _1 = __webpack_require__(8);
+const roomTemplates_1 = __webpack_require__(130);
+const MIN_SIZE = 3;
+const MAX_SIZE = 8;
+const MAX_ROOMS = 20;
+const MIN_ROOMS = 10;
+const DOOR_CHANCE = 0.5;
+const CA_ALIVE = 4;
+const CA_DEAD = 5;
+const CA_ITER = 5;
+var CellType;
+(function (CellType) {
+    CellType[CellType["FLOOR"] = 0] = "FLOOR";
+    CellType[CellType["WALL"] = 1] = "WALL";
+    CellType[CellType["DOOR_OPEN"] = 2] = "DOOR_OPEN";
+    CellType[CellType["DOOR_CLOSED"] = 3] = "DOOR_CLOSED";
+    CellType[CellType["DOOR_LOCKED"] = 4] = "DOOR_LOCKED";
+    CellType[CellType["GRASS"] = 5] = "GRASS";
+})(CellType = exports.CellType || (exports.CellType = {}));
+exports.xyIdx = (x, y, W = _1.MAPWIDTH) => y * W + x;
+exports.lightPasses = (map, idx) => {
+    return !!(idx >= 0 && idx < map.length && [
+        CellType.DOOR_OPEN,
+        CellType.FLOOR,
+        CellType.GRASS
+    ].includes(map[idx]));
+};
+exports.isPassable = (map, idx) => {
+    return !!(idx >= 0 && idx < map.length && [
+        CellType.DOOR_OPEN,
+        CellType.FLOOR,
+        CellType.GRASS
+    ].includes(map[idx]));
+};
+const fillSquare = (map, x, y, w, h, type = CellType.FLOOR) => {
+    for (let _x = x; _x < x + w; _x++) {
+        for (let _y = y; _y < y + h; _y++) {
+            const idx = exports.xyIdx(_x, _y);
+            if (idx < 0 || idx >= _1.MAPWIDTH * _1.MAPHEIGHT) {
+                continue;
+            }
+            map[idx] = type;
+        }
+    }
+};
+const overlaps = (rect1, rect2) => {
+    const [rect1x, rect1y, rect1w, rect1h] = rect1;
+    const [rect2x, rect2y, rect2w, rect2h] = rect2;
+    return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
+};
+const getCenter = (rect) => {
+    const [x, y, w, h] = rect;
+    return [~~((x + x + w) / 2), ~~((y + y + h) / 2)];
+};
+exports.drawHorizontalLine = (map, x1, x2, y, type = CellType.FLOOR, W = _1.MAPWIDTH) => {
+    for (let _x = Math.min(x1, x2); _x <= Math.max(x1, x2); _x++) {
+        const idx = exports.xyIdx(_x, y, W);
+        map[idx] = type;
+    }
+};
+exports.drawVerticalLine = (map, y1, y2, x, type = CellType.FLOOR, W = _1.MAPWIDTH) => {
+    for (let _y = Math.min(y1, y2); _y <= Math.max(y1, y2); _y++) {
+        const idx = exports.xyIdx(x, _y, W);
+        map[idx] = type;
+    }
+};
+exports.getNeighborScores = (map) => {
+    return map
+        .map((_s, idx, scores) => {
+        const floorTiles = [
+            CellType.FLOOR,
+            CellType.GRASS
+        ];
+        let total = 0;
+        const [x, y] = [idx % _1.MAPWIDTH, ~~(idx / _1.MAPWIDTH)];
+        const NIdx = exports.xyIdx(x, y - 1);
+        const EIdx = exports.xyIdx(x + 1, y);
+        const SIdx = exports.xyIdx(x, y + 1);
+        const WIdx = exports.xyIdx(x - 1, y);
+        const NWIdx = exports.xyIdx(x - 1, y - 1);
+        const NEIdx = exports.xyIdx(x + 1, y - 1);
+        const SEIdx = exports.xyIdx(x + 1, y + 1);
+        const SWIdx = exports.xyIdx(x - 1, y + 1);
+        const neighbors = {
+            N: !!(NIdx >= 0 && NIdx < map.length && !floorTiles.includes(scores[NIdx])),
+            E: !!(EIdx >= 0 && EIdx < map.length && !floorTiles.includes(scores[EIdx])),
+            S: !!(SIdx >= 0 && SIdx < map.length && !floorTiles.includes(scores[SIdx])),
+            W: !!(WIdx >= 0 && WIdx < map.length && !floorTiles.includes(scores[WIdx])),
+            NW: !!(NWIdx >= 0 && NWIdx < map.length && !floorTiles.includes(scores[NWIdx])),
+            NE: !!(NEIdx >= 0 && NEIdx < map.length && !floorTiles.includes(scores[NEIdx])),
+            SE: !!(SEIdx >= 0 && SEIdx < map.length && !floorTiles.includes(scores[SEIdx])),
+            SW: !!(SWIdx >= 0 && SWIdx < map.length && !floorTiles.includes(scores[SWIdx]))
+        };
+        if (neighbors.N) {
+            total += 2;
+        }
+        if (neighbors.E) {
+            total += 16;
+        }
+        if (neighbors.S) {
+            total += 64;
+        }
+        if (neighbors.W) {
+            total += 8;
+        }
+        if (neighbors.NW && neighbors.W && neighbors.N) {
+            total += 1;
+        }
+        if (neighbors.NE && neighbors.N && neighbors.E) {
+            total += 4;
+        }
+        if (neighbors.SE && neighbors.E && neighbors.S) {
+            total += 128;
+        }
+        if (neighbors.SW && neighbors.S && neighbors.W) {
+            total += 32;
+        }
+        return total;
+    });
+};
+exports.applyCellularAutomataToArea = (map, x, y, w, h, params = {
+    alive: CA_ALIVE,
+    dead: CA_DEAD,
+    iterations: CA_ITER
+}) => {
+    const initial = (new Array(map.length)).fill(null);
+    for (let _x = x; _x < x + w; _x++) {
+        for (let _y = y; _y < y + h; _y++) {
+            const idx = exports.xyIdx(_x, _y);
+            if (idx > _1.MAPWIDTH * _1.MAPHEIGHT) {
+                continue;
+            }
+            initial[idx] = map[idx];
+        }
+    }
+    const simulateCells = (cells) => {
+        const out = [...cells];
+        for (let i = 0; i < cells.length; i++) {
+            const cellX = i % _1.MAPWIDTH;
+            const cellY = ~~(i / _1.MAPWIDTH);
+            let count = 0;
+            for (let _x = -1; _x <= 1; _x++) {
+                for (let _y = -1; _y <= 1; _y++) {
+                    if (_x === 0 && _y === 0) {
+                        continue;
+                    }
+                    const nIdx = exports.xyIdx(cellX + _x, cellY + _y);
+                    if (nIdx < 0 || nIdx >= cells.length) {
+                        continue;
+                    }
+                    count += cells[nIdx];
+                }
+            }
+            if (cells[i] === CellType.FLOOR) {
+                out[i] = count <= params.dead ? CellType.FLOOR : CellType.WALL;
+            }
+            else if (cells[i] === CellType.WALL) {
+                out[i] = count >= params.alive ? CellType.WALL : CellType.FLOOR;
+            }
+        }
+        return out;
+    };
+    let cells = initial.slice(0);
+    for (let i = 0; i < params.iterations; i++) {
+        cells = simulateCells(cells);
+    }
+    const out = map.slice(0);
+    for (let i = 0; i < cells.length; i++) {
+        if (cells[i] != null) {
+            out[i] = cells[i];
+        }
+    }
+    return out;
+};
+const createRoom = (coordinates, minWidth, maxWidth, minHeight, maxHeight) => {
+    const size = [
+        rot_js_1.RNG.getUniformInt(minWidth, maxWidth),
+        rot_js_1.RNG.getUniformInt(minHeight, maxHeight),
+    ];
+    return [coordinates[0] - ~~(size[0] / 2), coordinates[1] - ~~(size[1] / 2), size[0], size[1]];
+};
+const drawMapBorders = map => {
+    exports.drawVerticalLine(map, 0, _1.MAPHEIGHT - 1, 0, CellType.WALL);
+    exports.drawVerticalLine(map, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
+    exports.drawHorizontalLine(map, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
+    exports.drawHorizontalLine(map, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
+};
+exports.grassNoise = new rot_js_1.Noise.Simplex(8);
+exports.createNewMap = (w, h) => {
+    const map = new Array(w * h).fill(CellType.WALL);
+    const mapCenter = [
+        ~~(w / 2),
+        ~~(h / 2)
+    ];
+    const caCreator = roomTemplates_1.createRoomTemplate(roomTemplates_1.RoomType.CELLULAR_AUTOMATA);
+    const initialRoomTemplate = caCreator({
+        minWidth: 7,
+        maxWidth: 11,
+        minHeight: 7,
+        maxHeight: 11
+    });
+    const initialRoom = [
+        mapCenter[0] - initialRoomTemplate[1].centerOffset[0],
+        mapCenter[1] - initialRoomTemplate[1].centerOffset[1],
+        initialRoomTemplate[1].width,
+        initialRoomTemplate[1].height,
+    ];
+    roomTemplates_1.applyRoomTemplate(map, mapCenter, initialRoomTemplate);
+    console.log(mapCenter);
+    let prevCenter = mapCenter;
+    let centers = [mapCenter];
+    let rooms = [initialRoom];
+    let tries = 0;
+    while (rooms.length < 15 && tries++ < 100) {
+        const dirs = {
+            's': [0, 10],
+            'n': [0, -10],
+            'e': [10, 0],
+            'w': [-10, 0]
+        };
+        const dir = rot_js_1.RNG.getItem(Object.keys(dirs));
+        const offset = dirs[dir];
+        const newCenter = [prevCenter[0] + offset[0], prevCenter[1] + offset[1]];
+        if (newCenter[0] <= 0 || newCenter[0] > w || newCenter[1] <= 0 || newCenter[1] > h) {
+            continue;
+        }
+        const room = createRoom(newCenter, 5, 9, 5, 9);
+        let ok = true;
+        for (const other of rooms) {
+            if (overlaps(room, other)) {
+                ok = false;
+                break;
+            }
+        }
+        if (ok) {
+            fillSquare(map, room[0], room[1], room[2], room[3], CellType.FLOOR);
+            if (dir === 'n' || dir === 's') {
+                exports.drawVerticalLine(map, prevCenter[1], newCenter[1], prevCenter[0], CellType.FLOOR);
+            }
+            else {
+                exports.drawHorizontalLine(map, prevCenter[0], newCenter[0], prevCenter[1], CellType.FLOOR);
+            }
+            centers.push(newCenter);
+            rooms.push(room);
+            prevCenter = rot_js_1.RNG.getItem(centers);
+        }
+    }
+    for (let idx = 0; idx < map.length; idx++) {
+        if (typeof map[idx] === 'undefined') {
+            map[idx] = CellType.FLOOR;
+        }
+    }
+    drawMapBorders(map);
+    for (let idx = 0; idx < map.length; idx++) {
+        if (map[idx] === CellType.FLOOR) {
+            const x = idx % _1.MAPWIDTH;
+            const y = ~~(idx / _1.MAPWIDTH);
+            if (exports.grassNoise.get(x / 10, y / 10) > 0.25) {
+                map[idx] = CellType.GRASS;
+            }
+        }
+    }
+    return {
+        map,
+        rooms,
+        centers,
+        scores: exports.getNeighborScores(map)
+    };
+};
+exports.createMap = (w, h) => {
+    const map = (new Array(w * h)).fill(CellType.WALL);
+    for (let y = 0; y < _1.MAPHEIGHT; y++) {
+        for (let x = 0; x < _1.MAPWIDTH; x++) {
+            map[exports.xyIdx(x, y)] = CellType.WALL;
+        }
+    }
+    const rooms = [];
+    const nRooms = rot_js_1.RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
+    let i = 0;
+    while (rooms.length < nRooms || i++ > 300) {
+        const width = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const height = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const x = rot_js_1.RNG.getUniformInt(1, _1.MAPWIDTH - 1 - MAX_SIZE);
+        const y = rot_js_1.RNG.getUniformInt(1, _1.MAPHEIGHT - 1 - MAX_SIZE);
+        const room = [x, y, width, height];
+        if (rooms.length === 0) {
+            rooms.push(room);
+        }
+        else {
+            let ok = true;
+            rooms.forEach(other => {
+                if (overlaps(room, other)) {
+                    ok = false;
+                }
+            });
+            if (ok) {
+                rooms.push(room);
+            }
+        }
+    }
+    rooms.forEach(([x, y, width, height]) => fillSquare(map, x, y, width, height, CellType.FLOOR));
+    const centers = rooms.map(getCenter);
+    let finalMap = map.slice(0);
+    for (const center of centers) {
+        const [cx, cy] = center;
+        const hpad = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const vpad = rot_js_1.RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+        const x = cx - hpad;
+        const y = cy - vpad;
+        const w = hpad * 2;
+        const h = vpad * 2;
+        finalMap = exports.applyCellularAutomataToArea(finalMap, x, y, w, h);
+    }
+    const doors = [];
+    centers.sort((a, b) => {
+        return b[0] + b[1] - a[0] - a[1];
+    }).forEach((center, idx) => {
+        if (idx === centers.length - 1) {
+            return;
+        }
+        const c1 = center;
+        const c2 = centers[idx + 1];
+        const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
+        const turn = rot_js_1.RNG.getItem(turns);
+        const room = rooms.find(r => isEqual_1.default(getCenter(r), c1));
+        let possibleDoorLocation;
+        if (c1[0] === turn[0]) {
+            if (c1[1] > turn[1]) {
+                possibleDoorLocation = [c1[0], c1[1] - ~~(room[3] / 2) - 1];
+            }
+            else {
+                possibleDoorLocation = [c1[0], c1[1] + ~~(room[3] / 2) + 1];
+            }
+        }
+        else {
+            if (c1[0] > turn[0]) {
+                possibleDoorLocation = [c1[0] - ~~(room[2] / 2) - 1, c1[1]];
+            }
+            else {
+                possibleDoorLocation = [c1[0] + ~~(room[2] / 2) + 1, c1[1]];
+            }
+        }
+        const type = rot_js_1.RNG.getItem([CellType.DOOR_OPEN, CellType.DOOR_CLOSED]);
+        doors.push([possibleDoorLocation, type]);
+        if (c1[0] === turn[0]) {
+            exports.drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
+            exports.drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
+        }
+        else {
+            exports.drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
+            exports.drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
+        }
+        for (const [loc, type] of doors) {
+            if (rot_js_1.RNG.getUniform() < DOOR_CHANCE) {
+                const idx = exports.xyIdx(loc[0], loc[1]);
+                finalMap[idx] = type;
+            }
+        }
+    });
+    exports.drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, 0, CellType.WALL);
+    exports.drawVerticalLine(finalMap, 0, _1.MAPHEIGHT - 1, _1.MAPWIDTH - 1, CellType.WALL);
+    exports.drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, 0, CellType.WALL);
+    exports.drawHorizontalLine(finalMap, 0, _1.MAPWIDTH - 1, _1.MAPHEIGHT - 1, CellType.WALL);
+    for (let idx = 0; idx < finalMap.length; idx++) {
+        if (finalMap[idx] === CellType.FLOOR) {
+            const x = idx % _1.MAPWIDTH;
+            const y = ~~(idx / _1.MAPWIDTH);
+            if (exports.grassNoise.get(x / 100, y / 100) > 0.25) {
+                finalMap[idx] = CellType.GRASS;
+            }
+        }
+    }
+    return { map: finalMap, rooms, centers, scores: exports.getNeighborScores(finalMap) };
+};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Term; });
+/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+
+
+function clearToAnsi(bg) {
+    return `\x1b[0;48;5;${termcolor(bg)}m\x1b[2J`;
+}
+function colorToAnsi(fg, bg) {
+    return `\x1b[0;38;5;${termcolor(fg)};48;5;${termcolor(bg)}m`;
+}
+function positionToAnsi(x, y) {
+    return `\x1b[${y + 1};${x + 1}H`;
+}
+function termcolor(color) {
+    const SRC_COLORS = 256.0;
+    const DST_COLORS = 6.0;
+    const COLOR_RATIO = DST_COLORS / SRC_COLORS;
+    let rgb = _color_js__WEBPACK_IMPORTED_MODULE_1__["fromString"](color);
+    let r = Math.floor(rgb[0] * COLOR_RATIO);
+    let g = Math.floor(rgb[1] * COLOR_RATIO);
+    let b = Math.floor(rgb[2] * COLOR_RATIO);
+    return r * 36 + g * 6 + b * 1 + 16;
+}
+class Term extends _backend_js__WEBPACK_IMPORTED_MODULE_0__[/* default */ "a"] {
+    constructor() {
+        super();
+        this._offset = [0, 0];
+        this._cursor = [-1, -1];
+        this._lastColor = "";
+    }
+    schedule(cb) { setTimeout(cb, 1000 / 60); }
+    setOptions(options) {
+        super.setOptions(options);
+        let size = [options.width, options.height];
+        let avail = this.computeSize();
+        this._offset = avail.map((val, index) => Math.floor((val - size[index]) / 2));
+    }
+    clear() {
+        process.stdout.write(clearToAnsi(this._options.bg));
+    }
+    draw(data, clearBefore) {
+        // determine where to draw what with what colors
+        let [x, y, ch, fg, bg] = data;
+        // determine if we need to move the terminal cursor
+        let dx = this._offset[0] + x;
+        let dy = this._offset[1] + y;
+        let size = this.computeSize();
+        if (dx < 0 || dx >= size[0]) {
+            return;
+        }
+        if (dy < 0 || dy >= size[1]) {
+            return;
+        }
+        if (dx !== this._cursor[0] || dy !== this._cursor[1]) {
+            process.stdout.write(positionToAnsi(dx, dy));
+            this._cursor[0] = dx;
+            this._cursor[1] = dy;
+        }
+        // terminals automatically clear, but if we're clearing when we're
+        // not otherwise provided with a character, just use a space instead
+        if (clearBefore) {
+            if (!ch) {
+                ch = " ";
+            }
+        }
+        // if we're not clearing and not provided with a character, do nothing
+        if (!ch) {
+            return;
+        }
+        // determine if we need to change colors
+        let newColor = colorToAnsi(fg, bg);
+        if (newColor !== this._lastColor) {
+            process.stdout.write(newColor);
+            this._lastColor = newColor;
+        }
+        // write the provided symbol to the display
+        let chars = [].concat(ch);
+        process.stdout.write(chars[0]);
+        // update our position, given that we wrote a character
+        this._cursor[0]++;
+        if (this._cursor[0] >= size[0]) {
+            this._cursor[0] = 0;
+            this._cursor[1]++;
+        }
+    }
+    computeFontSize() { throw new Error("Terminal backend has no notion of font size"); }
+    eventToPosition(x, y) { return [x, y]; }
+    computeSize() { return [process.stdout.columns, process.stdout.rows]; }
+}
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(24)))
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseIsNative = __webpack_require__(60),
+    getValue = __webpack_require__(63);
 
 /**
  * Gets the native function at `key` of `object`.
@@ -7863,27 +7978,11 @@ module.exports = getNative;
 
 
 /***/ }),
-/* 11 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Backend; });
-/**
- * @class Abstract display backend module
- * @private
- */
-class Backend {
-    getContainer() { return null; }
-    setOptions(options) { this._options = options; }
-}
-
-
-/***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseHas = __webpack_require__(46),
-    hasPath = __webpack_require__(47);
+var baseHas = __webpack_require__(47),
+    hasPath = __webpack_require__(48);
 
 /**
  * Checks if `path` is a direct property of `object`.
@@ -7920,12 +8019,12 @@ module.exports = has;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Symbol = __webpack_require__(18),
-    getRawTag = __webpack_require__(51),
-    objectToString = __webpack_require__(52);
+var Symbol = __webpack_require__(19),
+    getRawTag = __webpack_require__(52),
+    objectToString = __webpack_require__(53);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -7954,7 +8053,7 @@ module.exports = baseGetTag;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -7989,7 +8088,7 @@ module.exports = isObjectLike;
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /**
@@ -8026,7 +8125,7 @@ module.exports = isObject;
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8035,22 +8134,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const rendering_1 = __importDefault(__webpack_require__(44));
+const rendering_1 = __importDefault(__webpack_require__(45));
 exports.RenderingSystem = rendering_1.default;
-const visibility_1 = __importDefault(__webpack_require__(131));
+const visibility_1 = __importDefault(__webpack_require__(132));
 exports.VisibilitySystem = visibility_1.default;
-const ai_1 = __importDefault(__webpack_require__(132));
+const ai_1 = __importDefault(__webpack_require__(133));
 exports.AISystem = ai_1.default;
-const info_1 = __importDefault(__webpack_require__(133));
+const info_1 = __importDefault(__webpack_require__(134));
 exports.InfoSystem = info_1.default;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetTag = __webpack_require__(13),
-    isObjectLike = __webpack_require__(14);
+var baseGetTag = __webpack_require__(14),
+    isObjectLike = __webpack_require__(15);
 
 /** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
@@ -8081,10 +8180,10 @@ module.exports = isSymbol;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var root = __webpack_require__(3);
+var root = __webpack_require__(6);
 
 /** Built-in value references. */
 var Symbol = root.Symbol;
@@ -8093,10 +8192,10 @@ module.exports = Symbol;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10);
+var getNative = __webpack_require__(12);
 
 /* Built-in method references that are verified to be native. */
 var nativeCreate = getNative(Object, 'create');
@@ -8105,14 +8204,14 @@ module.exports = nativeCreate;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var listCacheClear = __webpack_require__(67),
-    listCacheDelete = __webpack_require__(68),
-    listCacheGet = __webpack_require__(69),
-    listCacheHas = __webpack_require__(70),
-    listCacheSet = __webpack_require__(71);
+var listCacheClear = __webpack_require__(68),
+    listCacheDelete = __webpack_require__(69),
+    listCacheGet = __webpack_require__(70),
+    listCacheHas = __webpack_require__(71),
+    listCacheSet = __webpack_require__(72);
 
 /**
  * Creates an list cache object.
@@ -8143,10 +8242,10 @@ module.exports = ListCache;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var eq = __webpack_require__(32);
+var eq = __webpack_require__(33);
 
 /**
  * Gets the index at which the `key` is found in `array` of key-value pairs.
@@ -8170,10 +8269,10 @@ module.exports = assocIndexOf;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isKeyable = __webpack_require__(73);
+var isKeyable = __webpack_require__(74);
 
 /**
  * Gets the data for `map`.
@@ -8194,14 +8293,204 @@ module.exports = getMapData;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mapCacheClear = __webpack_require__(56),
-    mapCacheDelete = __webpack_require__(72),
-    mapCacheGet = __webpack_require__(74),
-    mapCacheHas = __webpack_require__(75),
-    mapCacheSet = __webpack_require__(76);
+var mapCacheClear = __webpack_require__(57),
+    mapCacheDelete = __webpack_require__(73),
+    mapCacheGet = __webpack_require__(75),
+    mapCacheHas = __webpack_require__(76),
+    mapCacheSet = __webpack_require__(77);
 
 /**
  * Creates a map cache object to store key-value pairs.
@@ -8232,11 +8521,11 @@ module.exports = MapCache;
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10),
-    root = __webpack_require__(3);
+var getNative = __webpack_require__(12),
+    root = __webpack_require__(6);
 
 /* Built-in method references that are verified to be native. */
 var Map = getNative(root, 'Map');
@@ -8245,7 +8534,7 @@ module.exports = Map;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports) {
 
 /** Used as references for various `Number` constants. */
@@ -8286,7 +8575,7 @@ module.exports = isLength;
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8302,12 +8591,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(9));
-const _1 = __webpack_require__(6);
-const components_1 = __webpack_require__(2);
-const systems_1 = __webpack_require__(16);
-const map_1 = __webpack_require__(8);
-const tileMap_1 = __importDefault(__webpack_require__(130));
+const ROT = __importStar(__webpack_require__(7));
+const _1 = __webpack_require__(8);
+const components_1 = __webpack_require__(5);
+const systems_1 = __webpack_require__(17);
+const map_1 = __webpack_require__(10);
+const tileMap_1 = __importDefault(__webpack_require__(131));
 exports.setupDisplay = (options) => {
     const tileSet = document.createElement("img");
     tileSet.src = "dist/images/VGA8x16.png";
@@ -8322,7 +8611,7 @@ exports.setupDisplay = (options) => {
         height: options.height,
         tileColorize: true
     });
-    document.querySelector('.main').appendChild(display.getContainer());
+    document.querySelector('.main-container').appendChild(display.getContainer());
     return display;
 };
 const getWallGlyph = (score) => {
@@ -8521,105 +8810,7 @@ exports.drawMap = (map) => {
 
 
 /***/ }),
-/* 27 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Term; });
-/* harmony import */ var _backend_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(11);
-/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5);
-
-
-function clearToAnsi(bg) {
-    return `\x1b[0;48;5;${termcolor(bg)}m\x1b[2J`;
-}
-function colorToAnsi(fg, bg) {
-    return `\x1b[0;38;5;${termcolor(fg)};48;5;${termcolor(bg)}m`;
-}
-function positionToAnsi(x, y) {
-    return `\x1b[${y + 1};${x + 1}H`;
-}
-function termcolor(color) {
-    const SRC_COLORS = 256.0;
-    const DST_COLORS = 6.0;
-    const COLOR_RATIO = DST_COLORS / SRC_COLORS;
-    let rgb = _color_js__WEBPACK_IMPORTED_MODULE_1__["fromString"](color);
-    let r = Math.floor(rgb[0] * COLOR_RATIO);
-    let g = Math.floor(rgb[1] * COLOR_RATIO);
-    let b = Math.floor(rgb[2] * COLOR_RATIO);
-    return r * 36 + g * 6 + b * 1 + 16;
-}
-class Term extends _backend_js__WEBPACK_IMPORTED_MODULE_0__[/* default */ "a"] {
-    constructor() {
-        super();
-        this._offset = [0, 0];
-        this._cursor = [-1, -1];
-        this._lastColor = "";
-    }
-    schedule(cb) { setTimeout(cb, 1000 / 60); }
-    setOptions(options) {
-        super.setOptions(options);
-        let size = [options.width, options.height];
-        let avail = this.computeSize();
-        this._offset = avail.map((val, index) => Math.floor((val - size[index]) / 2));
-    }
-    clear() {
-        process.stdout.write(clearToAnsi(this._options.bg));
-    }
-    draw(data, clearBefore) {
-        // determine where to draw what with what colors
-        let [x, y, ch, fg, bg] = data;
-        // determine if we need to move the terminal cursor
-        let dx = this._offset[0] + x;
-        let dy = this._offset[1] + y;
-        let size = this.computeSize();
-        if (dx < 0 || dx >= size[0]) {
-            return;
-        }
-        if (dy < 0 || dy >= size[1]) {
-            return;
-        }
-        if (dx !== this._cursor[0] || dy !== this._cursor[1]) {
-            process.stdout.write(positionToAnsi(dx, dy));
-            this._cursor[0] = dx;
-            this._cursor[1] = dy;
-        }
-        // terminals automatically clear, but if we're clearing when we're
-        // not otherwise provided with a character, just use a space instead
-        if (clearBefore) {
-            if (!ch) {
-                ch = " ";
-            }
-        }
-        // if we're not clearing and not provided with a character, do nothing
-        if (!ch) {
-            return;
-        }
-        // determine if we need to change colors
-        let newColor = colorToAnsi(fg, bg);
-        if (newColor !== this._lastColor) {
-            process.stdout.write(newColor);
-            this._lastColor = newColor;
-        }
-        // write the provided symbol to the display
-        let chars = [].concat(ch);
-        process.stdout.write(chars[0]);
-        // update our position, given that we wrote a character
-        this._cursor[0]++;
-        if (this._cursor[0] >= size[0]) {
-            this._cursor[0] = 0;
-            this._cursor[1]++;
-        }
-    }
-    computeFontSize() { throw new Error("Terminal backend has no notion of font size"); }
-    eventToPosition(x, y) { return [x, y]; }
-    computeSize() { return [process.stdout.columns, process.stdout.rows]; }
-}
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(39)))
-
-/***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8628,9 +8819,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const immer_1 = __importDefault(__webpack_require__(43));
-const systems_1 = __webpack_require__(16);
-const display_1 = __webpack_require__(26);
+const immer_1 = __importDefault(__webpack_require__(44));
+const systems_1 = __webpack_require__(17);
+const display_1 = __webpack_require__(28);
 var RunState;
 (function (RunState) {
     RunState["PRERUN"] = "PRERUN";
@@ -8718,7 +8909,7 @@ exports.default = GameState;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
@@ -8726,14 +8917,14 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 
 module.exports = freeGlobal;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(50)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(51)))
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetTag = __webpack_require__(13),
-    isObject = __webpack_require__(15);
+var baseGetTag = __webpack_require__(14),
+    isObject = __webpack_require__(16);
 
 /** `Object#toString` result references. */
 var asyncTag = '[object AsyncFunction]',
@@ -8772,7 +8963,7 @@ module.exports = isFunction;
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -8804,7 +8995,7 @@ module.exports = toSource;
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports) {
 
 /**
@@ -8847,11 +9038,11 @@ module.exports = eq;
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsArguments = __webpack_require__(80),
-    isObjectLike = __webpack_require__(14);
+var baseIsArguments = __webpack_require__(81),
+    isObjectLike = __webpack_require__(15);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -8889,7 +9080,7 @@ module.exports = isArguments;
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports) {
 
 /** Used as references for various `Number` constants. */
@@ -8920,12 +9111,12 @@ module.exports = isIndex;
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var SetCache = __webpack_require__(96),
-    arraySome = __webpack_require__(99),
-    cacheHas = __webpack_require__(100);
+var SetCache = __webpack_require__(97),
+    arraySome = __webpack_require__(100),
+    cacheHas = __webpack_require__(101);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1,
@@ -9009,11 +9200,11 @@ module.exports = equalArrays;
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var root = __webpack_require__(3),
-    stubFalse = __webpack_require__(115);
+/* WEBPACK VAR INJECTION */(function(module) {var root = __webpack_require__(6),
+    stubFalse = __webpack_require__(116);
 
 /** Detect free variable `exports`. */
 var freeExports =  true && exports && !exports.nodeType && exports;
@@ -9051,10 +9242,10 @@ var isBuffer = nativeIsBuffer || stubFalse;
 
 module.exports = isBuffer;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(38)(module)))
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -9082,12 +9273,12 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsTypedArray = __webpack_require__(116),
-    baseUnary = __webpack_require__(117),
-    nodeUtil = __webpack_require__(118);
+var baseIsTypedArray = __webpack_require__(117),
+    baseUnary = __webpack_require__(118),
+    nodeUtil = __webpack_require__(119);
 
 /* Node.js helper references. */
 var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
@@ -9115,197 +9306,8 @@ module.exports = isTypedArray;
 
 
 /***/ }),
-/* 39 */
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-/* 40 */
+/* 40 */,
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9314,12 +9316,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const keymage_1 = __importDefault(__webpack_require__(41));
-const state_1 = __webpack_require__(28);
-const components_1 = __webpack_require__(2);
-const systems_1 = __webpack_require__(16);
-const map_1 = __webpack_require__(8);
-const _1 = __webpack_require__(6);
+const keymage_1 = __importDefault(__webpack_require__(42));
+const state_1 = __webpack_require__(29);
+const components_1 = __webpack_require__(5);
+const systems_1 = __webpack_require__(17);
+const map_1 = __webpack_require__(10);
+const _1 = __webpack_require__(8);
 const tryMove = (dir) => (game) => () => {
     const { map, runState } = game.getState(state => ({ runState: state.runState, map: state.map }));
     const player = game.player;
@@ -9423,7 +9425,7 @@ exports.default = setupKeys;
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings handling
@@ -9770,11 +9772,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings 
     return keymage;
 }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-})(__webpack_require__(42));
+})(__webpack_require__(43));
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = function() {
@@ -9783,7 +9785,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9812,7 +9814,7 @@ function n(n){for(var t=arguments.length,r=Array(t>1?t-1:0),e=1;e<t;e++)r[e-1]=a
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9825,13 +9827,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(9));
-const ecsy_1 = __webpack_require__(1);
-const components_1 = __webpack_require__(2);
-const __1 = __webpack_require__(6);
-const display_1 = __webpack_require__(26);
-const map_1 = __webpack_require__(8);
-const __2 = __webpack_require__(6);
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(5);
+const __1 = __webpack_require__(8);
+const display_1 = __webpack_require__(28);
+const map_1 = __webpack_require__(10);
+const __2 = __webpack_require__(8);
 const byZIndex = (a, b) => b.getComponent(components_1.Renderable).z - a.getComponent(components_1.Renderable).z;
 class RenderingSystem extends ecsy_1.System {
     execute(delta, time) {
@@ -9862,7 +9864,7 @@ exports.default = RenderingSystem;
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9871,8 +9873,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const has_1 = __importDefault(__webpack_require__(12));
+const ecsy_1 = __webpack_require__(4);
+const has_1 = __importDefault(__webpack_require__(13));
 class Renderable extends ecsy_1.Component {
     constructor() {
         super();
@@ -9905,7 +9907,7 @@ exports.default = Renderable;
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -9930,15 +9932,15 @@ module.exports = baseHas;
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(48),
-    isArguments = __webpack_require__(33),
-    isArray = __webpack_require__(7),
-    isIndex = __webpack_require__(34),
-    isLength = __webpack_require__(25),
-    toKey = __webpack_require__(81);
+var castPath = __webpack_require__(49),
+    isArguments = __webpack_require__(34),
+    isArray = __webpack_require__(9),
+    isIndex = __webpack_require__(35),
+    isLength = __webpack_require__(27),
+    toKey = __webpack_require__(82);
 
 /**
  * Checks if `path` exists on `object`.
@@ -9975,13 +9977,13 @@ module.exports = hasPath;
 
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isArray = __webpack_require__(7),
-    isKey = __webpack_require__(49),
-    stringToPath = __webpack_require__(53),
-    toString = __webpack_require__(77);
+var isArray = __webpack_require__(9),
+    isKey = __webpack_require__(50),
+    stringToPath = __webpack_require__(54),
+    toString = __webpack_require__(78);
 
 /**
  * Casts `value` to a path array if it's not one.
@@ -10002,11 +10004,11 @@ module.exports = castPath;
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isArray = __webpack_require__(7),
-    isSymbol = __webpack_require__(17);
+var isArray = __webpack_require__(9),
+    isSymbol = __webpack_require__(18);
 
 /** Used to match property names within property paths. */
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -10037,7 +10039,7 @@ module.exports = isKey;
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports) {
 
 var g;
@@ -10063,10 +10065,10 @@ module.exports = g;
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Symbol = __webpack_require__(18);
+var Symbol = __webpack_require__(19);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -10115,7 +10117,7 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -10143,10 +10145,10 @@ module.exports = objectToString;
 
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoizeCapped = __webpack_require__(54);
+var memoizeCapped = __webpack_require__(55);
 
 /** Used to match property names within property paths. */
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
@@ -10176,10 +10178,10 @@ module.exports = stringToPath;
 
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var memoize = __webpack_require__(55);
+var memoize = __webpack_require__(56);
 
 /** Used as the maximum memoize cache size. */
 var MAX_MEMOIZE_SIZE = 500;
@@ -10208,10 +10210,10 @@ module.exports = memoizeCapped;
 
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var MapCache = __webpack_require__(23);
+var MapCache = __webpack_require__(25);
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -10287,12 +10289,12 @@ module.exports = memoize;
 
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Hash = __webpack_require__(57),
-    ListCache = __webpack_require__(20),
-    Map = __webpack_require__(24);
+var Hash = __webpack_require__(58),
+    ListCache = __webpack_require__(21),
+    Map = __webpack_require__(26);
 
 /**
  * Removes all key-value entries from the map.
@@ -10314,14 +10316,14 @@ module.exports = mapCacheClear;
 
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var hashClear = __webpack_require__(58),
-    hashDelete = __webpack_require__(63),
-    hashGet = __webpack_require__(64),
-    hashHas = __webpack_require__(65),
-    hashSet = __webpack_require__(66);
+var hashClear = __webpack_require__(59),
+    hashDelete = __webpack_require__(64),
+    hashGet = __webpack_require__(65),
+    hashHas = __webpack_require__(66),
+    hashSet = __webpack_require__(67);
 
 /**
  * Creates a hash object.
@@ -10352,10 +10354,10 @@ module.exports = Hash;
 
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var nativeCreate = __webpack_require__(19);
+var nativeCreate = __webpack_require__(20);
 
 /**
  * Removes all key-value entries from the hash.
@@ -10373,13 +10375,13 @@ module.exports = hashClear;
 
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(30),
-    isMasked = __webpack_require__(60),
-    isObject = __webpack_require__(15),
-    toSource = __webpack_require__(31);
+var isFunction = __webpack_require__(31),
+    isMasked = __webpack_require__(61),
+    isObject = __webpack_require__(16),
+    toSource = __webpack_require__(32);
 
 /**
  * Used to match `RegExp`
@@ -10426,10 +10428,10 @@ module.exports = baseIsNative;
 
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var coreJsData = __webpack_require__(61);
+var coreJsData = __webpack_require__(62);
 
 /** Used to detect methods masquerading as native. */
 var maskSrcKey = (function() {
@@ -10452,10 +10454,10 @@ module.exports = isMasked;
 
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var root = __webpack_require__(3);
+var root = __webpack_require__(6);
 
 /** Used to detect overreaching core-js shims. */
 var coreJsData = root['__core-js_shared__'];
@@ -10464,7 +10466,7 @@ module.exports = coreJsData;
 
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports) {
 
 /**
@@ -10483,7 +10485,7 @@ module.exports = getValue;
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports) {
 
 /**
@@ -10506,10 +10508,10 @@ module.exports = hashDelete;
 
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var nativeCreate = __webpack_require__(19);
+var nativeCreate = __webpack_require__(20);
 
 /** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -10542,10 +10544,10 @@ module.exports = hashGet;
 
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var nativeCreate = __webpack_require__(19);
+var nativeCreate = __webpack_require__(20);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -10571,10 +10573,10 @@ module.exports = hashHas;
 
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var nativeCreate = __webpack_require__(19);
+var nativeCreate = __webpack_require__(20);
 
 /** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -10600,7 +10602,7 @@ module.exports = hashSet;
 
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, exports) {
 
 /**
@@ -10619,10 +10621,10 @@ module.exports = listCacheClear;
 
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var assocIndexOf = __webpack_require__(21);
+var assocIndexOf = __webpack_require__(22);
 
 /** Used for built-in method references. */
 var arrayProto = Array.prototype;
@@ -10660,10 +10662,10 @@ module.exports = listCacheDelete;
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var assocIndexOf = __webpack_require__(21);
+var assocIndexOf = __webpack_require__(22);
 
 /**
  * Gets the list cache value for `key`.
@@ -10685,10 +10687,10 @@ module.exports = listCacheGet;
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var assocIndexOf = __webpack_require__(21);
+var assocIndexOf = __webpack_require__(22);
 
 /**
  * Checks if a list cache value for `key` exists.
@@ -10707,10 +10709,10 @@ module.exports = listCacheHas;
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var assocIndexOf = __webpack_require__(21);
+var assocIndexOf = __webpack_require__(22);
 
 /**
  * Sets the list cache `key` to `value`.
@@ -10739,10 +10741,10 @@ module.exports = listCacheSet;
 
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getMapData = __webpack_require__(22);
+var getMapData = __webpack_require__(23);
 
 /**
  * Removes `key` and its value from the map.
@@ -10763,7 +10765,7 @@ module.exports = mapCacheDelete;
 
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports) {
 
 /**
@@ -10784,10 +10786,10 @@ module.exports = isKeyable;
 
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getMapData = __webpack_require__(22);
+var getMapData = __webpack_require__(23);
 
 /**
  * Gets the map value for `key`.
@@ -10806,10 +10808,10 @@ module.exports = mapCacheGet;
 
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getMapData = __webpack_require__(22);
+var getMapData = __webpack_require__(23);
 
 /**
  * Checks if a map value for `key` exists.
@@ -10828,10 +10830,10 @@ module.exports = mapCacheHas;
 
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getMapData = __webpack_require__(22);
+var getMapData = __webpack_require__(23);
 
 /**
  * Sets the map `key` to `value`.
@@ -10856,10 +10858,10 @@ module.exports = mapCacheSet;
 
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseToString = __webpack_require__(78);
+var baseToString = __webpack_require__(79);
 
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -10890,13 +10892,13 @@ module.exports = toString;
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Symbol = __webpack_require__(18),
-    arrayMap = __webpack_require__(79),
-    isArray = __webpack_require__(7),
-    isSymbol = __webpack_require__(17);
+var Symbol = __webpack_require__(19),
+    arrayMap = __webpack_require__(80),
+    isArray = __webpack_require__(9),
+    isSymbol = __webpack_require__(18);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -10933,7 +10935,7 @@ module.exports = baseToString;
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports) {
 
 /**
@@ -10960,11 +10962,11 @@ module.exports = arrayMap;
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetTag = __webpack_require__(13),
-    isObjectLike = __webpack_require__(14);
+var baseGetTag = __webpack_require__(14),
+    isObjectLike = __webpack_require__(15);
 
 /** `Object#toString` result references. */
 var argsTag = '[object Arguments]';
@@ -10984,10 +10986,10 @@ module.exports = baseIsArguments;
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isSymbol = __webpack_require__(17);
+var isSymbol = __webpack_require__(18);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -11011,7 +11013,7 @@ module.exports = toKey;
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11020,8 +11022,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const has_1 = __importDefault(__webpack_require__(12));
+const ecsy_1 = __webpack_require__(4);
+const has_1 = __importDefault(__webpack_require__(13));
 class Position extends ecsy_1.Component {
     constructor() {
         super();
@@ -11048,7 +11050,7 @@ exports.default = Position;
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11057,8 +11059,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const has_1 = __importDefault(__webpack_require__(12));
+const ecsy_1 = __webpack_require__(4);
+const has_1 = __importDefault(__webpack_require__(13));
 class Viewshed extends ecsy_1.Component {
     constructor() {
         super();
@@ -11091,20 +11093,20 @@ exports.default = Viewshed;
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
+const ecsy_1 = __webpack_require__(4);
 class Monster extends ecsy_1.TagComponent {
 }
 exports.default = Monster;
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11113,8 +11115,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const has_1 = __importDefault(__webpack_require__(12));
+const ecsy_1 = __webpack_require__(4);
+const has_1 = __importDefault(__webpack_require__(13));
 class Light extends ecsy_1.Component {
     constructor() {
         super();
@@ -11150,7 +11152,7 @@ exports.default = Light;
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11159,8 +11161,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const has_1 = __importDefault(__webpack_require__(12));
+const ecsy_1 = __webpack_require__(4);
+const has_1 = __importDefault(__webpack_require__(13));
 class Name extends ecsy_1.Component {
     constructor() {
         super();
@@ -11184,10 +11186,10 @@ exports.default = Name;
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsEqual = __webpack_require__(88);
+var baseIsEqual = __webpack_require__(89);
 
 /**
  * Performs a deep comparison between two values to determine if they are
@@ -11225,11 +11227,11 @@ module.exports = isEqual;
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseIsEqualDeep = __webpack_require__(89),
-    isObjectLike = __webpack_require__(14);
+var baseIsEqualDeep = __webpack_require__(90),
+    isObjectLike = __webpack_require__(15);
 
 /**
  * The base implementation of `_.isEqual` which supports partial comparisons
@@ -11259,17 +11261,17 @@ module.exports = baseIsEqual;
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Stack = __webpack_require__(90),
-    equalArrays = __webpack_require__(35),
-    equalByTag = __webpack_require__(101),
-    equalObjects = __webpack_require__(105),
-    getTag = __webpack_require__(124),
-    isArray = __webpack_require__(7),
-    isBuffer = __webpack_require__(36),
-    isTypedArray = __webpack_require__(38);
+var Stack = __webpack_require__(91),
+    equalArrays = __webpack_require__(36),
+    equalByTag = __webpack_require__(102),
+    equalObjects = __webpack_require__(106),
+    getTag = __webpack_require__(125),
+    isArray = __webpack_require__(9),
+    isBuffer = __webpack_require__(37),
+    isTypedArray = __webpack_require__(39);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1;
@@ -11348,15 +11350,15 @@ module.exports = baseIsEqualDeep;
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ListCache = __webpack_require__(20),
-    stackClear = __webpack_require__(91),
-    stackDelete = __webpack_require__(92),
-    stackGet = __webpack_require__(93),
-    stackHas = __webpack_require__(94),
-    stackSet = __webpack_require__(95);
+var ListCache = __webpack_require__(21),
+    stackClear = __webpack_require__(92),
+    stackDelete = __webpack_require__(93),
+    stackGet = __webpack_require__(94),
+    stackHas = __webpack_require__(95),
+    stackSet = __webpack_require__(96);
 
 /**
  * Creates a stack cache object to store key-value pairs.
@@ -11381,10 +11383,10 @@ module.exports = Stack;
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ListCache = __webpack_require__(20);
+var ListCache = __webpack_require__(21);
 
 /**
  * Removes all key-value entries from the stack.
@@ -11402,7 +11404,7 @@ module.exports = stackClear;
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports) {
 
 /**
@@ -11426,7 +11428,7 @@ module.exports = stackDelete;
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports) {
 
 /**
@@ -11446,7 +11448,7 @@ module.exports = stackGet;
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ (function(module, exports) {
 
 /**
@@ -11466,12 +11468,12 @@ module.exports = stackHas;
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ListCache = __webpack_require__(20),
-    Map = __webpack_require__(24),
-    MapCache = __webpack_require__(23);
+var ListCache = __webpack_require__(21),
+    Map = __webpack_require__(26),
+    MapCache = __webpack_require__(25);
 
 /** Used as the size to enable large array optimizations. */
 var LARGE_ARRAY_SIZE = 200;
@@ -11506,12 +11508,12 @@ module.exports = stackSet;
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var MapCache = __webpack_require__(23),
-    setCacheAdd = __webpack_require__(97),
-    setCacheHas = __webpack_require__(98);
+var MapCache = __webpack_require__(25),
+    setCacheAdd = __webpack_require__(98),
+    setCacheHas = __webpack_require__(99);
 
 /**
  *
@@ -11539,7 +11541,7 @@ module.exports = SetCache;
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ (function(module, exports) {
 
 /** Used to stand-in for `undefined` hash values. */
@@ -11564,7 +11566,7 @@ module.exports = setCacheAdd;
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ (function(module, exports) {
 
 /**
@@ -11584,7 +11586,7 @@ module.exports = setCacheHas;
 
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ (function(module, exports) {
 
 /**
@@ -11613,7 +11615,7 @@ module.exports = arraySome;
 
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ (function(module, exports) {
 
 /**
@@ -11632,15 +11634,15 @@ module.exports = cacheHas;
 
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Symbol = __webpack_require__(18),
-    Uint8Array = __webpack_require__(102),
-    eq = __webpack_require__(32),
-    equalArrays = __webpack_require__(35),
-    mapToArray = __webpack_require__(103),
-    setToArray = __webpack_require__(104);
+var Symbol = __webpack_require__(19),
+    Uint8Array = __webpack_require__(103),
+    eq = __webpack_require__(33),
+    equalArrays = __webpack_require__(36),
+    mapToArray = __webpack_require__(104),
+    setToArray = __webpack_require__(105);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1,
@@ -11750,10 +11752,10 @@ module.exports = equalByTag;
 
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var root = __webpack_require__(3);
+var root = __webpack_require__(6);
 
 /** Built-in value references. */
 var Uint8Array = root.Uint8Array;
@@ -11762,7 +11764,7 @@ module.exports = Uint8Array;
 
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports) {
 
 /**
@@ -11786,7 +11788,7 @@ module.exports = mapToArray;
 
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ (function(module, exports) {
 
 /**
@@ -11810,10 +11812,10 @@ module.exports = setToArray;
 
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getAllKeys = __webpack_require__(106);
+var getAllKeys = __webpack_require__(107);
 
 /** Used to compose bitmasks for value comparisons. */
 var COMPARE_PARTIAL_FLAG = 1;
@@ -11905,12 +11907,12 @@ module.exports = equalObjects;
 
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetAllKeys = __webpack_require__(107),
-    getSymbols = __webpack_require__(109),
-    keys = __webpack_require__(112);
+var baseGetAllKeys = __webpack_require__(108),
+    getSymbols = __webpack_require__(110),
+    keys = __webpack_require__(113);
 
 /**
  * Creates an array of own enumerable property names and symbols of `object`.
@@ -11927,11 +11929,11 @@ module.exports = getAllKeys;
 
 
 /***/ }),
-/* 107 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayPush = __webpack_require__(108),
-    isArray = __webpack_require__(7);
+var arrayPush = __webpack_require__(109),
+    isArray = __webpack_require__(9);
 
 /**
  * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
@@ -11953,7 +11955,7 @@ module.exports = baseGetAllKeys;
 
 
 /***/ }),
-/* 108 */
+/* 109 */
 /***/ (function(module, exports) {
 
 /**
@@ -11979,11 +11981,11 @@ module.exports = arrayPush;
 
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayFilter = __webpack_require__(110),
-    stubArray = __webpack_require__(111);
+var arrayFilter = __webpack_require__(111),
+    stubArray = __webpack_require__(112);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -12015,7 +12017,7 @@ module.exports = getSymbols;
 
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ (function(module, exports) {
 
 /**
@@ -12046,7 +12048,7 @@ module.exports = arrayFilter;
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ (function(module, exports) {
 
 /**
@@ -12075,12 +12077,12 @@ module.exports = stubArray;
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayLikeKeys = __webpack_require__(113),
-    baseKeys = __webpack_require__(119),
-    isArrayLike = __webpack_require__(123);
+var arrayLikeKeys = __webpack_require__(114),
+    baseKeys = __webpack_require__(120),
+    isArrayLike = __webpack_require__(124);
 
 /**
  * Creates an array of the own enumerable property names of `object`.
@@ -12118,15 +12120,15 @@ module.exports = keys;
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseTimes = __webpack_require__(114),
-    isArguments = __webpack_require__(33),
-    isArray = __webpack_require__(7),
-    isBuffer = __webpack_require__(36),
-    isIndex = __webpack_require__(34),
-    isTypedArray = __webpack_require__(38);
+var baseTimes = __webpack_require__(115),
+    isArguments = __webpack_require__(34),
+    isArray = __webpack_require__(9),
+    isBuffer = __webpack_require__(37),
+    isIndex = __webpack_require__(35),
+    isTypedArray = __webpack_require__(39);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -12173,7 +12175,7 @@ module.exports = arrayLikeKeys;
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ (function(module, exports) {
 
 /**
@@ -12199,7 +12201,7 @@ module.exports = baseTimes;
 
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ (function(module, exports) {
 
 /**
@@ -12223,12 +12225,12 @@ module.exports = stubFalse;
 
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetTag = __webpack_require__(13),
-    isLength = __webpack_require__(25),
-    isObjectLike = __webpack_require__(14);
+var baseGetTag = __webpack_require__(14),
+    isLength = __webpack_require__(27),
+    isObjectLike = __webpack_require__(15);
 
 /** `Object#toString` result references. */
 var argsTag = '[object Arguments]',
@@ -12289,7 +12291,7 @@ module.exports = baseIsTypedArray;
 
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ (function(module, exports) {
 
 /**
@@ -12309,10 +12311,10 @@ module.exports = baseUnary;
 
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(29);
+/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(30);
 
 /** Detect free variable `exports`. */
 var freeExports =  true && exports && !exports.nodeType && exports;
@@ -12343,14 +12345,14 @@ var nodeUtil = (function() {
 
 module.exports = nodeUtil;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(38)(module)))
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isPrototype = __webpack_require__(120),
-    nativeKeys = __webpack_require__(121);
+var isPrototype = __webpack_require__(121),
+    nativeKeys = __webpack_require__(122);
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -12382,7 +12384,7 @@ module.exports = baseKeys;
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -12406,10 +12408,10 @@ module.exports = isPrototype;
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var overArg = __webpack_require__(122);
+var overArg = __webpack_require__(123);
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
 var nativeKeys = overArg(Object.keys, Object);
@@ -12418,7 +12420,7 @@ module.exports = nativeKeys;
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ (function(module, exports) {
 
 /**
@@ -12439,11 +12441,11 @@ module.exports = overArg;
 
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(30),
-    isLength = __webpack_require__(25);
+var isFunction = __webpack_require__(31),
+    isLength = __webpack_require__(27);
 
 /**
  * Checks if `value` is array-like. A value is considered array-like if it's
@@ -12478,16 +12480,16 @@ module.exports = isArrayLike;
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DataView = __webpack_require__(125),
-    Map = __webpack_require__(24),
-    Promise = __webpack_require__(126),
-    Set = __webpack_require__(127),
-    WeakMap = __webpack_require__(128),
-    baseGetTag = __webpack_require__(13),
-    toSource = __webpack_require__(31);
+var DataView = __webpack_require__(126),
+    Map = __webpack_require__(26),
+    Promise = __webpack_require__(127),
+    Set = __webpack_require__(128),
+    WeakMap = __webpack_require__(129),
+    baseGetTag = __webpack_require__(14),
+    toSource = __webpack_require__(32);
 
 /** `Object#toString` result references. */
 var mapTag = '[object Map]',
@@ -12542,11 +12544,11 @@ module.exports = getTag;
 
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10),
-    root = __webpack_require__(3);
+var getNative = __webpack_require__(12),
+    root = __webpack_require__(6);
 
 /* Built-in method references that are verified to be native. */
 var DataView = getNative(root, 'DataView');
@@ -12555,11 +12557,11 @@ module.exports = DataView;
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10),
-    root = __webpack_require__(3);
+var getNative = __webpack_require__(12),
+    root = __webpack_require__(6);
 
 /* Built-in method references that are verified to be native. */
 var Promise = getNative(root, 'Promise');
@@ -12568,11 +12570,11 @@ module.exports = Promise;
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10),
-    root = __webpack_require__(3);
+var getNative = __webpack_require__(12),
+    root = __webpack_require__(6);
 
 /* Built-in method references that are verified to be native. */
 var Set = getNative(root, 'Set');
@@ -12581,11 +12583,11 @@ module.exports = Set;
 
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getNative = __webpack_require__(10),
-    root = __webpack_require__(3);
+var getNative = __webpack_require__(12),
+    root = __webpack_require__(6);
 
 /* Built-in method references that are verified to be native. */
 var WeakMap = getNative(root, 'WeakMap');
@@ -12594,14 +12596,14 @@ module.exports = WeakMap;
 
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const rot_js_1 = __webpack_require__(9);
-const map_1 = __webpack_require__(8);
+const rot_js_1 = __webpack_require__(7);
+const map_1 = __webpack_require__(10);
 var RoomType;
 (function (RoomType) {
     RoomType[RoomType["CELLULAR_AUTOMATA"] = 0] = "CELLULAR_AUTOMATA";
@@ -12786,7 +12788,7 @@ exports.createRoomTemplate = (type) => (params) => {
 
 
 /***/ }),
-/* 130 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13053,7 +13055,7 @@ exports.default = tileMap;
 
 
 /***/ }),
-/* 131 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13066,11 +13068,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(9));
-const ecsy_1 = __webpack_require__(1);
-const components_1 = __webpack_require__(2);
-const __1 = __webpack_require__(6);
-const map_1 = __webpack_require__(8);
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(5);
+const __1 = __webpack_require__(8);
+const map_1 = __webpack_require__(10);
 const DIR_NORTH = 0;
 const DIR_EAST = 2;
 const DIR_SOUTH = 4;
@@ -13194,7 +13196,7 @@ exports.default = VisibilitySystem;
 
 
 /***/ }),
-/* 132 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13207,11 +13209,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ROT = __importStar(__webpack_require__(9));
-const ecsy_1 = __webpack_require__(1);
-const components_1 = __webpack_require__(2);
-const map_1 = __webpack_require__(8);
-const __1 = __webpack_require__(6);
+const ROT = __importStar(__webpack_require__(7));
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(5);
+const map_1 = __webpack_require__(10);
+const __1 = __webpack_require__(8);
 class AISystem extends ecsy_1.System {
     execute(delta, time) {
         const player = __1.game.player;
@@ -13241,14 +13243,14 @@ exports.default = AISystem;
 
 
 /***/ }),
-/* 133 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecsy_1 = __webpack_require__(1);
-const components_1 = __webpack_require__(2);
+const ecsy_1 = __webpack_require__(4);
+const components_1 = __webpack_require__(5);
 class InfoSystem extends ecsy_1.System {
     execute() { }
 }
@@ -13259,11 +13261,11 @@ exports.default = InfoSystem;
 
 
 /***/ }),
-/* 134 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var debounce = __webpack_require__(135),
-    isObject = __webpack_require__(15);
+var debounce = __webpack_require__(136),
+    isObject = __webpack_require__(16);
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -13334,12 +13336,12 @@ module.exports = throttle;
 
 
 /***/ }),
-/* 135 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(15),
-    now = __webpack_require__(136),
-    toNumber = __webpack_require__(137);
+var isObject = __webpack_require__(16),
+    now = __webpack_require__(137),
+    toNumber = __webpack_require__(138);
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -13531,10 +13533,10 @@ module.exports = debounce;
 
 
 /***/ }),
-/* 136 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var root = __webpack_require__(3);
+var root = __webpack_require__(6);
 
 /**
  * Gets the timestamp of the number of milliseconds that have elapsed since
@@ -13560,11 +13562,11 @@ module.exports = now;
 
 
 /***/ }),
-/* 137 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(15),
-    isSymbol = __webpack_require__(17);
+var isObject = __webpack_require__(16),
+    isSymbol = __webpack_require__(18);
 
 /** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
@@ -13632,7 +13634,7 @@ module.exports = toNumber;
 
 
 /***/ }),
-/* 138 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13641,22 +13643,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const player_1 = __importDefault(__webpack_require__(139));
+const player_1 = __importDefault(__webpack_require__(140));
 exports.createPlayer = player_1.default;
-const mobs_1 = __webpack_require__(140);
+const mobs_1 = __webpack_require__(141);
 exports.createOrc = mobs_1.createOrc;
-const lights_1 = __webpack_require__(141);
+const lights_1 = __webpack_require__(142);
 exports.createLight = lights_1.createLight;
 
 
 /***/ }),
-/* 139 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(2);
+const components_1 = __webpack_require__(5);
 const createPlayer = (ecs, x, y) => {
     const player = ecs
         .createEntity('player')
@@ -13671,13 +13673,13 @@ exports.default = createPlayer;
 
 
 /***/ }),
-/* 140 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(2);
+const components_1 = __webpack_require__(5);
 exports.createOrc = (ecs, x, y) => {
     const orc = ecs
         .createEntity('Orc')
@@ -13691,13 +13693,13 @@ exports.createOrc = (ecs, x, y) => {
 
 
 /***/ }),
-/* 141 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const components_1 = __webpack_require__(2);
+const components_1 = __webpack_require__(5);
 exports.createLight = (ECS, x, y, range = 7, color = [255, 255, 235]) => {
     return ECS
         .createEntity()
@@ -13710,7 +13712,7 @@ exports.createLight = (ECS, x, y, range = 7, color = [255, 255, 235]) => {
 
 
 /***/ }),
-/* 142 */
+/* 143 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13718,7 +13720,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
-/* 143 */
+/* 144 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13726,7 +13728,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
 
 /***/ }),
-/* 144 */
+/* 145 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13734,7 +13736,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
 
 /***/ }),
-/* 145 */
+/* 146 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13742,7 +13744,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
 
 /***/ }),
-/* 146 */
+/* 147 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13750,7 +13752,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.ttf");
 
 /***/ }),
-/* 147 */
+/* 148 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
