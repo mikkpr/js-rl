@@ -1,10 +1,13 @@
 module.exports = {
-  entry: __dirname + '/src/index.ts',
+  entry: {
+    'bundle': __dirname + '/src/index.ts',
+    'gen': __dirname + '/src/mapgen/index.ts'
+  },
   devtool: 'inline-source-map',
   output: {
     path: __dirname + '/dist',
     publicPath: '/dist/',
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   resolve: {
     extensions: ['.js', '.ts']
@@ -51,5 +54,5 @@ module.exports = {
         ]
       }
     ]
-}
+  }
 };

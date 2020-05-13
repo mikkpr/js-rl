@@ -21,7 +21,7 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
     tileColorize: true
   });
 
-  document.querySelector('.main').appendChild(display.getContainer());
+  document.querySelector('.main-container').appendChild(display.getContainer());
 
   return display;
 };

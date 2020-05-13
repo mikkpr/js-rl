@@ -40,49 +40,52 @@ const MAPHEIGHT = HEIGHT * 2;
 const TILEWIDTH = 8;
 const TILEHEIGHT = 16;
 
-const display = setupDisplay({
-  width: WIDTH,
-  height: HEIGHT
-});
+let display;
+let ECS;
+let map;
+let game;
 
-const ECS = new World();
-
-ECS.registerComponent(Position);
-ECS.registerComponent(Viewshed);
-ECS.registerComponent(Renderable);
-ECS.registerComponent(Monster);
-ECS.registerComponent(Light);
-ECS.registerComponent(Name);
-
-ECS.registerSystem(VisibilitySystem);
-ECS.registerSystem(AISystem);
-ECS.registerSystem(RenderingSystem);
-ECS.registerSystem(InfoSystem);
-
-const map = createNewMap(MAPWIDTH, MAPHEIGHT);
-
-const game = new GameState({
-  runState: RunState.PRERUN,
-  map: map.map,
-  rooms: map.rooms,
-  centers: map.centers,
-  scores: map.scores
-}, display, ECS);
-
-eval('window.game = game;');
-const handleCanvasMouseMove = throttle((e) => {
-  if (display.getContainer().contains(e.target)) {
-    const { layerX, layerY } = e;
-    const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
-    const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
-    if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) { return; }
-    const tileIdx = xyIdx(X, Y);
-    game.setState(state => { state.hoveredTileIdx = tileIdx; });
-  }
-}, 30)
-
-document.addEventListener('mousemove', handleCanvasMouseMove);
 const main = (): void => {
+  ECS = new World();
+  ECS.registerComponent(Position);
+  ECS.registerComponent(Viewshed);
+  ECS.registerComponent(Renderable);
+  ECS.registerComponent(Monster);
+  ECS.registerComponent(Light);
+  ECS.registerComponent(Name);
+
+  ECS.registerSystem(VisibilitySystem);
+  ECS.registerSystem(AISystem);
+  ECS.registerSystem(RenderingSystem);
+  ECS.registerSystem(InfoSystem);
+
+  display = setupDisplay({
+    width: WIDTH,
+    height: HEIGHT
+  });
+  map = createNewMap(MAPWIDTH, MAPHEIGHT);
+  const handleCanvasMouseMove = throttle((e) => {
+    if (display.getContainer().contains(e.target)) {
+      const { layerX, layerY } = e;
+      const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
+      const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
+      if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) { return; }
+      const tileIdx = xyIdx(X, Y);
+      game.setState(state => { state.hoveredTileIdx = tileIdx; });
+    }
+  }, 30);
+
+  game = new GameState({
+    runState: RunState.PRERUN,
+    map: map.map,
+    rooms: map.rooms,
+    centers: map.centers,
+    scores: map.scores
+  }, display, ECS);
+  eval('window.game = game;');
+
+  document.addEventListener('mousemove', handleCanvasMouseMove);
+
   const randomCenter = ROT.RNG.getItem(map.centers);
   const mapCenter = [~~(WIDTH/2), ~~(HEIGHT/2)];
   const cameraOffset: [number, number] = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
@@ -121,9 +124,15 @@ const main = (): void => {
 
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.main .loading').remove();
-  main();
-});
+eval('window.main = main;');
 
-export { game, ECS, display, WIDTH, HEIGHT, MAPWIDTH, MAPHEIGHT };
+export {
+  game,
+  ECS,
+  display,
+  WIDTH,
+  HEIGHT,
+  MAPWIDTH,
+  MAPHEIGHT,
+};
+
