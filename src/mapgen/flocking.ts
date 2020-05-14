@@ -7,9 +7,31 @@ export type Rect = {
   h: number;
 }
 
-const maxSpeed = 3;
+export interface Movable {
+  velocity: Vector;
+  acceleration: Vector;
+}
 
-export const separation = (rects: Rect[], desiredSeparation = 25.0): Vector[] => {
+export type MovableRect = Rect & Movable;
+
+const maxSpeed = 3;
+const maxForce = 0.05;
+
+export const dSquared = (rect, other) => {
+  const outer = {
+    l: Math.min(rect.x - rect.w / 2, other.x - other.w / 2),
+    t: Math.min(rect.y - rect.h / 2, other.y - other.h / 2),
+    r: Math.max(rect.x + rect.w / 2, other.x + other.w / 2),
+    b: Math.max(rect.y + rect.h / 2, other.y + other.h / 2)
+  };
+  const innerWidth = Math.max(0, outer.r - outer.l - rect.w - other.w);
+  const innerHeight = Math.max(0, outer.t - outer.b - rect.h - other.h);
+
+
+  return Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2));
+};
+
+export const separation = (rects: MovableRect[], desiredSeparation = 25.0, target: Vector): Vector[] => {
   const vectors: Vector[] = (new Array(rects.length).fill(new Vector(0, 0)));
 
   for (let idx = 0; idx < rects.length; idx++) {
@@ -19,68 +41,76 @@ export const separation = (rects: Rect[], desiredSeparation = 25.0): Vector[] =>
     let count = 0;
 
     for (let i = 0; i < rects.length; i++) {
-      if (i === idx) { continue; }
+      //if (i === idx) { continue; }
       const other = rects[i];
       const otherPos = new Vector(other.x, other.y);
 
-      const d = rectPos.distance(otherPos);
-      if (d > 0 && d < desiredSeparation) {
-        let diff = rectPos.subtract(otherPos);
+      const d = Math.max(dSquared(rect, other), rectPos.distance(otherPos));
+      let diff = rectPos.clone().subtract(otherPos);
+      if (d >= 0 && d < desiredSeparation) {
         diff = diff.normalize();
         diff = diff.divideScalar(d);
-        steeringVector = steeringVector.add(diff);
+        steeringVector.add(diff);
         count++;
       }
     }
     if (count > 0) {
-      steeringVector = steeringVector.divideScalar(count);
+      steeringVector.divideScalar(count);
     }
-
     if (steeringVector.magnitude() > 0) {
-      steeringVector = steeringVector.normalize();
-      steeringVector = steeringVector.multiplyScalar(maxSpeed);
+      steeringVector.normalize();
+      steeringVector.multiplyScalar(maxSpeed);
+      steeringVector.subtract(rect.velocity);
     }
 
-    vectors[idx] = steeringVector.toFixed();
+    vectors[idx] = steeringVector;
   }
 
   return vectors;
 };
 
-export const seek = (rect: Rect, vector: Vector): Vector => {
+export const seek = (rect: MovableRect, target: Vector): Vector => {
   const rectPos = new Vector(rect.x, rect.y);
-  let desired = vector.subtract(rectPos);  // A vector pointing from the location to the target
+  let desired = target.clone().subtract(rectPos);  // A vector pointing from the location to the target
   desired = desired.normalize();
 
   desired = desired.multiplyScalar(maxSpeed);
 
-  return desired.toFixed();
+  let steer = desired.subtract(rect.velocity);
+  if (steer.magnitude() > 0.05) {
+    steer = steer.normalize().multiplyScalar(0.05);
+  }
+
+  return steer;
 }
 
-export const cohesion = (rects: Rect[], target: Vector, nDist: number = 25): Vector[] => {
-  let vectors = (new Array(rects.length)).fill(new Vector(0, 0));
+export const cohesion = (rects: MovableRect[], nDist = 50, target: Vector): Vector[] => {
+  const vectors = (new Array(rects.length)).fill(new Vector(0, 0));
   for (let idx = 0; idx < rects.length; idx++) {
     const rect = rects[idx];
     const rectPos = new Vector(rect.x, rect.y);
-    let sum = new Vector(0, 0);   // Start with empty vector to accumulate all locations
+    //vectors[idx] = seek(rect, target.clone());
+    //continue;
     let count = 0;
+    let sum = new Vector(0, 0);
     for (let i = 0; i < rects.length; i++) {
       if (i === idx) { continue; }
       const other = rects[i];
       const otherPos = new Vector(other.x, other.y);
 
-      const dist = rectPos.distance(otherPos);
+      const dist = Math.max(dSquared(rect, other), rectPos.distance(otherPos));
+
       if ((dist > 0) && (dist < nDist)) {
-        sum = sum.add(otherPos); // Add location
+        sum.add(otherPos);
         count++;
       }
     }
     if (count > 0) {
-      sum = sum.divideScalar(count);
-      sum = sum.toFixed();
-      vectors[idx] = seek(rect, target ? target : sum);  // Steer towards the location
-    } else {
-      vectors[idx] = new Vector(0, 0);
+      let steering = seek(rect, target.clone());
+      if (steering.magnitude() > 0.05) {
+        steering = steering.normalize().multiplyScalar(0.05);
+      }
+      vectors[idx] = steering; // Steer towards the location
     }
   }
   return vectors;
