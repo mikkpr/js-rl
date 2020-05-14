@@ -409,78 +409,44 @@ const rot_js_1 = __webpack_require__(7);
 const dat_gui_1 = __webpack_require__(150);
 const victor_1 = __importDefault(__webpack_require__(40));
 const flocking_1 = __webpack_require__(151);
-const debugRects = [
-    {
-        x: 5,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 4,
-        y: 4,
-        w: 15,
-        h: 15
-    }, {
-        x: 3,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 5,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 4,
-        y: 4,
-        w: 15,
-        h: 15
-    }, {
-        x: 3,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 5,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 4,
-        y: 4,
-        w: 15,
-        h: 15
-    }, {
-        x: 3,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 5,
-        y: 5,
-        w: 15,
-        h: 15
-    }, {
-        x: 4,
-        y: 4,
-        w: 15,
-        h: 15
-    }, {
-        x: 3,
-        y: 5,
-        w: 15,
-        h: 15
+const FPS = 1000 / 30.0;
+function colorGradient(fadeFraction, rgbColor1, rgbColor2, rgbColor3) {
+    let color1 = rgbColor1;
+    let color2 = rgbColor2;
+    let fade = fadeFraction;
+    if (rgbColor3) {
+        fade = fade * 2;
+        if (fade >= 1) {
+            fade -= 1;
+            color1 = rgbColor2;
+            color2 = rgbColor3;
+        }
     }
-];
+    const diffRed = color2.red - color1.red;
+    const diffGreen = color2.green - color1.green;
+    const diffBlue = color2.blue - color1.blue;
+    const gradient = {
+        red: Math.floor(color1.red + (diffRed * fade)),
+        green: Math.floor(color1.green + (diffGreen * fade)),
+        blue: Math.floor(color1.blue + (diffBlue * fade)),
+    };
+    return 'rgb(' + gradient.red + ',' + gradient.green + ',' + gradient.blue + ')';
+}
 class MapGen {
     constructor(W, H) {
         this.initGUI = () => {
-            this.gui.add(this, 'numRects', 1, 12, 1);
-            this.gui.add(this, 'separation', 1, 100, 1);
-            this.gui.add(this, 'separationCoeff', 0, 2.5, 0.1);
-            this.gui.add(this, 'cohesion', 1, 100, 1);
-            this.gui.add(this, 'cohesionCoeff', 0, 2.5, 0.1);
             this.gui.add(this, 'seed');
+            const rects = this.gui.addFolder('Rects');
+            rects.add(this, 'numRects', 1, 150, 1).name('Initial count');
+            rects.add(this, 'minRoomSize', 1, 100, 1);
+            rects.add(this, 'maxRoomSize', 1, 200, 1);
+            const flock = this.gui.addFolder('Flocking');
+            flock.open();
+            flock.add(this, 'separation', 1, 1000, 1);
+            flock.add(this, 'separationCoeff', 0, 10.0, 0.1);
+            flock.add(this, 'cohesion', 1, 1000, 1);
+            flock.add(this, 'cohesionCoeff', 0, 10.0, 0.1);
+            flock.add(this, 'friction', 0.1, 2.0, 0.01);
             this.gui.add(this, 'regen').name('Generate!');
             this.gui.add(this, 'pause').name('Pause');
             this.gui.add(this, 'play').name('Play');
@@ -493,15 +459,26 @@ class MapGen {
             document.querySelector('.levelgen').appendChild(this.canvas);
         };
         this.draw = (rects) => {
-            const [dx, dy] = [this.canvas.width / 2, this.canvas.height / 2];
             const ctx = this.canvas.getContext('2d');
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            rects.forEach(rect => {
+            rects.forEach((rect, i) => {
                 const { x, y, w, h } = rect;
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                ctx.strokeStyle = 'red';
-                ctx.rect(x + dx, y + dy, w, h);
+                ctx.strokeStyle = colorGradient((i + 1) / this.numRects, {
+                    red: 255,
+                    green: 0,
+                    blue: 0
+                }, {
+                    red: 0,
+                    green: 255,
+                    blue: 0
+                }, {
+                    red: 0,
+                    green: 0,
+                    blue: 255
+                });
+                ctx.rect(x - w / 2, y - h / 2, w, h);
                 ctx.stroke();
             });
         };
@@ -512,53 +489,97 @@ class MapGen {
             this.running = true;
         };
         this.step = () => {
-            const sepVectors = flocking_1.separation(this.rects, this.separation);
-            const cohVectors = flocking_1.cohesion(this.rects, new victor_1.default(this.canvas.width / 2, this.canvas.height / 2), this.cohesion);
-            const sum = [...sepVectors, ...cohVectors]
-                .map(v => v.magnitude())
-                .reduce((sum, m) => sum + m, 0);
-            this.rects = this.rects.map((rect, idx) => {
-                const newPos = new victor_1.default(rect.x + sepVectors[idx].x * this.separationCoeff + cohVectors[idx].x * this.cohesionCoeff, rect.y + sepVectors[idx].y * this.separationCoeff + cohVectors[idx].y * this.cohesionCoeff);
+            const sepVectors = flocking_1.separation(this.rects, this.separation, this.rectCenter.clone());
+            const cohVectors = flocking_1.cohesion(this.rects, this.cohesion, this.rectCenter.clone());
+            this.rects = this.rects
+                .map((rect, idx) => {
+                const sepVector = sepVectors[idx].multiplyScalar(this.separationCoeff);
+                const cohVector = cohVectors[idx].multiplyScalar(this.cohesionCoeff);
                 return {
                     ...rect,
-                    x: newPos.x,
-                    y: newPos.y,
+                    acceleration: rect.acceleration
+                        .add(sepVector)
+                        .add(cohVector)
+                };
+            })
+                .map((rect, idx) => {
+                rect.velocity.add(rect.acceleration);
+                if (rect.velocity.magnitude() > 3) {
+                    rect.velocity.normalize().multiplyScalar(3);
+                }
+                const acceleration = new victor_1.default(0, 0);
+                const x = rect.x + rect.velocity.x;
+                const y = rect.y + rect.velocity.y;
+                rect.velocity.multiplyScalar(this.friction);
+                return {
+                    ...rect,
+                    acceleration,
+                    x,
+                    y
                 };
             });
-            if (sum <= 0.2) {
-                clearInterval(this.drawingInterval);
-                this.running = false;
-                console.log('Done!', this.rects);
-            }
             this.draw(this.rects);
         };
         this.regen = () => {
             this.running = true;
+            this.done = false;
             clearInterval(this.drawingInterval);
             rot_js_1.RNG.setSeed(this.seed);
-            this.allRects = debugRects;
-            this.rects = this.allRects.slice(0, this.numRects);
+            const center = [this.canvas.width / 2, this.canvas.height / 2];
+            this.rects = [];
+            for (let i = 1; i <= this.numRects; i++) {
+                const rect = {
+                    x: rot_js_1.RNG.getUniformInt(-20, 20) + center[0],
+                    y: rot_js_1.RNG.getUniformInt(-20, 20) + center[1],
+                    w: rot_js_1.RNG.getUniformInt(this.minRoomSize, this.maxRoomSize),
+                    h: rot_js_1.RNG.getUniformInt(this.minRoomSize, this.maxRoomSize),
+                    velocity: new victor_1.default(0, 0),
+                    acceleration: new victor_1.default(0, 0)
+                };
+                this.rects.push(rect);
+            }
+            const boundingRect = this.rects.reduce((acc, rect) => {
+                return {
+                    l: Math.min(rect.x - rect.w / 2, acc.l),
+                    t: Math.min(rect.y - rect.h / 2, acc.t),
+                    r: Math.max(rect.x + rect.w / 2, acc.r),
+                    b: Math.max(rect.y + rect.h / 2, acc.b),
+                };
+            }, { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity });
+            this.rectCenter = new victor_1.default((boundingRect.r + boundingRect.l) / 2, (boundingRect.b + boundingRect.t) / 2);
+            this.rects = this.rects.map(r => {
+                const pos = new victor_1.default(r.x, r.y);
+                return {
+                    ...r,
+                    velocity: this.rectCenter.clone().subtract(pos).normalize().invert()
+                };
+            });
             this.draw(this.rects);
             this.drawingInterval = setInterval(() => {
                 if (this.running) {
                     this.step();
                 }
-            }, 1000 / 10.0);
+            }, FPS);
         };
         this.width = W;
         this.height = H;
-        this.numRects = 4;
+        this.numRects = 50;
         this.seed = 0;
         this.gui = new dat_gui_1.GUI();
         this.gui.remember(this);
         this.drawingInterval = null;
-        this.separationCoeff = 1.5;
+        this.separationCoeff = 2.5;
         this.cohesionCoeff = 1.0;
         this.running = false;
-        this.separation = 25.0;
-        this.cohesion = 25.0;
+        this.separation = 10.0;
+        this.cohesion = 50.0;
+        this.friction = 0.9;
+        this.minRoomSize = 30;
+        this.maxRoomSize = 60;
         this.init();
         this.initGUI();
+        this.done = false;
+        this.rectCenter = new victor_1.default(W * 4, H * 4);
     }
 }
 eval('window.MapGen = MapGen');
@@ -3115,7 +3136,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const victor_1 = __importDefault(__webpack_require__(40));
 const maxSpeed = 3;
-exports.separation = (rects, desiredSeparation = 25.0) => {
+const maxForce = 0.05;
+exports.dSquared = (rect, other) => {
+    const outer = {
+        l: Math.min(rect.x - rect.w / 2, other.x - other.w / 2),
+        t: Math.min(rect.y - rect.h / 2, other.y - other.h / 2),
+        r: Math.max(rect.x + rect.w / 2, other.x + other.w / 2),
+        b: Math.max(rect.y + rect.h / 2, other.y + other.h / 2)
+    };
+    const innerWidth = Math.max(0, outer.r - outer.l - rect.w - other.w);
+    const innerHeight = Math.max(0, outer.t - outer.b - rect.h - other.h);
+    return Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2));
+};
+exports.separation = (rects, desiredSeparation = 25.0, target) => {
     const vectors = (new Array(rects.length).fill(new victor_1.default(0, 0)));
     for (let idx = 0; idx < rects.length; idx++) {
         const rect = rects[idx];
@@ -3123,64 +3156,65 @@ exports.separation = (rects, desiredSeparation = 25.0) => {
         let steeringVector = new victor_1.default(0, 0);
         let count = 0;
         for (let i = 0; i < rects.length; i++) {
-            if (i === idx) {
-                continue;
-            }
             const other = rects[i];
             const otherPos = new victor_1.default(other.x, other.y);
-            const d = rectPos.distance(otherPos);
-            if (d > 0 && d < desiredSeparation) {
-                let diff = rectPos.subtract(otherPos);
+            const d = Math.max(exports.dSquared(rect, other), rectPos.distance(otherPos));
+            let diff = rectPos.clone().subtract(otherPos);
+            if (d >= 0 && d < desiredSeparation) {
                 diff = diff.normalize();
                 diff = diff.divideScalar(d);
-                steeringVector = steeringVector.add(diff);
+                steeringVector.add(diff);
                 count++;
             }
         }
         if (count > 0) {
-            steeringVector = steeringVector.divideScalar(count);
+            steeringVector.divideScalar(count);
         }
         if (steeringVector.magnitude() > 0) {
-            steeringVector = steeringVector.normalize();
-            steeringVector = steeringVector.multiplyScalar(maxSpeed);
+            steeringVector.normalize();
+            steeringVector.multiplyScalar(maxSpeed);
+            steeringVector.subtract(rect.velocity);
         }
-        vectors[idx] = steeringVector.toFixed();
+        vectors[idx] = steeringVector;
     }
     return vectors;
 };
-exports.seek = (rect, vector) => {
+exports.seek = (rect, target) => {
     const rectPos = new victor_1.default(rect.x, rect.y);
-    let desired = vector.subtract(rectPos);
+    let desired = target.clone().subtract(rectPos);
     desired = desired.normalize();
     desired = desired.multiplyScalar(maxSpeed);
-    return desired.toFixed();
+    let steer = desired.subtract(rect.velocity);
+    if (steer.magnitude() > 0.05) {
+        steer = steer.normalize().multiplyScalar(0.05);
+    }
+    return steer;
 };
-exports.cohesion = (rects, target, nDist = 25) => {
-    let vectors = (new Array(rects.length)).fill(new victor_1.default(0, 0));
+exports.cohesion = (rects, nDist = 50, target) => {
+    const vectors = (new Array(rects.length)).fill(new victor_1.default(0, 0));
     for (let idx = 0; idx < rects.length; idx++) {
         const rect = rects[idx];
         const rectPos = new victor_1.default(rect.x, rect.y);
-        let sum = new victor_1.default(0, 0);
         let count = 0;
+        let sum = new victor_1.default(0, 0);
         for (let i = 0; i < rects.length; i++) {
             if (i === idx) {
                 continue;
             }
             const other = rects[i];
             const otherPos = new victor_1.default(other.x, other.y);
-            const dist = rectPos.distance(otherPos);
+            const dist = Math.max(exports.dSquared(rect, other), rectPos.distance(otherPos));
             if ((dist > 0) && (dist < nDist)) {
-                sum = sum.add(otherPos);
+                sum.add(otherPos);
                 count++;
             }
         }
         if (count > 0) {
-            sum = sum.divideScalar(count);
-            sum = sum.toFixed();
-            vectors[idx] = exports.seek(rect, target ? target : sum);
-        }
-        else {
-            vectors[idx] = new victor_1.default(0, 0);
+            let steering = exports.seek(rect, target.clone());
+            if (steering.magnitude() > 0.05) {
+                steering = steering.normalize().multiplyScalar(0.05);
+            }
+            vectors[idx] = steering;
         }
     }
     return vectors;
