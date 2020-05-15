@@ -68,12 +68,12 @@ class MapGen {
     this.gui = new GUI();
     this.gui.remember(this);
     this.drawingInterval = null;
-    this.separationCoeff = 7.5;
+    this.separationCoeff = 10;
     this.cohesionCoeff = 0.1;
     this.running = false;
     this.separation = 10.0;
-    this.cohesion = 50.0;
-    this.friction = 0.95;
+    this.cohesion = 150.0;
+    this.friction = 0.9;
     this.minRoomSize = 30;
     this.maxRoomSize = 60;
     this.roomHeightWidthRatio = 1.3;
@@ -167,7 +167,8 @@ class MapGen {
         const acceleration = new Vector(0, 0);
         const x = rect.x + rect.velocity.x;
         const y = rect.y + rect.velocity.y;
-        rect.velocity.multiplyScalar(this.friction)
+        const rectPos = new Vector(x, y);
+        rect.velocity.multiplyScalar(this.friction);
         return {
           ...rect,
           acceleration,

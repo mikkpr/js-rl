@@ -37,7 +37,7 @@ export const separation = (rects: MovableRect[], desiredSeparation = 25.0, targe
   for (let idx = 0; idx < rects.length; idx++) {
     const rect = rects[idx];
     const rectPos = new Vector(rect.x, rect.y);
-    let steeringVector = new Vector(0, 0);
+    const steeringVector = new Vector(0, 0);
     let count = 0;
 
     for (let i = 0; i < rects.length; i++) {
@@ -47,11 +47,20 @@ export const separation = (rects: MovableRect[], desiredSeparation = 25.0, targe
 
       const d = Math.max(dSquared(rect, other), rectPos.distance(otherPos));
       let diff = rectPos.clone().subtract(otherPos);
-      if (d >= 0 && d < desiredSeparation) {
+      if (d > 0 && d < desiredSeparation) {
         diff = diff.normalize();
-        diff = diff.divideScalar(d);
+        const invSq = 1 / Math.pow(d, 2);
+        diff.multiplyScalar(invSq)
         steeringVector.add(diff);
         count++;
+      } else if (d === 0) {
+        diff = diff.normalize();
+        const dist = rectPos.clone().distance(otherPos.clone());
+        if (dist) {
+          diff.multiplyScalar(1 / Math.pow(dist, 2));
+          steeringVector.add(diff);
+          count++;
+        }
       }
     }
     if (count > 0) {
@@ -60,7 +69,8 @@ export const separation = (rects: MovableRect[], desiredSeparation = 25.0, targe
     if (steeringVector.magnitude() > 0) {
       steeringVector.normalize();
       steeringVector.multiplyScalar(maxSpeed);
-      steeringVector.subtract(rect.velocity);
+      //steeringVector.subtract(rect.velocity);
+
     }
 
     vectors[idx] = steeringVector;
@@ -98,10 +108,10 @@ export const cohesion = (rects: MovableRect[], nDist = 50, target: Vector): Vect
       const other = rects[i];
       const otherPos = new Vector(other.x, other.y);
 
-      const dist = Math.max(dSquared(rect, other), rectPos.distance(otherPos));
+      const dist = dSquared(rect, other);
 
-      if ((dist > 0) && (dist < nDist)) {
-        sum.add(otherPos);
+      if ((dist >= 0) && (dist < nDist)) {
+        sum.add(otherPos.clone().normalize());
         count++;
       }
     }
