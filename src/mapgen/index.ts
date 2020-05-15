@@ -68,14 +68,15 @@ class MapGen {
     this.gui = new GUI();
     this.gui.remember(this);
     this.drawingInterval = null;
-    this.separationCoeff = 2.5;
-    this.cohesionCoeff = 1.0;
+    this.separationCoeff = 7.5;
+    this.cohesionCoeff = 0.1;
     this.running = false;
     this.separation = 10.0;
     this.cohesion = 50.0;
-    this.friction = 0.9;
+    this.friction = 0.95;
     this.minRoomSize = 30;
     this.maxRoomSize = 60;
+    this.roomHeightWidthRatio = 1.3;
     this.init();
     this.initGUI();
     this.done = false;
@@ -88,6 +89,7 @@ class MapGen {
     rects.add(this, 'numRects', 1, 150, 1).name('Initial count');
     rects.add(this, 'minRoomSize', 1, 100, 1);
     rects.add(this, 'maxRoomSize', 1, 200, 1);
+    rects.add(this, 'roomHeightWidthRatio', 0.25, 2.0, 0.1);
     const flock = this.gui.addFolder('Flocking');
     flock.open()
     flock.add(this, 'separation', 1, 1000, 1);
@@ -177,24 +179,40 @@ class MapGen {
     this.draw(this.rects);
   }
 
+  getRect = () => {
+    const center = [this.canvas.width / 2, this.canvas.height / 2];
+    const w = RNG.getUniformInt(this.minRoomSize, this.maxRoomSize);
+    const hMin = ~~(w / this.roomHeightWidthRatio);
+    const hMax = ~~(w * this.roomHeightWidthRatio);
+    const h = RNG.getUniformInt(Math.min(hMin, hMax), Math.max(hMin, hMax));
+    let rect = {
+      x: RNG.getUniformInt(-20, 20) + center[0],
+      y: RNG.getUniformInt(-20, 20) + center[1],
+      w,
+      h,
+      velocity: new Vector(0, 0),
+      acceleration: new Vector(0, 0)
+    };
+    if (RNG.getUniformInt(0, 1)) {
+      const { w, h } = rect;
+      rect = {
+        ...rect,
+        w: h,
+        h: w
+      };
+    }
+    return rect;
+  }
+
   regen = (): void => {
     this.running = true;
     this.done = false;
     clearInterval(this.drawingInterval);
     RNG.setSeed(this.seed);
-    const center = [this.canvas.width / 2, this.canvas.height / 2];
 
     this.rects = [];
     for (let i = 1; i <= this.numRects; i++) {
-      const rect = {
-        x: RNG.getUniformInt(-20, 20) + center[0],
-        y: RNG.getUniformInt(-20, 20) + center[1],
-        w: RNG.getUniformInt(this.minRoomSize, this.maxRoomSize),
-        h: RNG.getUniformInt(this.minRoomSize, this.maxRoomSize),
-        velocity: new Vector(0, 0),
-        acceleration: new Vector(0, 0)
-      };
-      this.rects.push(rect);
+      this.rects.push(this.getRect());
     }
     const boundingRect = this.rects.reduce((acc, rect) => {
       return {
