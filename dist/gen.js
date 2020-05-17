@@ -12063,6 +12063,9 @@ class MapGen {
             flock.add(this, 'cohesion', 1, 1000, 1);
             flock.add(this, 'cohesionCoeff', 0, 10.0, 0.1);
             flock.add(this, 'friction', 0.1, 2.0, 0.01);
+            const graph = this.gui.addFolder('Graphs');
+            graph.open();
+            graph.add(this, 'cycleEdgePct', 0, 1, 0.05);
             this.gui.add(this, 'restart').name('Restart');
             this.gui.add(this, 'next').name('Next step');
         };
@@ -12242,8 +12245,6 @@ class MapGen {
             finalRooms.forEach((r, idx) => {
                 this.roomGraph.setNode(r.id, r);
             });
-            this.del.halfedges.forEach(he => {
-            });
             forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e, p, q) => {
                 this.roomGraph.setEdge(p.id, q.id);
             });
@@ -12265,6 +12266,26 @@ class MapGen {
             }, {});
             this.MSTGraph = graphlib_1.alg.prim(this.roomGraph, this.edgeWeight(rooms));
             this.drawDel(this.del);
+            this.drawMST(this.MSTGraph);
+        };
+        this.addCycles = () => {
+            const rooms = this.rects.reduce((acc, room) => {
+                return {
+                    ...acc,
+                    [room.id]: room
+                };
+            }, {});
+            const finalRooms = this.rects.filter(r => r.final);
+            const edgesToAddBack = Math.floor((this.roomGraph.edges().length - this.MSTGraph.edges().length) * this.cycleEdgePct);
+            let i = 0;
+            while (i <= edgesToAddBack) {
+                const edge = rot_js_1.RNG.getItem(this.roomGraph.edges());
+                if (!this.MSTGraph.hasEdge(edge)) {
+                    const { v, w } = edge;
+                    this.MSTGraph.setEdge(v, w);
+                    i++;
+                }
+            }
             this.drawMST(this.MSTGraph);
         };
         this.drawLine = (ctx, color, lineWidth = 1) => (v, w) => {
@@ -12341,6 +12362,7 @@ class MapGen {
                 this.generateMSTGraph();
             }
             else if (newState === MapGenState.CYCLES) {
+                this.addCycles();
             }
             this.state = newState;
         };
@@ -12357,6 +12379,7 @@ class MapGen {
         this.drawingInterval = null;
         this.separationCoeff = 10;
         this.cohesionCoeff = 0.5;
+        this.cycleEdgePct = 0.15;
         this.running = false;
         this.separation = 15.0;
         this.cohesion = 100.0;
