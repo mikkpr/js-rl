@@ -1,12 +1,54 @@
 import { RNG } from 'rot-js';
 import { GUI } from 'dat.gui';
+import Delaunator from 'delaunator';
 import Vector from 'victor';
 import { MAPWIDTH, MAPHEIGHT } from '..';
 import { MovableRect, dSquared, separation, cohesion } from './flocking';
 
-const FPS = 1000/30.0;
+const FPS = 1000 / 30.0;
 
-function colorGradient(fadeFraction, rgbColor1, rgbColor2, rgbColor3) {
+const edgesOfTriangle = (t) => [3 * t, 3 * t + 1, 3 * t + 2];
+
+const triangleOfEdge = (e) => Math.floor(e / 3);
+
+const nextHalfedge = (e) => ((e % 3 === 2) ? e - 2 : e + 1);
+
+const prevHalfedge = (e) => ((e % 3 === 0) ? e + 2 : e - 1);
+
+const forEachTriangleEdge = (points, delaunay, callback) => {
+    for (let e = 0; e < delaunay.triangles.length; e++) {
+        if (e > delaunay.halfedges[e]) {
+            const p = points[delaunay.triangles[e]];
+            const q = points[delaunay.triangles[nextHalfedge(e)]];
+            callback(e, p, q);
+        }
+    }
+}
+
+const delaunay = rects => {
+  const del = Delaunator.from(rects.map(r => [r.x, r.y]));
+  return del;
+}
+
+export const roundToTilesize = (n, size) => {
+  const N = ((n + size - 1) / size);
+  return (N - Math.floor(N) > 0.5 ? Math.ceil : Math.floor)(N) * size;
+}
+
+const randomPointInEllipse = (r1, r2, x, y) => {
+  const t = 2 * Math.PI * RNG.getUniform();
+  const u = RNG.getUniform() + RNG.getUniform();
+  let R;
+  if (u > 1) {
+    R = 2 - u
+  } else {
+    R = u
+  }
+
+  return [x + r1 * R * Math.cos(t), y + r2 * R * Math.sin(t)];
+}
+
+const colorGradient = (fadeFraction, rgbColor1, rgbColor2, rgbColor3) => {
   let color1 = rgbColor1;
   let color2 = rgbColor2;
   let fade = fadeFraction;
@@ -59,24 +101,30 @@ class MapGen {
   minRoomSize: number;
   maxRoomSize: number;
   roomHeightWidthRatio: number;
+  spawnRadiusHorizontal: number;
+  spawnRadiusVertical: number;
+  del?: Delaunator<[number, number]>;
 
   constructor(W: number, H: number) {
     this.width = W;
     this.height = H;
-    this.numRects = 50;
+    this.numRects = 150;
     this.seed = 0;
     this.gui = new GUI();
     this.gui.remember(this);
     this.drawingInterval = null;
     this.separationCoeff = 10;
-    this.cohesionCoeff = 0.1;
+    this.cohesionCoeff = 0.5;
     this.running = false;
-    this.separation = 10.0;
-    this.cohesion = 150.0;
+    this.separation = 15.0;
+    this.cohesion = 100.0;
     this.friction = 0.9;
-    this.minRoomSize = 30;
-    this.maxRoomSize = 60;
-    this.roomHeightWidthRatio = 1.3;
+    this.minRoomSize = 4;
+    this.maxRoomSize = 16;
+    this.spawnRadiusHorizontal = 70;
+    this.spawnRadiusVertical = 50;
+    this.roomHeightWidthRatio = 1.5;
+    this.del = undefined;
     this.init();
     this.initGUI();
     this.done = false;
@@ -86,18 +134,21 @@ class MapGen {
   initGUI = (): void => {
     this.gui.add(this, 'seed');
     const rects = this.gui.addFolder('Rects');
-    rects.add(this, 'numRects', 1, 150, 1).name('Initial count');
+    rects.add(this, 'numRects', 1, 600, 1).name('Initial count');
     rects.add(this, 'minRoomSize', 1, 100, 1);
     rects.add(this, 'maxRoomSize', 1, 200, 1);
     rects.add(this, 'roomHeightWidthRatio', 0.25, 2.0, 0.1);
+    rects.add(this, 'spawnRadiusHorizontal', 10, 1000, 1);
+    rects.add(this, 'spawnRadiusVertical', 10, 1000, 1);
     const flock = this.gui.addFolder('Flocking');
     flock.open()
-    flock.add(this, 'separation', 1, 1000, 1);
+    flock.add(this, 'separation', 5, 1000, 1);
     flock.add(this, 'separationCoeff', 0, 10.0, 0.1);
     flock.add(this, 'cohesion', 1, 1000, 1);
     flock.add(this, 'cohesionCoeff', 0, 10.0, 0.1);
     flock.add(this, 'friction', 0.1, 2.0, 0.01);
-    this.gui.add(this, 'regen').name('Generate!');
+    this.gui.add(this, 'regen').name('Restart!');
+    this.gui.add(this, 'stop').name('Stop');
     this.gui.add(this, 'pause').name('Pause');
     this.gui.add(this, 'play').name('Play');
     this.gui.add(this, 'step').name('Step');
@@ -115,9 +166,10 @@ class MapGen {
     const ctx = this.canvas.getContext('2d');
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     rects.forEach((rect, i) => {
-      const { x, y, w, h } = rect;
+      const { x, y, w, h, final, discarded } = rect;
+      if (discarded) { return; }
       ctx.beginPath();
-      ctx.lineWidth = 1;
+      ctx.lineWidth = final ? 3 : 1;
       ctx.strokeStyle = colorGradient((i+1)/this.numRects, {
         red: 255,
         green: 0,
@@ -136,6 +188,79 @@ class MapGen {
     });
   }
 
+  drawDel = (del: Delaunator<[number, number]>) => {
+    const ctx = this.canvas.getContext('2d');
+    if (!del) { return; }
+
+    forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e: number, p: MovableRect, q: MovableRect) => {
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#FFFF00';
+      ctx.lineTo(q.x, q.y);
+      ctx.stroke();
+    });
+  }
+
+  cleanUpRooms = () => {
+    this.rects = this.rects.map((r, idx) => {
+      let count = 0;
+      for (let i = 0; i < this.rects.length; i++) {
+        if (i === idx) { continue; }
+        const other = this.rects[i];
+        const d = dSquared(r, other);
+        if (d === 0) {
+          count ++;
+        }
+      }
+      let discarded = true;
+      if (count === 0) {
+      // if (count < this.numRects * 0.3) {
+        discarded = false; 
+      }; 
+
+      return {
+        ...r, discarded
+      };
+    });
+    this.draw(this.rects);
+  }
+
+  findRooms = () => {
+    const meanW = this.rects.map(r => r.w).reduce((sum, w) => sum + w, 0) / this.rects.length;
+    const meanH = this.rects.map(r => r.h).reduce((sum, h) => sum + h, 0) / this.rects.length;
+    const coeff = 1.15;
+    this.rects = this.rects.map((r, idx) => {
+      if (r.w < (meanW * coeff) || r.h < (meanH * coeff)) { return r; }
+      let count = 0;
+      for (let i = 0; i < this.rects.length; i++) {
+        if (i === idx) { continue; }
+        const other = this.rects[i];
+        const d = dSquared(r, other);
+        if (d === 0) {
+          count ++;
+        }
+      }
+      return {
+        ...r, final: !r.discarded && count === 0
+      };
+    });
+    this.draw(this.rects);
+  }
+
+  stop = () => {
+    this.running = false;
+    this.done = true;
+
+    this.cleanUpRooms();
+    this.findRooms();
+    const finalRooms = this.rects.filter(r => r.final);
+    console.log(finalRooms);
+    this.del = delaunay(finalRooms);
+
+    this.drawDel(this.del);
+  }
+
   pause = () => {
     this.running = false;
   }
@@ -144,9 +269,11 @@ class MapGen {
     this.running = true;
   }
 
-  step = () => {
-    const sepVectors = separation(this.rects, this.separation, this.rectCenter.clone());
+  step = (initial = false) => {
+    const sepVectors = separation(this.rects, initial ? 5 : this.separation, this.rectCenter.clone());
     const cohVectors = cohesion(this.rects, this.cohesion, this.rectCenter.clone());
+
+    // this.running = false;
 
     this.rects = this.rects
       .map((rect, idx) => {
@@ -165,8 +292,8 @@ class MapGen {
           rect.velocity.normalize().multiplyScalar(3);
         }
         const acceleration = new Vector(0, 0);
-        const x = rect.x + rect.velocity.x;
-        const y = rect.y + rect.velocity.y;
+        const x = roundToTilesize(rect.x + rect.velocity.x, 1);
+        const y = roundToTilesize(rect.y + rect.velocity.y, 1);
         const rectPos = new Vector(x, y);
         rect.velocity.multiplyScalar(this.friction);
         return {
@@ -176,7 +303,6 @@ class MapGen {
           y
         };
       });
-    //console.log(this.rects);
     this.draw(this.rects);
   }
 
@@ -186,9 +312,10 @@ class MapGen {
     const hMin = ~~(w / this.roomHeightWidthRatio);
     const hMax = ~~(w * this.roomHeightWidthRatio);
     const h = RNG.getUniformInt(Math.min(hMin, hMax), Math.max(hMin, hMax));
+    const [x, y] = randomPointInEllipse(this.spawnRadiusHorizontal, this.spawnRadiusVertical, center[0], center[1]);
     let rect = {
-      x: RNG.getUniformInt(-20, 20) + center[0],
-      y: RNG.getUniformInt(-20, 20) + center[1],
+      x,
+      y,
       w,
       h,
       velocity: new Vector(0, 0),
@@ -208,6 +335,8 @@ class MapGen {
   regen = (): void => {
     this.running = true;
     this.done = false;
+    this.del = undefined;
+
     clearInterval(this.drawingInterval);
     RNG.setSeed(this.seed);
 
@@ -224,13 +353,7 @@ class MapGen {
       }
     }, {l: Infinity, t: Infinity, r: -Infinity, b: -Infinity});
     this.rectCenter = new Vector((boundingRect.r + boundingRect.l) / 2, (boundingRect.b + boundingRect.t) / 2);
-    this.rects = this.rects.map(r => {
-      const pos = new Vector(r.x, r.y);
-      return {
-        ...r,
-        velocity: this.rectCenter.clone().subtract(pos).normalize().invert()
-      };
-    });
+    this.step(true);
     this.draw(this.rects);
     this.drawingInterval = setInterval(() => {
       if (this.running) {
