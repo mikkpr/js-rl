@@ -14,7 +14,7 @@ export interface Movable {
   acceleration: Vector;
 }
 
-export type MovableRect = Rect & Movable;
+export type MovableRect = Rect & Movable & { id: string; };
 
 const maxSpeed = 30;
 const maxForce = 0.1;

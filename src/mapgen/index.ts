@@ -3,9 +3,21 @@ import { GUI } from 'dat.gui';
 import Delaunator from 'delaunator';
 import Vector from 'victor';
 import { MAPWIDTH, MAPHEIGHT } from '..';
+import { ID } from '../utils/id';
 import { MovableRect, dSquared, separation, cohesion } from './flocking';
+import { Graph, alg } from 'graphlib';
 
 const FPS = 1000 / 30.0;
+
+enum MapGenState {
+  PRERUN = 'PRERUN',
+  CREATE_RECTS = 'CREATE_RECTS',
+  SEPARATION = 'SEPARATION',
+  CLEANUP = 'CLEANUP',
+  DELAUNAY = 'DELAUNAY',
+  MST = 'MST',
+  CYCLES = 'CYCLES'
+}
 
 const edgesOfTriangle = (t) => [3 * t, 3 * t + 1, 3 * t + 2];
 
@@ -79,6 +91,9 @@ const colorGradient = (fadeFraction, rgbColor1, rgbColor2, rgbColor3) => {
 }
 
 class MapGen {
+  state: MapGenState;
+  roomGraph: Graph;
+  MSTGraph: Graph;
   test: string;
   width: number;
   _initialWidth: number;
@@ -108,6 +123,7 @@ class MapGen {
   constructor(W: number, H: number) {
     this.width = W;
     this.height = H;
+    this.state = MapGenState.PRERUN;
     this.numRects = 150;
     this.seed = 0;
     this.gui = new GUI();
@@ -147,12 +163,8 @@ class MapGen {
     flock.add(this, 'cohesion', 1, 1000, 1);
     flock.add(this, 'cohesionCoeff', 0, 10.0, 0.1);
     flock.add(this, 'friction', 0.1, 2.0, 0.01);
-    this.gui.add(this, 'regen').name('Restart!');
-    this.gui.add(this, 'stop').name('Stop');
-    this.gui.add(this, 'pause').name('Pause');
-    this.gui.add(this, 'play').name('Play');
-    this.gui.add(this, 'step').name('Step');
-
+    this.gui.add(this, 'restart').name('Restart');
+    this.gui.add(this, 'next').name('Next step'); 
   }
 
   init = (): void => {
@@ -191,14 +203,9 @@ class MapGen {
   drawDel = (del: Delaunator<[number, number]>) => {
     const ctx = this.canvas.getContext('2d');
     if (!del) { return; }
-
+    const color = '#FFFF00';
     forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e: number, p: MovableRect, q: MovableRect) => {
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = '#FFFF00';
-      ctx.lineTo(q.x, q.y);
-      ctx.stroke();
+      this.drawLine(ctx, color)(p, q);
     });
   }
 
@@ -248,31 +255,28 @@ class MapGen {
     this.draw(this.rects);
   }
 
-  stop = () => {
-    this.running = false;
-    this.done = true;
-
-    this.cleanUpRooms();
-    this.findRooms();
-    const finalRooms = this.rects.filter(r => r.final);
-    this.del = delaunay(finalRooms);
-
-    this.drawDel(this.del);
-  }
-
-  pause = () => {
-    this.running = false;
-  }
-
-  play = () => {
-    this.running = true;
+  next = () => {
+    switch (this.state) {
+      case MapGenState.PRERUN:
+        return this.setState(MapGenState.CREATE_RECTS);
+      case MapGenState.CREATE_RECTS:
+        return this.setState(MapGenState.SEPARATION);
+      case MapGenState.SEPARATION:
+        return this.setState(MapGenState.CLEANUP);
+      case MapGenState.CLEANUP:
+        return this.setState(MapGenState.DELAUNAY);
+      case MapGenState.DELAUNAY:
+        return this.setState(MapGenState.MST);
+      case MapGenState.MST:
+        return this.setState(MapGenState.CYCLES);
+      default:
+        return this.setState(MapGenState.PRERUN);
+    }
   }
 
   step = (initial = false) => {
     const sepVectors = separation(this.rects, initial ? 5 : this.separation, this.rectCenter.clone());
     const cohVectors = cohesion(this.rects, this.cohesion, this.rectCenter.clone());
-
-    // this.running = false;
 
     this.rects = this.rects
       .map((rect, idx) => {
@@ -318,7 +322,8 @@ class MapGen {
       w,
       h,
       velocity: new Vector(0, 0),
-      acceleration: new Vector(0, 0)
+      acceleration: new Vector(0, 0),
+      id: ID()
     };
     if (RNG.getUniformInt(0, 1)) {
       const { w, h } = rect;
@@ -331,35 +336,123 @@ class MapGen {
     return rect;
   }
 
-  regen = (): void => {
-    this.running = true;
-    this.done = false;
-    this.del = undefined;
+  generateRoomGraph = () => {
+    const finalRooms = this.rects.filter(r => r.final);
+    this.del = delaunay(finalRooms);
 
-    clearInterval(this.drawingInterval);
-    RNG.setSeed(this.seed);
+    this.roomGraph = new Graph({ directed: false });
+    finalRooms.forEach((r, idx) => {
+      this.roomGraph.setNode(r.id, r);
+    });
+    this.del.halfedges.forEach(he => {
+    
+    })
 
-    this.rects = [];
-    for (let i = 1; i <= this.numRects; i++) {
-      this.rects.push(this.getRect());
-    }
-    const boundingRect = this.rects.reduce((acc, rect) => {
-      return {
-        l: Math.min(rect.x - rect.w / 2, acc.l),
-        t: Math.min(rect.y - rect.h / 2, acc.t),
-        r: Math.max(rect.x + rect.w / 2, acc.r),
-        b: Math.max(rect.y + rect.h / 2, acc.b),
-      }
-    }, {l: Infinity, t: Infinity, r: -Infinity, b: -Infinity});
-    this.rectCenter = new Vector((boundingRect.r + boundingRect.l) / 2, (boundingRect.b + boundingRect.t) / 2);
-    this.step(true);
+    forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e: number, p: MovableRect, q: MovableRect) => {
+      this.roomGraph.setEdge(p.id, q.id);
+    });
     this.draw(this.rects);
-    this.drawingInterval = setInterval(() => {
-      if (this.running) {
-        this.step();
+
+    this.drawDel(this.del);
+  }
+
+  edgeWeight = rooms => ({ v, w }) => {
+    const V = rooms[v];
+    const W = rooms[w];
+    return (new Vector(V.x, V.y)).distance(new Vector(W.x, W.y));
+  }
+
+  generateMSTGraph = () => {
+    this.draw(this.rects);
+    const rooms = this.rects.reduce((acc, room) => {
+      return {
+        ...acc,
+        [room.id]: room
       }
-    }, FPS);
+    }, {});
+    this.MSTGraph = alg.prim(this.roomGraph, this.edgeWeight(rooms));
+    this.drawDel(this.del);
+    this.drawMST(this.MSTGraph);
+  }
+
+  drawLine = (ctx, color, lineWidth = 1) => (v, w) => {
+    ctx.beginPath();
+    ctx.moveTo(v.x, v.y);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = color;
+    ctx.lineTo(w.x, w.y);
+    ctx.stroke();
+  }
+
+  drawMST = graph => {
+    const ctx = this.canvas.getContext('2d');
+    if (!graph) { return; }
+    const color = '#FF00FF';
+    const rooms = this.rects.reduce((acc, room) => {
+      return {
+        ...acc,
+        [room.id]: room
+      }
+    }, {});
+
+    this.MSTGraph.edges().forEach(edge => {
+      const { v, w } = edge;
+      this.drawLine(ctx, color, 2)(rooms[v], rooms[w]);
+    });
+  }
+
+  setState = (newState: MapGenState) => {
+    if (newState === MapGenState.PRERUN) {
+      this.running = true;
+      this.done = false;
+      this.del = undefined;
+      clearInterval(this.drawingInterval);
+      RNG.setSeed(this.seed);
+      this.rects = [];
+      this.draw(this.rects);
+    } else if (newState === MapGenState.CREATE_RECTS) {
+      for (let i = 1; i <= this.numRects; i++) {
+        this.rects.push(this.getRect());
+      }
+      const boundingRect = this.rects.reduce((acc, rect) => {
+        return {
+          l: Math.min(rect.x - rect.w / 2, acc.l),
+          t: Math.min(rect.y - rect.h / 2, acc.t),
+          r: Math.max(rect.x + rect.w / 2, acc.r),
+          b: Math.max(rect.y + rect.h / 2, acc.b),
+        }
+      }, {l: Infinity, t: Infinity, r: -Infinity, b: -Infinity});
+      this.rectCenter = new Vector((boundingRect.r + boundingRect.l) / 2, (boundingRect.b + boundingRect.t) / 2);
+      this.draw(this.rects);
+    } else if (newState === MapGenState.SEPARATION) {
+      this.step(true);
+      this.draw(this.rects);
+      this.drawingInterval = setInterval(() => {
+        if (this.running) {
+          this.step();
+        }
+      }, FPS);
+    } else if (newState === MapGenState.CLEANUP) {
+      clearInterval(this.drawingInterval);
+      this.running = false;
+      this.done = true;
+      this.cleanUpRooms();
+      this.findRooms();
+      this.draw(this.rects);
+    } else if (newState === MapGenState.DELAUNAY) { 
+      this.generateRoomGraph();
+    } else if (newState === MapGenState.MST) {
+      this.generateMSTGraph();
+    } else if (newState === MapGenState.CYCLES) {
+
+    }
+
+    this.state = newState; 
+  }
+
+  restart = (): void => {
+    this.setState(MapGenState.PRERUN);
   }
 }
 eval('window.MapGen = MapGen');
-
+ 
