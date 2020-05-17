@@ -119,6 +119,7 @@ class MapGen {
   spawnRadiusHorizontal: number;
   spawnRadiusVertical: number;
   del?: Delaunator<[number, number]>;
+  cycleEdgePct: number;
 
   constructor(W: number, H: number) {
     this.width = W;
@@ -131,6 +132,7 @@ class MapGen {
     this.drawingInterval = null;
     this.separationCoeff = 10;
     this.cohesionCoeff = 0.5;
+    this.cycleEdgePct = 0.15;
     this.running = false;
     this.separation = 15.0;
     this.cohesion = 100.0;
@@ -157,12 +159,15 @@ class MapGen {
     rects.add(this, 'spawnRadiusHorizontal', 10, 1000, 1);
     rects.add(this, 'spawnRadiusVertical', 10, 1000, 1);
     const flock = this.gui.addFolder('Flocking');
-    flock.open()
+    flock.open();
     flock.add(this, 'separation', 5, 1000, 1);
     flock.add(this, 'separationCoeff', 0, 10.0, 0.1);
     flock.add(this, 'cohesion', 1, 1000, 1);
     flock.add(this, 'cohesionCoeff', 0, 10.0, 0.1);
     flock.add(this, 'friction', 0.1, 2.0, 0.01);
+    const graph = this.gui.addFolder('Graphs');
+    graph.open();
+    graph.add(this, 'cycleEdgePct', 0, 1, 0.05);
     this.gui.add(this, 'restart').name('Restart');
     this.gui.add(this, 'next').name('Next step'); 
   }
@@ -344,10 +349,7 @@ class MapGen {
     finalRooms.forEach((r, idx) => {
       this.roomGraph.setNode(r.id, r);
     });
-    this.del.halfedges.forEach(he => {
-    
-    })
-
+ 
     forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e: number, p: MovableRect, q: MovableRect) => {
       this.roomGraph.setEdge(p.id, q.id);
     });
@@ -372,6 +374,28 @@ class MapGen {
     }, {});
     this.MSTGraph = alg.prim(this.roomGraph, this.edgeWeight(rooms));
     this.drawDel(this.del);
+    this.drawMST(this.MSTGraph);
+  }
+
+  addCycles = () => {
+    const rooms = this.rects.reduce((acc, room) => {
+      return {
+        ...acc,
+        [room.id]: room
+      }
+    }, {});
+    const finalRooms = this.rects.filter(r => r.final);
+    const edgesToAddBack = Math.floor((this.roomGraph.edges().length - this.MSTGraph.edges().length) * this.cycleEdgePct);
+    let i = 0;
+    while (i <= edgesToAddBack) {
+      const edge = RNG.getItem(this.roomGraph.edges());
+      if (!this.MSTGraph.hasEdge(edge)) {
+        const { v, w } = edge;
+        this.MSTGraph.setEdge(v, w);
+        i++;
+      }
+    }
+
     this.drawMST(this.MSTGraph);
   }
 
@@ -444,7 +468,7 @@ class MapGen {
     } else if (newState === MapGenState.MST) {
       this.generateMSTGraph();
     } else if (newState === MapGenState.CYCLES) {
-
+      this.addCycles();
     }
 
     this.state = newState; 
