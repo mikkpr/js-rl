@@ -255,7 +255,6 @@ class MapGen {
     this.cleanUpRooms();
     this.findRooms();
     const finalRooms = this.rects.filter(r => r.final);
-    console.log(finalRooms);
     this.del = delaunay(finalRooms);
 
     this.drawDel(this.del);

@@ -20,16 +20,15 @@ const maxSpeed = 30;
 const maxForce = 0.1;
 
 export const dSquared = (rect, other) => {
+  const halfWidth = rect => Math.floor(rect.w / 2);
   const outer = {
-    l: Math.min(rect.x - rect.w / 2, other.x - other.w / 2),
-    t: Math.min(rect.y - rect.h / 2, other.y - other.h / 2),
-    r: Math.max(rect.x + rect.w / 2, other.x + other.w / 2),
-    b: Math.max(rect.y + rect.h / 2, other.y + other.h / 2)
+    l: Math.min(rect.x - halfWidth(rect), other.x - halfWidth(other)),
+    t: Math.min(rect.y - halfWidth(rect), other.y - halfWidth(other)),
+    r: Math.max(rect.x + halfWidth(rect) + 1, other.x + halfWidth(other) + 1),
+    b: Math.max(rect.y + halfWidth(rect) + 1, other.y + halfWidth(other) + 1),
   };
   const innerWidth = Math.max(0, outer.r - outer.l - rect.w - other.w);
   const innerHeight = Math.max(0, outer.b - outer.t - rect.h - other.h);
-  // console.log(outer, innerWidth, innerHeight);
-
 
   return Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2));
 };
