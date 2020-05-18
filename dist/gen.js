@@ -11989,6 +11989,7 @@ var MapGenState;
     MapGenState["DELAUNAY"] = "DELAUNAY";
     MapGenState["MST"] = "MST";
     MapGenState["CYCLES"] = "CYCLES";
+    MapGenState["CORRIDORS"] = "CORRIDORS";
 })(MapGenState || (MapGenState = {}));
 const edgesOfTriangle = (t) => [3 * t, 3 * t + 1, 3 * t + 2];
 const triangleOfEdge = (e) => Math.floor(e / 3);
@@ -12022,6 +12023,20 @@ const randomPointInEllipse = (r1, r2, x, y) => {
         R = u;
     }
     return [x + r1 * R * Math.cos(t), y + r2 * R * Math.sin(t)];
+};
+const doLinesIntersect = (p0, p1, p2, p3) => {
+    let s1_x, s1_y, s2_x, s2_y;
+    s1_x = p1.x - p0.x;
+    s1_y = p1.y - p0.y;
+    s2_x = p3.x - p2.x;
+    s2_y = p3.y - p2.y;
+    let s, t;
+    s = (-s1_y * (p0.x - p2.x) + s1_x * (p0.y - p2.y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = (s2_x * (p0.y - p2.y) - s2_y * (p0.x - p2.x)) / (-s2_x * s1_y + s1_x * s2_y);
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+        return true;
+    }
+    return false;
 };
 const colorGradient = (fadeFraction, rgbColor1, rgbColor2, rgbColor3) => {
     let color1 = rgbColor1;
@@ -12085,19 +12100,15 @@ class MapGen {
                 }
                 ctx.beginPath();
                 ctx.lineWidth = final ? 3 : 1;
-                ctx.strokeStyle = colorGradient((i + 1) / this.numRects, {
-                    red: 255,
-                    green: 0,
-                    blue: 0
-                }, {
-                    red: 0,
-                    green: 255,
-                    blue: 0
-                }, {
-                    red: 0,
-                    green: 0,
-                    blue: 255
-                });
+                if (final !== true && this.state === MapGenState.CORRIDORS) {
+                    ctx.strokeStyle = 'transparent';
+                }
+                else if (final !== true) {
+                    ctx.strokeStyle = 'rgba(255,255,255, 0.2)';
+                }
+                else {
+                    ctx.strokeStyle = 'rgba(255,255,255, 0.8)';
+                }
                 ctx.rect(x - w / 2, y - h / 2, w, h);
                 ctx.stroke();
             });
@@ -12134,7 +12145,7 @@ class MapGen {
                     ...r, discarded
                 };
             });
-            this.draw(this.rects);
+            requestAnimationFrame(() => this.draw(this.rects));
         };
         this.findRooms = () => {
             const meanW = this.rects.map(r => r.w).reduce((sum, w) => sum + w, 0) / this.rects.length;
@@ -12159,7 +12170,7 @@ class MapGen {
                     ...r, final: !r.discarded && count === 0
                 };
             });
-            this.draw(this.rects);
+            requestAnimationFrame(() => this.draw(this.rects));
         };
         this.next = () => {
             switch (this.state) {
@@ -12175,6 +12186,8 @@ class MapGen {
                     return this.setState(MapGenState.MST);
                 case MapGenState.MST:
                     return this.setState(MapGenState.CYCLES);
+                case MapGenState.CYCLES:
+                    return this.setState(MapGenState.CORRIDORS);
                 default:
                     return this.setState(MapGenState.PRERUN);
             }
@@ -12210,7 +12223,7 @@ class MapGen {
                     y
                 };
             });
-            this.draw(this.rects);
+            requestAnimationFrame(() => this.draw(this.rects));
         };
         this.getRect = () => {
             const center = [this.canvas.width / 2, this.canvas.height / 2];
@@ -12248,8 +12261,10 @@ class MapGen {
             forEachTriangleEdge(this.rects.filter(r => r.final), this.del, (e, p, q) => {
                 this.roomGraph.setEdge(p.id, q.id);
             });
-            this.draw(this.rects);
-            this.drawDel(this.del);
+            requestAnimationFrame(() => {
+                this.draw(this.rects);
+                this.drawDel(this.del);
+            });
         };
         this.edgeWeight = rooms => ({ v, w }) => {
             const V = rooms[v];
@@ -12257,7 +12272,7 @@ class MapGen {
             return (new victor_1.default(V.x, V.y)).distance(new victor_1.default(W.x, W.y));
         };
         this.generateMSTGraph = () => {
-            this.draw(this.rects);
+            requestAnimationFrame(() => this.draw(this.rects));
             const rooms = this.rects.reduce((acc, room) => {
                 return {
                     ...acc,
@@ -12265,10 +12280,13 @@ class MapGen {
                 };
             }, {});
             this.MSTGraph = graphlib_1.alg.prim(this.roomGraph, this.edgeWeight(rooms));
-            this.drawDel(this.del);
-            this.drawMST(this.MSTGraph);
+            requestAnimationFrame(() => {
+                this.drawDel(this.del);
+                this.drawMST(this.MSTGraph);
+            });
         };
         this.addCycles = () => {
+            requestAnimationFrame(() => this.drawDel(this.del));
             const rooms = this.rects.reduce((acc, room) => {
                 return {
                     ...acc,
@@ -12286,7 +12304,7 @@ class MapGen {
                     i++;
                 }
             }
-            this.drawMST(this.MSTGraph);
+            requestAnimationFrame(() => this.drawMST(this.MSTGraph));
         };
         this.drawLine = (ctx, color, lineWidth = 1) => (v, w) => {
             ctx.beginPath();
@@ -12313,6 +12331,60 @@ class MapGen {
                 this.drawLine(ctx, color, 2)(rooms[v], rooms[w]);
             });
         };
+        this.createCorridor = (a, b) => {
+            const room = new victor_1.default(a.x, a.y);
+            const other = new victor_1.default(b.x, b.y);
+            const corner1 = new victor_1.default(a.x, b.y);
+            const corner2 = new victor_1.default(b.x, a.y);
+            const corner = rot_js_1.RNG.getItem([corner1, corner2]);
+            const segments = [[room, corner], [corner, other]];
+            return segments;
+        };
+        this.drawCorridors = (corridors) => {
+            requestAnimationFrame(() => this.draw(this.rects));
+            const ctx = this.canvas.getContext('2d');
+            const color = 'rgba(255, 100, 100, 0.5)';
+            const draw = this.drawLine(ctx, color, 3);
+            for (const corridor of corridors) {
+                const [seg1, seg2] = corridor;
+                requestAnimationFrame(() => {
+                    draw(seg1, seg2);
+                });
+            }
+        };
+        this.createCorridors = () => {
+            const rooms = this.rects.reduce((acc, room) => {
+                return {
+                    ...acc,
+                    [room.id]: room
+                };
+            }, {});
+            this.corridors = [];
+            const finalRooms = this.rects.filter(r => r.final);
+            const ctx = this.canvas.getContext('2d');
+            const color = 'rgba(100, 255, 100, 0.75)';
+            this.MSTGraph.edges().forEach(edge => {
+                const { v, w } = edge;
+                this.drawLine(ctx, color, 2)(rooms[v], rooms[w]);
+                this.corridors = this.corridors.concat(this.createCorridor(rooms[v], rooms[w]));
+            });
+            for (const corridor of this.corridors) {
+                for (let idx = 0; idx < this.rects.length; idx++) {
+                    const rect = this.rects[idx];
+                    const intersects = (doLinesIntersect(new victor_1.default(rect.x - rect.w / 2, rect.y - rect.h / 2), new victor_1.default(rect.x + rect.w / 2, rect.y - rect.h / 2), corridor[0], corridor[1]) || doLinesIntersect(new victor_1.default(rect.x - rect.w / 2, rect.y + rect.h / 2), new victor_1.default(rect.x + rect.w / 2, rect.y + rect.h / 2), corridor[0], corridor[1]) || doLinesIntersect(new victor_1.default(rect.x - rect.w / 2, rect.y - rect.h / 2), new victor_1.default(rect.x - rect.w / 2, rect.y + rect.h / 2), corridor[0], corridor[1]) || doLinesIntersect(new victor_1.default(rect.x + rect.w / 2, rect.y - rect.h / 2), new victor_1.default(rect.x + rect.w / 2, rect.y + rect.h / 2), corridor[0], corridor[1]));
+                    if (intersects) {
+                        this.rects[idx] = { ...rect, final: true };
+                    }
+                }
+            }
+            requestAnimationFrame(() => this.draw(this.rects));
+            this.drawCorridors(this.corridors);
+            console.log({
+                rooms: this.rects.filter(r => r.final).map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h })),
+                corridors: this.corridors.map(c => ({ x: c[0], y: c[1] })),
+                graph: this.MSTGraph
+            });
+        };
         this.setState = (newState) => {
             if (newState === MapGenState.PRERUN) {
                 this.running = true;
@@ -12321,6 +12393,7 @@ class MapGen {
                 clearInterval(this.drawingInterval);
                 rot_js_1.RNG.setSeed(this.seed);
                 this.rects = [];
+                this.corridors = [];
                 this.draw(this.rects);
             }
             else if (newState === MapGenState.CREATE_RECTS) {
@@ -12364,6 +12437,9 @@ class MapGen {
             else if (newState === MapGenState.CYCLES) {
                 this.addCycles();
             }
+            else if (newState === MapGenState.CORRIDORS) {
+                this.createCorridors();
+            }
             this.state = newState;
         };
         this.restart = () => {
@@ -12374,6 +12450,8 @@ class MapGen {
         this.state = MapGenState.PRERUN;
         this.numRects = 150;
         this.seed = 0;
+        this.rects = [];
+        this.corridors = [];
         this.gui = new dat_gui_1.GUI();
         this.gui.remember(this);
         this.drawingInterval = null;
