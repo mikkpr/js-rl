@@ -4,7 +4,7 @@ import { World } from 'ecsy';
 import throttle from 'lodash/throttle';
 
 import GameState, { RunState } from './state';
-import { setupDisplay } from './display';
+import { setupDisplay, setupMinimap } from './display';
 import { xyIdx, createNewMap2 } from './map';
 
 import {
@@ -41,9 +41,11 @@ export const TILEWIDTH = 8;
 export const TILEHEIGHT = 16;
 
 let display;
+let minimap;
 let ECS;
 let map;
 let game;
+let player;
 
 const main = async (): Promise<any> => {
   ECS = new World();
@@ -63,6 +65,10 @@ const main = async (): Promise<any> => {
     width: WIDTH,
     height: HEIGHT
   });
+  minimap = setupMinimap({
+    width: MAPWIDTH,
+    height: MAPHEIGHT,
+  });
   map = await createNewMap2(MAPWIDTH, MAPHEIGHT);
   const handleCanvasMouseMove = throttle((e) => {
     if (display.getContainer().contains(e.target)) {
@@ -80,7 +86,8 @@ const main = async (): Promise<any> => {
     map: map.map,
     rooms: map.rooms,
     centers: map.centers,
-    scores: map.scores
+    scores: map.scores,
+    minimapVisible: false
   }, display, ECS);
   eval('window.game = game;');
 
@@ -91,7 +98,8 @@ const main = async (): Promise<any> => {
   const cameraOffset: [number, number] = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
 
   createPlayer(ECS, randomCenter[0], randomCenter[1]);
-  game.player = (game.ecs as any).entityManager.getEntityByName('player');
+  player = (game.ecs as any).entityManager.getEntityByName('player');
+  game.player = player;
   game.cameraOffset = cameraOffset;
 
   const randomCenter2 = ROT.RNG.getItem(map.centers);
@@ -130,6 +138,8 @@ export {
   game,
   ECS,
   display,
+  minimap,
+  player,
   WIDTH,
   HEIGHT,
   MAPWIDTH,

@@ -165,7 +165,7 @@ export type MapGenResult = {
 const defaultOptions = {
   W: 128,
   H: 128,
-  callback: console.log,
+  callback: () => {},
   draw: false
 }
 
@@ -349,7 +349,6 @@ export class MapGen implements MapGenParams {
   }
 
   cleanUpRooms = () => {
-    console.log(this.rects)
     this.rects = this.rects.map((r, idx) => {
       let count = 0;
       for (let i = 0; i < this.rects.length; i++) {

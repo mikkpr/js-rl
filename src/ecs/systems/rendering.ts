@@ -3,8 +3,8 @@ import { Entity, System } from 'ecsy';
 import { Position, Renderable, Viewshed, Light } from '../components';
 import { display } from '../..';
 import { drawMap, addLight } from '../../display';
-import { xyIdx } from '../../map';
-import { game } from '../..';
+import { CellType, xyIdx } from '../../map';
+import { game, player, minimap, MAPWIDTH } from '../..';
 
 const byZIndex = (a: Entity, b: Entity): number => b.getComponent(Renderable).z - a.getComponent(Renderable).z;
 
@@ -14,6 +14,8 @@ class RenderingSystem extends System {
   execute(delta: number, time: number): void {
     const { map, hoveredTileIdx } = game.getState();
     drawMap(map);
+
+    drawMinimap();
 
     const viewshed = game.player.getComponent(Viewshed);
 
@@ -46,3 +48,33 @@ RenderingSystem.queries = {
 };
 
 export default RenderingSystem;
+
+const tileColors = {
+  [CellType.FLOOR]: 'rgba(200,200,200,1)',
+  [CellType.WALL]: 'rgba(100,100,100,1)',
+  [CellType.GRASS]: 'rgba(100,200,100,1)',
+  [CellType.DOOR_OPEN]: 'rgba(150, 150, 100, 1)',
+  [CellType.DOOR_CLOSED]: 'rgba(150, 150, 100, 1)',
+  [CellType.DOOR_LOCKED]: 'rgba(150, 150, 100, 1)',
+  [CellType.GRASSY_WALL]: 'rgba(80, 150, 80)',
+}
+
+const drawMinimap = () => {
+  const { map, minimapVisible } = game.getState();
+  if (!minimapVisible) { return minimap.setAttribute('style', 'display: none;') }
+
+  const playerViewshed = player.getComponent(Viewshed);
+  const { x: X, y: Y } = player.getComponent(Position);
+  const { exploredTiles } = playerViewshed;
+  const ctx = minimap.getContext('2d');
+
+  for (const idx of (exploredTiles as Set<number>).values()) {
+    const x = idx % MAPWIDTH;
+    const y = ~~(idx / MAPWIDTH);
+    ctx.fillStyle = tileColors[map[idx]];
+    ctx.fillRect( x, y, 1, 1 );
+  }
+  ctx.fillStyle = "rgba(255, 0, 0, 1)";
+  ctx.fillRect( X-1, Y-1, 3, 3 );
+  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X}px; margin-top: -${Y + 256}px;opacity:0.75;`);
+}

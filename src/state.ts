@@ -1,9 +1,11 @@
 import { Entity, World } from 'ecsy';
 import produce from 'immer';
 import * as ROT from 'rot-js';
+import { Position, Viewshed } from './ecs/components';
 import { RenderingSystem, VisibilitySystem } from './ecs/systems';
 import { CellType } from './map';
 import { drawHoveredInfo } from './display';
+import { MAPWIDTH, player, minimap } from '.';
 
 export enum RunState {
   PRERUN = 'PRERUN',
@@ -26,6 +28,7 @@ export type State = {
   centers: number[][];
   scores: number[];
   hoveredTileIdx?: number;
+  minimapVisible: boolean;
 }
 
 type StateGetter = (state: State) => any;
@@ -67,7 +70,7 @@ class GameState {
 
   proceed = (nextRunState): void => {
     this.setState(state => {state.runState = nextRunState; });
-  }
+  } 
 
   render = (delta, time): void => {
     this.display.clear();

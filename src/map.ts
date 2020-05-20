@@ -258,17 +258,18 @@ export const createNewMap2 = async (w: number, h: number) => {
       W: 256, 
       H: 256,
       callback: resolve,
-      draw: false,
-      loadingCallback: (...args) => console.log(...args),
+      draw: false
     }, {
         ...MapGen.defaultParams,
-        maxRoomSize: 14,
-        numRects: 250,
+        maxRoomSize: 8,
+        numRects: 300,
         spawnRadiusVertical: 128,
         spawnRadiusHorizontal: 128,
-        separation: 10,
-        friction: 0.9,
-        seed: 0
+        cohesion: 300,
+        cohesionCoeff: 0.2,
+        separation: 8,
+        friction: 0.88,
+        seed: 1337 
       });
     gen.generate();
   });
@@ -294,10 +295,8 @@ export const createNewMap2 = async (w: number, h: number) => {
       }
     }
   });
-  console.log(data);
   data.corridors.forEach(c => {
     const [start, end] = c;
-    console.log(start, end);
     if (start.x === end.x) {
       drawVerticalLine(map, start.y , end.y , start.x , CellType.FLOOR)
     } else {

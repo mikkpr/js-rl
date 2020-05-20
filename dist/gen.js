@@ -12041,7 +12041,7 @@ const colorGradient = (fadeFraction, rgbColor1, rgbColor2, rgbColor3) => {
 const defaultOptions = {
     W: 128,
     H: 128,
-    callback: console.log,
+    callback: () => { },
     draw: false
 };
 class MapGen {
@@ -12125,7 +12125,6 @@ class MapGen {
             });
         };
         this.cleanUpRooms = () => {
-            console.log(this.rects);
             this.rects = this.rects.map((r, idx) => {
                 let count = 0;
                 for (let i = 0; i < this.rects.length; i++) {

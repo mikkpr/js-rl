@@ -8164,11 +8164,15 @@ exports.TILEWIDTH = 8;
 exports.TILEHEIGHT = 16;
 let display;
 exports.display = display;
+let minimap;
+exports.minimap = minimap;
 let ECS;
 exports.ECS = ECS;
 let map;
 let game;
 exports.game = game;
+let player;
+exports.player = player;
 const main = async () => {
     exports.ECS = ECS = new ecsy_1.World();
     ECS.registerComponent(components_1.Position);
@@ -8184,6 +8188,10 @@ const main = async () => {
     exports.display = display = display_1.setupDisplay({
         width: WIDTH,
         height: HEIGHT
+    });
+    exports.minimap = minimap = display_1.setupMinimap({
+        width: MAPWIDTH,
+        height: MAPHEIGHT,
     });
     map = await map_1.createNewMap2(MAPWIDTH, MAPHEIGHT);
     const handleCanvasMouseMove = throttle_1.default((e) => {
@@ -8203,7 +8211,8 @@ const main = async () => {
         map: map.map,
         rooms: map.rooms,
         centers: map.centers,
-        scores: map.scores
+        scores: map.scores,
+        minimapVisible: false
     }, display, ECS);
     eval('window.game = game;');
     document.addEventListener('mousemove', handleCanvasMouseMove);
@@ -8211,7 +8220,8 @@ const main = async () => {
     const mapCenter = [~~(WIDTH / 2), ~~(HEIGHT / 2)];
     const cameraOffset = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
     entities_1.createPlayer(ECS, randomCenter[0], randomCenter[1]);
-    game.player = game.ecs.entityManager.getEntityByName('player');
+    exports.player = player = game.ecs.entityManager.getEntityByName('player');
+    game.player = player;
     game.cameraOffset = cameraOffset;
     const randomCenter2 = ROT.RNG.getItem(map.centers);
     entities_1.createOrc(ECS, randomCenter2[0], randomCenter2[1]);
@@ -8721,17 +8731,18 @@ exports.createNewMap2 = async (w, h) => {
             W: 256,
             H: 256,
             callback: resolve,
-            draw: false,
-            loadingCallback: (...args) => console.log(...args),
+            draw: false
         }, {
             ...mapgen_1.MapGen.defaultParams,
-            maxRoomSize: 14,
-            numRects: 250,
+            maxRoomSize: 8,
+            numRects: 300,
             spawnRadiusVertical: 128,
             spawnRadiusHorizontal: 128,
-            separation: 10,
-            friction: 0.9,
-            seed: 0
+            cohesion: 300,
+            cohesionCoeff: 0.2,
+            separation: 8,
+            friction: 0.88,
+            seed: 1337
         });
         gen.generate();
     });
@@ -8748,10 +8759,8 @@ exports.createNewMap2 = async (w, h) => {
             }
         }
     });
-    console.log(data);
     data.corridors.forEach(c => {
         const [start, end] = c;
-        console.log(start, end);
         if (start.x === end.x) {
             exports.drawVerticalLine(map, start.y, end.y, start.x, CellType.FLOOR);
         }
@@ -13643,6 +13652,14 @@ const components_1 = __webpack_require__(17);
 const systems_1 = __webpack_require__(90);
 const map_1 = __webpack_require__(41);
 const tileMap_1 = __importDefault(__webpack_require__(249));
+exports.setupMinimap = (options) => {
+    const container = document.querySelector('.minimap');
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+    canvas.setAttribute('width', options.width.toString());
+    canvas.setAttribute('height', options.height.toString());
+    return canvas;
+};
 exports.setupDisplay = (options) => {
     const tileSet = document.createElement("img");
     tileSet.src = "dist/images/VGA8x16.png";
@@ -14664,7 +14681,7 @@ const colorGradient = (fadeFraction, rgbColor1, rgbColor2, rgbColor3) => {
 const defaultOptions = {
     W: 128,
     H: 128,
-    callback: console.log,
+    callback: () => { },
     draw: false
 };
 class MapGen {
@@ -14748,7 +14765,6 @@ class MapGen {
             });
         };
         this.cleanUpRooms = () => {
-            console.log(this.rects);
             this.rects = this.rects.map((r, idx) => {
                 let count = 0;
                 for (let i = 0; i < this.rects.length; i++) {
@@ -21577,6 +21593,10 @@ const dwim = () => {
     }
     _1.game.ecs.getSystem(systems_1.VisibilitySystem).execute(0, _1.game.lastTime);
 };
+const toggleMinimap = () => {
+    _1.game.setState(state => { state.minimapVisible = !state.minimapVisible; });
+    _1.game.render(0, _1.game.runState);
+};
 const setupKeys = (game) => {
     keymage_1.default('k', tryMove('N')(game));
     keymage_1.default('up', tryMove('N')(game));
@@ -21593,6 +21613,7 @@ const setupKeys = (game) => {
     keymage_1.default('i d c l i p', idclip);
     keymage_1.default('t', toggleLight);
     keymage_1.default('space', dwim);
+    keymage_1.default('m', toggleMinimap);
 };
 exports.default = setupKeys;
 
@@ -22012,6 +22033,7 @@ class RenderingSystem extends ecsy_1.System {
     execute(delta, time) {
         const { map, hoveredTileIdx } = __2.game.getState();
         display_1.drawMap(map);
+        drawMinimap();
         const viewshed = __2.game.player.getComponent(components_1.Viewshed);
         this.queries.renderables.results.sort(byZIndex).forEach(entity => {
             const position = entity.getComponent(components_1.Position);
@@ -22034,6 +22056,34 @@ RenderingSystem.queries = {
     lights: { components: [components_1.Light] }
 };
 exports.default = RenderingSystem;
+const tileColors = {
+    [map_1.CellType.FLOOR]: 'rgba(200,200,200,1)',
+    [map_1.CellType.WALL]: 'rgba(100,100,100,1)',
+    [map_1.CellType.GRASS]: 'rgba(100,200,100,1)',
+    [map_1.CellType.DOOR_OPEN]: 'rgba(150, 150, 100, 1)',
+    [map_1.CellType.DOOR_CLOSED]: 'rgba(150, 150, 100, 1)',
+    [map_1.CellType.DOOR_LOCKED]: 'rgba(150, 150, 100, 1)',
+    [map_1.CellType.GRASSY_WALL]: 'rgba(80, 150, 80)',
+};
+const drawMinimap = () => {
+    const { map, minimapVisible } = __2.game.getState();
+    if (!minimapVisible) {
+        return __2.minimap.setAttribute('style', 'display: none;');
+    }
+    const playerViewshed = __2.player.getComponent(components_1.Viewshed);
+    const { x: X, y: Y } = __2.player.getComponent(components_1.Position);
+    const { exploredTiles } = playerViewshed;
+    const ctx = __2.minimap.getContext('2d');
+    for (const idx of exploredTiles.values()) {
+        const x = idx % __2.MAPWIDTH;
+        const y = ~~(idx / __2.MAPWIDTH);
+        ctx.fillStyle = tileColors[map[idx]];
+        ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.fillStyle = "rgba(255, 0, 0, 1)";
+    ctx.fillRect(X - 1, Y - 1, 3, 3);
+    __2.minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X}px; margin-top: -${Y + 256}px;opacity:0.75;`);
+};
 
 
 /***/ }),

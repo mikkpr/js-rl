@@ -4,6 +4,15 @@ import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
 
+export const setupMinimap = (options: { width: number; height: number; }): HTMLCanvasElement => {
+  const container = document.querySelector('.minimap');
+  const canvas: HTMLCanvasElement = document.createElement('canvas');
+  container.appendChild(canvas);
+  canvas.setAttribute('width', options.width.toString());
+  canvas.setAttribute('height', options.height.toString());
+
+  return canvas;
+}
 
 export const setupDisplay = (options: { width: number; height: number }): ROT.Display => {
   const tileSet = document.createElement("img");

@@ -88,6 +88,11 @@ const dwim = () => {
   game.ecs.getSystem(VisibilitySystem).execute(0, game.lastTime)
 };
 
+const toggleMinimap = () => {
+  game.setState(state => { state.minimapVisible = !state.minimapVisible; })
+  game.render(0, game.runState);
+};
+
 const setupKeys = (game): void => {
   keymage('k', tryMove('N')(game));
   keymage('up', tryMove('N')(game));
@@ -104,6 +109,7 @@ const setupKeys = (game): void => {
   keymage('i d c l i p', idclip);
   keymage('t', toggleLight);
   keymage('space', dwim);
+  keymage('m', toggleMinimap);
 };
 
 export default setupKeys;
