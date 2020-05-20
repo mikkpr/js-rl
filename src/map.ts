@@ -1,7 +1,8 @@
 import {RNG, Noise} from 'rot-js';
 import isEqual from 'lodash/isEqual';
-import { MAPWIDTH, MAPHEIGHT } from '.';
+import { TILEWIDTH, TILEHEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
 import { applyRoomTemplate, RoomType, createRoomTemplate } from './mapgen/roomTemplates';
+import { MapGen, MapGenResult } from './mapgen';
 
 // Map generation parameters
 const MIN_SIZE = 3;
@@ -21,7 +22,8 @@ export enum CellType {
   DOOR_OPEN,
   DOOR_CLOSED,
   DOOR_LOCKED,
-  GRASS
+  GRASS,
+  GRASSY_WALL,
 }
 
 export type Map = CellType[];
@@ -250,6 +252,94 @@ const drawMapBorders = map => {
 
 export const grassNoise = new Noise.Simplex(8);
 
+export const createNewMap2 = async (w: number, h: number) => {
+  const mapGenPromise: Promise<MapGenResult> = new Promise((resolve, reject) => {
+    const gen = new MapGen({
+      W: 256, 
+      H: 256,
+      callback: resolve,
+      draw: false,
+      loadingCallback: (...args) => console.log(...args),
+    }, {
+        ...MapGen.defaultParams,
+        maxRoomSize: 14,
+        numRects: 250,
+        spawnRadiusVertical: 128,
+        spawnRadiusHorizontal: 128,
+        separation: 10,
+        friction: 0.9,
+        seed: 0
+      });
+    gen.generate();
+  });
+
+  /*
+   *
+  * tile width = 8px
+  * mapgen output room size = 4px -> 4 tiles
+  * viewport width = 64 tiles
+  * map width = 64 * 4 tiles = 256 tiles = 2048px
+  * */
+
+  const data = await mapGenPromise;
+  const map = new Array(w * h).fill(CellType.WALL);
+  data.rooms.forEach(r => {
+    const x = r.x;
+    const y = r.y;
+    const w = r.w;
+    const h = r.h;
+    for (let _x = ~~(x - w/2) ; _x < x + w/2 ; _x++) {
+      for (let _y = ~~(y - h/2); _y < y + h/2; _y++) {
+        map[xyIdx(_x, _y)] = CellType.FLOOR;
+      }
+    }
+  });
+  console.log(data);
+  data.corridors.forEach(c => {
+    const [start, end] = c;
+    console.log(start, end);
+    if (start.x === end.x) {
+      drawVerticalLine(map, start.y , end.y , start.x , CellType.FLOOR)
+    } else {
+      drawHorizontalLine(map, start.x, end.x, start.y, CellType.FLOOR)
+    }
+  });
+
+
+
+  const {
+    rooms,
+    corridors,
+    graph
+  } = data;
+
+  drawMapBorders(map);
+
+  // generate grass
+  for (let idx = 0; idx < map.length; idx++) {
+    const x = idx % MAPWIDTH;
+    const y = ~~(idx / MAPWIDTH);
+    const noise = grassNoise.get(x / 300, y / 300);
+    if (noise > 0.25 && noise <= 0.5) {
+      if (map[idx] === CellType.FLOOR) {
+        map[idx] = CellType.GRASS;
+      } else if (map[idx] === CellType.WALL) {
+        map[idx] = CellType.GRASSY_WALL;
+      }
+    }
+  }
+
+  const scores = getNeighborScores(map); 
+
+  return {
+    map,
+    rooms: data.rooms,
+    centers: data.rooms.map(r => [r.x, r.y]),
+    scores: scores 
+  };
+
+}
+
 export const createNewMap = (w: number, h: number): {
   map: Map;
   rooms: number[][];
@@ -275,7 +365,6 @@ export const createNewMap = (w: number, h: number): {
     initialRoomTemplate[1].height,
   ];
   applyRoomTemplate(map, mapCenter, initialRoomTemplate);
-  console.log(mapCenter);
   let prevCenter = mapCenter;
   let centers = [mapCenter];
   let rooms = [initialRoom];

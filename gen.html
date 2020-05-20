@@ -13,7 +13,13 @@
     <script type="text/javascript" src="dist/gen.js"></script>
     <script type="text/javascript">
       document.addEventListener('DOMContentLoaded', () => {
-        window.GEN = new MapGen(128, 128);
+        window.GEN = new MapGen({
+          W: 64 * 4, 
+          H: 64 * 4,
+          callback: console.log,
+          draw: true,
+          loadingCallback: (...args) => console.log(...args),
+        }, MapGen.defaultParams);
       });
     </script>
   </body>

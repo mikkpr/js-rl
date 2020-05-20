@@ -42,6 +42,7 @@ const getLimitedRange = (dir, range, origin, map) => {
     if ([
       CellType.GRASS,
       CellType.WALL,
+      CellType.GRASSY_WALL,
       CellType.DOOR_CLOSED,
       CellType.DOOR_LOCKED
     ].includes(map[idx])) {

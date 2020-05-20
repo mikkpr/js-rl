@@ -127,7 +127,7 @@ const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): strin
     [CellType.DOOR_LOCKED]: '+',
     [CellType.GRASS]: '"',
   };
-  if (map[idx] === CellType.WALL) {
+  if ([CellType.WALL, CellType.GRASSY_WALL].includes(map[idx])) {
     return getWallGlyph(scores[idx]);
   } else {
     return glyphs[map[idx]];
@@ -141,6 +141,7 @@ const tileColors: { [type: string]: Color } = {
   [CellType.DOOR_CLOSED]: [255, 255, 255],
   [CellType.DOOR_LOCKED]: [255, 255, 255],
   [CellType.GRASS]: [150, 255, 150],
+  [CellType.GRASSY_WALL]: [120, 150, 100],
 };
 
 export const drawHoveredInfo = () => {
@@ -153,7 +154,8 @@ export const drawHoveredInfo = () => {
     [CellType.DOOR_OPEN]: 'Door (open)',
     [CellType.DOOR_CLOSED]: 'Door (closed)',
     [CellType.DOOR_LOCKED]: 'Door (closed)',
-    [CellType.GRASS]: 'Grass'
+    [CellType.GRASS]: 'Grass',
+    [CellType.GRASSY_WALL]: 'Grassy wall',
   }
   const hoveredItems = [];
   hoveredItems.push(tileNames[map[hoveredTileIdx]]);
@@ -201,7 +203,11 @@ export const drawMap = (map: Map): void => {
       const tileHovered = game.getState().hoveredTileIdx === idx;
       const noise = mapNoise.get(x / 100, y / 100);
       const noiseVal = (1 + noise / 2);
-      const fgColor = tileColors[map[idx]];
+      let fgColor = tileColors[map[idx]];
+      if (map[idx] === CellType.GRASS) {
+        const grassColorVariance = grassNoise.get(x / 5, y / 7) * 50;
+        fgColor = ROT.Color.multiply(fgColor, [grassColorVariance + 40, grassColorVariance + 80, grassColorVariance + 40]);
+      }
       if (!fgColor) { console.log(idx, map[idx]) }
       const fgColorWithNoise = ROT.Color.multiply(fgColor, [80, 80, 80]);
       const fgWithNoise = ROT.Color.interpolate(
@@ -228,7 +234,7 @@ export const drawMap = (map: Map): void => {
 
       const fg = ROT.Color.toHex(fgRGB);
 
-      const bgColor = grassNoise.get(x / 100, y / 100) > 0.25 ? '#010' : '#000';
+      const bgColor = map[idx] === CellType.GRASSY_WALL ? '#010' : '#000';
       const bg = tileVisible
           ? bgColor
           : '#000';

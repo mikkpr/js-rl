@@ -5,7 +5,7 @@ import throttle from 'lodash/throttle';
 
 import GameState, { RunState } from './state';
 import { setupDisplay } from './display';
-import { xyIdx, createNewMap } from './map';
+import { xyIdx, createNewMap2 } from './map';
 
 import {
   AISystem,
@@ -34,18 +34,18 @@ declare global {
 
 const WIDTH = 64;
 const HEIGHT = 32;
-const MAPWIDTH = WIDTH * 2;
-const MAPHEIGHT = HEIGHT * 2;
+const MAPWIDTH = 256;
+const MAPHEIGHT = 256;
 
-const TILEWIDTH = 8;
-const TILEHEIGHT = 16;
+export const TILEWIDTH = 8;
+export const TILEHEIGHT = 16;
 
 let display;
 let ECS;
 let map;
 let game;
 
-const main = (): void => {
+const main = async (): Promise<any> => {
   ECS = new World();
   ECS.registerComponent(Position);
   ECS.registerComponent(Viewshed);
@@ -63,7 +63,7 @@ const main = (): void => {
     width: WIDTH,
     height: HEIGHT
   });
-  map = createNewMap(MAPWIDTH, MAPHEIGHT);
+  map = await createNewMap2(MAPWIDTH, MAPHEIGHT);
   const handleCanvasMouseMove = throttle((e) => {
     if (display.getContainer().contains(e.target)) {
       const { layerX, layerY } = e;
