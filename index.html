@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="dist/styles/main.css">
   </head>
   <body>
-    <section class="main-container scanlines"><div class="loading">Loading...</div></section>
+    <section class="main-container scanlines"><div class="loading">Loading</div></section>
     <section class="minimap"></section>
-    <section class="help">
+    <section class="help" style="display:none;">
       <p>HJKL / ARROWS to move (no diagonal movement)</p>
       <p>SPACE to open/close doors and do other stuff in the future</p>
       <p>T to toggle lantern</p>
@@ -22,7 +22,6 @@
     <script type="text/javascript" src="dist/bundle.js"></script>
     <script type="text/javascript">
       document.addEventListener('DOMContentLoaded', () => {
-        document.querySelector('.main-container .loading').remove();
         main();
       });
     </script>

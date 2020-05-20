@@ -4,7 +4,7 @@ import { Position, Renderable, Viewshed, Light } from '../components';
 import { display } from '../..';
 import { drawMap, addLight } from '../../display';
 import { CellType, xyIdx } from '../../map';
-import { game, player, minimap, MAPWIDTH } from '../..';
+import { game, player, minimap, MAPWIDTH, MAPHEIGHT } from '../..';
 
 const byZIndex = (a: Entity, b: Entity): number => b.getComponent(Renderable).z - a.getComponent(Renderable).z;
 
@@ -66,15 +66,17 @@ const drawMinimap = () => {
   const playerViewshed = player.getComponent(Viewshed);
   const { x: X, y: Y } = player.getComponent(Position);
   const { exploredTiles } = playerViewshed;
-  const ctx = minimap.getContext('2d');
-
-  for (const idx of (exploredTiles as Set<number>).values()) {
+  const ctx = (minimap as HTMLCanvasElement).getContext('2d');
+  ctx.clearRect(0, 0, MAPWIDTH * 2, MAPHEIGHT * 2);
+  const tiles = !window.clairvoyance ? playerViewshed.exploredTiles : new Set(Object.keys(map));
+  for (const idx of (tiles as Set<number>).values()) {
+    if ([CellType.WALL, CellType.GRASSY_WALL].includes(map[idx])) { continue; }
     const x = idx % MAPWIDTH;
     const y = ~~(idx / MAPWIDTH);
     ctx.fillStyle = tileColors[map[idx]];
-    ctx.fillRect( x, y, 1, 1 );
+    ctx.fillRect( x * 2, y * 2, 2, 2 );
   }
   ctx.fillStyle = "rgba(255, 0, 0, 1)";
-  ctx.fillRect( X-1, Y-1, 3, 3 );
-  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X}px; margin-top: -${Y + 256}px;opacity:0.75;`);
+  ctx.fillRect( X * 2, Y * 2, 2, 2 );
+  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.15;`);
 }

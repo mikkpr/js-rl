@@ -34,8 +34,8 @@ declare global {
 
 const WIDTH = 64;
 const HEIGHT = 32;
-const MAPWIDTH = 256;
-const MAPHEIGHT = 256;
+const MAPWIDTH = 128;
+const MAPHEIGHT = 128;
 
 export const TILEWIDTH = 8;
 export const TILEHEIGHT = 16;
@@ -46,6 +46,20 @@ let ECS;
 let map;
 let game;
 let player;
+
+document.addEventListener('keyup', e => {
+  if (e.key === 'F1') {
+    e.preventDefault();
+
+    const help: HTMLElement = document.querySelector('.help');
+    if (help.style.display !== 'none') {
+      help.style.display = 'none';
+    } else {
+      help.style.display = 'block';
+    }
+    
+  }
+})
 
 const main = async (): Promise<any> => {
   ECS = new World();
@@ -70,6 +84,7 @@ const main = async (): Promise<any> => {
     height: MAPHEIGHT,
   });
   map = await createNewMap2(MAPWIDTH, MAPHEIGHT);
+  document.querySelector('.loading').remove();
   const handleCanvasMouseMove = throttle((e) => {
     if (display.getContainer().contains(e.target)) {
       const { layerX, layerY } = e;

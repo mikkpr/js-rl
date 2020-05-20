@@ -8,8 +8,8 @@ export const setupMinimap = (options: { width: number; height: number; }): HTMLC
   const container = document.querySelector('.minimap');
   const canvas: HTMLCanvasElement = document.createElement('canvas');
   container.appendChild(canvas);
-  canvas.setAttribute('width', options.width.toString());
-  canvas.setAttribute('height', options.height.toString());
+  canvas.setAttribute('width', (options.width * 2).toString());
+  canvas.setAttribute('height', (options.height * 2).toString());
 
   return canvas;
 }

@@ -255,20 +255,20 @@ export const grassNoise = new Noise.Simplex(8);
 export const createNewMap2 = async (w: number, h: number) => {
   const mapGenPromise: Promise<MapGenResult> = new Promise((resolve, reject) => {
     const gen = new MapGen({
-      W: 256, 
-      H: 256,
+      W: w, 
+      H: h,
       callback: resolve,
       draw: false
     }, {
         ...MapGen.defaultParams,
         maxRoomSize: 8,
-        numRects: 300,
-        spawnRadiusVertical: 128,
-        spawnRadiusHorizontal: 128,
-        cohesion: 300,
-        cohesionCoeff: 0.2,
+        numRects: 280,
+        spawnRadiusVertical: w / 2,
+        spawnRadiusHorizontal: h / 2,
+        cohesion: 100,
+        cohesionCoeff: 0.3,
         separation: 8,
-        friction: 0.88,
+        friction: 0.9,
         seed: 1337 
       });
     gen.generate();
@@ -325,6 +325,10 @@ export const createNewMap2 = async (w: number, h: number) => {
       } else if (map[idx] === CellType.WALL) {
         map[idx] = CellType.GRASSY_WALL;
       }
+    }
+
+    if (map[idx] === undefined) {
+      map[idx] = CellType.WALL;
     }
   }
 
