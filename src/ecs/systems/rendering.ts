@@ -78,5 +78,5 @@ const drawMinimap = () => {
   }
   ctx.fillStyle = "rgba(255, 0, 0, 1)";
   ctx.fillRect( X * 2, Y * 2, 2, 2 );
-  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.15;`);
+  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.5;`);
 }

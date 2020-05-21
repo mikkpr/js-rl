@@ -3,6 +3,7 @@ import { Name, Position, Light, Viewshed } from './ecs/components';
 import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
+import { normalizeScore } from './utils/map';
 
 export const setupMinimap = (options: { width: number; height: number; }): HTMLCanvasElement => {
   const container = document.querySelector('.minimap');
@@ -35,7 +36,10 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
   return display;
 };
 
+
 const getWallGlyph = (score: number): string => {
+  let normalizedScore = normalizeScore(score);  
+
   const pillar = '○';
   const wallN = '▀';
   const wallW = '▌';
@@ -99,7 +103,7 @@ const getWallGlyph = (score: number): string => {
     255: 46
   };
 
-  const idx = scoreLookup[score];
+  const idx = scoreLookup[normalizedScore];
   if (!idx) { return ' '; }
   return tiles[idx];
 };
@@ -187,6 +191,12 @@ export const drawHoveredInfo = () => {
     for (let idx = 0; idx < hoveredItems.length; idx++) {
       display.drawText(x, y - idx, hoveredItems[idx]);
     }
+  }
+
+  if (window.clairvoyance) {
+    const x = hoveredTileIdx % MAPWIDTH;
+    const y = ~~(hoveredTileIdx / MAPWIDTH);
+    display.drawText(1, 1, `x: ${x}, y: ${y}, idx: ${hoveredTileIdx}`);
   }
 }
 

@@ -3,6 +3,7 @@ import isEqual from 'lodash/isEqual';
 import { TILEWIDTH, TILEHEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
 import { applyRoomTemplate, RoomType, createRoomTemplate } from './mapgen/roomTemplates';
 import { MapGen, MapGenResult } from './mapgen';
+import { matchNeighborScore } from './utils/map';
 
 // Map generation parameters
 const MIN_SIZE = 3;
@@ -138,16 +139,16 @@ export const getNeighborScores = (map: Map): number[] => {
       if (neighbors.W) {
         total += 8;
       }
-      if (neighbors.NW && neighbors.W && neighbors.N) {
+      if (neighbors.NW) {
         total += 1;
       }
-      if (neighbors.NE && neighbors.N && neighbors.E) {
+      if (neighbors.NE) {
         total += 4;
       }
-      if (neighbors.SE && neighbors.E && neighbors.S) {
+      if (neighbors.SE) {
         total += 128;
       }
-      if (neighbors.SW && neighbors.S && neighbors.W) {
+      if (neighbors.SW) {
         total += 32;
       }
 
@@ -289,8 +290,8 @@ export const createNewMap2 = async (w: number, h: number) => {
     const y = r.y;
     const w = r.w;
     const h = r.h;
-    for (let _x = ~~(x - w/2) ; _x < x + w/2 ; _x++) {
-      for (let _y = ~~(y - h/2); _y < y + h/2; _y++) {
+    for (let _x = ~~(x - w/2) ; _x < ~~(x + w/2); _x++) {
+      for (let _y = ~~(y - h/2); _y < ~~(y + h/2); _y++) {
         map[xyIdx(_x, _y)] = CellType.FLOOR;
       }
     }
@@ -332,7 +333,40 @@ export const createNewMap2 = async (w: number, h: number) => {
     }
   }
 
-  const scores = getNeighborScores(map); 
+  let scores = getNeighborScores(map); 
+  let doorCandidates = [];
+  const masks = {
+    N: '?0?11000',
+    E: '01?0001?',
+    S: '00011?0?',
+    W: '?1000?10',
+  };
+  for (let idx = 0; idx < map.length; idx++) {
+    if (![CellType.FLOOR, CellType.GRASS].includes(map[idx])) {
+      continue;
+    }
+
+    for (const mask of Object.values(masks)) {
+      if (matchNeighborScore(mask)(scores[idx])) {
+        doorCandidates.push(idx);
+      }
+    }
+  }
+  const DOORS = [CellType.DOOR_OPEN, CellType.DOOR_CLOSED, CellType.DOOR_LOCKED];
+  for (let candidate of doorCandidates) {
+    if (RNG.getUniformInt(0, 1)) {
+      if (
+        DOORS.includes(map[candidate-1]) ||
+        DOORS.includes(map[candidate+1]) ||
+        DOORS.includes(map[candidate-MAPWIDTH]) ||
+        DOORS.includes(map[candidate+MAPWIDTH])
+      ) {
+        continue;
+      }
+      map[candidate] = RNG.getItem(DOORS.slice(0, 2));
+    }
+  }
+  scores = getNeighborScores(map); 
 
   return {
     map,

@@ -8156,9 +8156,9 @@ const WIDTH = 64;
 exports.WIDTH = WIDTH;
 const HEIGHT = 32;
 exports.HEIGHT = HEIGHT;
-const MAPWIDTH = 256;
+const MAPWIDTH = 128;
 exports.MAPWIDTH = MAPWIDTH;
-const MAPHEIGHT = 256;
+const MAPHEIGHT = 128;
 exports.MAPHEIGHT = MAPHEIGHT;
 exports.TILEWIDTH = 8;
 exports.TILEHEIGHT = 16;
@@ -8173,6 +8173,18 @@ let game;
 exports.game = game;
 let player;
 exports.player = player;
+document.addEventListener('keyup', e => {
+    if (e.key === 'F1') {
+        e.preventDefault();
+        const help = document.querySelector('.help');
+        if (help.style.display !== 'none') {
+            help.style.display = 'none';
+        }
+        else {
+            help.style.display = 'block';
+        }
+    }
+});
 const main = async () => {
     exports.ECS = ECS = new ecsy_1.World();
     ECS.registerComponent(components_1.Position);
@@ -8194,6 +8206,7 @@ const main = async () => {
         height: MAPHEIGHT,
     });
     map = await map_1.createNewMap2(MAPWIDTH, MAPHEIGHT);
+    document.querySelector('.loading').remove();
     const handleCanvasMouseMove = throttle_1.default((e) => {
         if (display.getContainer().contains(e.target)) {
             const { layerX, layerY } = e;
@@ -8728,20 +8741,20 @@ exports.grassNoise = new rot_js_1.Noise.Simplex(8);
 exports.createNewMap2 = async (w, h) => {
     const mapGenPromise = new Promise((resolve, reject) => {
         const gen = new mapgen_1.MapGen({
-            W: 256,
-            H: 256,
+            W: w,
+            H: h,
             callback: resolve,
             draw: false
         }, {
             ...mapgen_1.MapGen.defaultParams,
             maxRoomSize: 8,
-            numRects: 300,
-            spawnRadiusVertical: 128,
-            spawnRadiusHorizontal: 128,
-            cohesion: 300,
-            cohesionCoeff: 0.2,
+            numRects: 280,
+            spawnRadiusVertical: w / 2,
+            spawnRadiusHorizontal: h / 2,
+            cohesion: 100,
+            cohesionCoeff: 0.3,
             separation: 8,
-            friction: 0.88,
+            friction: 0.9,
             seed: 1337
         });
         gen.generate();
@@ -8781,6 +8794,9 @@ exports.createNewMap2 = async (w, h) => {
             else if (map[idx] === CellType.WALL) {
                 map[idx] = CellType.GRASSY_WALL;
             }
+        }
+        if (map[idx] === undefined) {
+            map[idx] = CellType.WALL;
         }
     }
     const scores = exports.getNeighborScores(map);
@@ -13656,8 +13672,8 @@ exports.setupMinimap = (options) => {
     const container = document.querySelector('.minimap');
     const canvas = document.createElement('canvas');
     container.appendChild(canvas);
-    canvas.setAttribute('width', options.width.toString());
-    canvas.setAttribute('height', options.height.toString());
+    canvas.setAttribute('width', (options.width * 2).toString());
+    canvas.setAttribute('height', (options.height * 2).toString());
     return canvas;
 };
 exports.setupDisplay = (options) => {
@@ -22074,15 +22090,20 @@ const drawMinimap = () => {
     const { x: X, y: Y } = __2.player.getComponent(components_1.Position);
     const { exploredTiles } = playerViewshed;
     const ctx = __2.minimap.getContext('2d');
-    for (const idx of exploredTiles.values()) {
+    ctx.clearRect(0, 0, __2.MAPWIDTH * 2, __2.MAPHEIGHT * 2);
+    const tiles = !window.clairvoyance ? playerViewshed.exploredTiles : new Set(Object.keys(map));
+    for (const idx of tiles.values()) {
+        if ([map_1.CellType.WALL, map_1.CellType.GRASSY_WALL].includes(map[idx])) {
+            continue;
+        }
         const x = idx % __2.MAPWIDTH;
         const y = ~~(idx / __2.MAPWIDTH);
         ctx.fillStyle = tileColors[map[idx]];
-        ctx.fillRect(x, y, 1, 1);
+        ctx.fillRect(x * 2, y * 2, 2, 2);
     }
     ctx.fillStyle = "rgba(255, 0, 0, 1)";
-    ctx.fillRect(X - 1, Y - 1, 3, 3);
-    __2.minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X}px; margin-top: -${Y + 256}px;opacity:0.75;`);
+    ctx.fillRect(X * 2, Y * 2, 2, 2);
+    __2.minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.15;`);
 };
 
 

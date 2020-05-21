@@ -90,7 +90,7 @@ const dwim = () => {
 
 const toggleMinimap = () => {
   game.setState(state => { state.minimapVisible = !state.minimapVisible; })
-  game.render(0, game.runState);
+  game.render(0, game.lastTime);
 };
 
 const setupKeys = (game): void => {
