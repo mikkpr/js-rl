@@ -1,7 +1,6 @@
 import * as ROT from 'rot-js';
 import setupKeys from './keys';
 import { World } from 'ecsy';
-import throttle from 'lodash/throttle';
 
 import GameState, { RunState } from './state';
 import { setupDisplay, setupMinimap } from './display';
@@ -71,17 +70,7 @@ const main = async (): Promise<any> => {
   });
   map = await createNewMap2(MAPWIDTH, MAPHEIGHT);
   document.querySelector('.loading').remove();
-  const handleCanvasMouseMove = throttle((e) => {
-    if (display.getContainer().contains(e.target)) {
-      const { layerX, layerY } = e;
-      const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
-      const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
-      if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) { return; }
-      const tileIdx = xyIdx(X, Y);
-      game.setState(state => { state.hoveredTileIdx = tileIdx; });
-    }
-  }, 30);
-
+ 
   game = new GameState({
     runState: RunState.PRERUN,
     map: map.map,
@@ -91,8 +80,6 @@ const main = async (): Promise<any> => {
     minimapVisible: false
   }, display, ECS);
   eval('window.game = game;');
-
-  document.addEventListener('mousemove', handleCanvasMouseMove);
 
   const randomCenter = ROT.RNG.getItem(map.centers);
   const mapCenter = [~~(WIDTH/2), ~~(HEIGHT/2)];

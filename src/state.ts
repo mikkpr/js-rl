@@ -60,6 +60,8 @@ class GameState {
   setState(setter: StateSetter): GameState {
     this.state = produce(this.state, setter);
 
+    this.render(0, this.lastTime);
+
     return this;
   }
 

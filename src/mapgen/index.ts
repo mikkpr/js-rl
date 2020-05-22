@@ -6,7 +6,7 @@ import { ID } from '../utils/id';
 import { MovableRect, dSquared, separation, cohesion } from './flocking';
 import { Graph, alg } from 'graphlib';
 
-const FPS = 0;
+const FPS = 1000/10.0;
 
 enum MapGenState {
   PRERUN = 'PRERUN',

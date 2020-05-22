@@ -1,9 +1,12 @@
+import { match } from 'egna';
 import keymage from 'keymage';
+import throttle from 'lodash/throttle';
+
 import { RunState } from './state';
 import { Light, Position, Viewshed } from './ecs/components';
 import { VisibilitySystem } from './ecs/systems';
-import { getNeighborScores, CellType, xyIdx, isPassable } from './map';
-import { game } from '.';
+import { CellType, xyIdx, isPassable, getNeighborScores } from './map';
+import { game, WIDTH, HEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
 
 type Direction = 'N' | 'E' | 'S' |'W';
 
@@ -27,10 +30,7 @@ const tryMove = (dir: Direction) => (game) => (): void => {
     game.cameraOffset[1] -= dy;
     position.x += dx;
     position.y += dy;
-    const viewshed = player.getMutableComponent(Viewshed);
-    if (viewshed) viewshed.dirty = true;
-    const light = player.getMutableComponent(Light);
-    if (light) light.dirty = true;
+    touchEntityViewshed(game.player);  
   }
 
   game.setState(state => {
@@ -39,8 +39,14 @@ const tryMove = (dir: Direction) => (game) => (): void => {
   });
 };
 
+const touchEntityViewshed = (entity) => {
+  const viewshed = entity.getMutableComponent(Viewshed);
+  if (viewshed) viewshed.dirty = true;
+  const light = entity.getMutableComponent(Light);
+  if (light) light.dirty = true;
+}
+
 const debug = () => {
-  console.log('?')
   window.DEBUG = !(window.DEBUG);
 };
 
@@ -103,10 +109,66 @@ const toggleHelp = () => {
   }
 }
 
-const handleMouseUp = e => {
-  e.preventDefault();
-  e.stopPropagation();
-  console.log('?')
+const handleCanvasMouseUp = (e: MouseEvent) => {
+  match(
+    { which: 3 }, () => handleRightClick(e),
+    { which: 2 }, () => handleMiddleClick(e),
+    { which: 1 }, () => handleLeftClick(e)
+  )(e)
+}
+
+const handleRightClick = e => {
+  const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+}
+
+const handleMiddleClick = e => {
+  const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+}
+
+const handleLeftClick = e => {
+  const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+  if (window.DEBUG && e.shiftKey) {
+    shiftTileType(tileIdx);
+  }
+}
+
+const handleCanvasMouseMove = throttle((e) => {
+  const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+  game.setState(state => { state.hoveredTileIdx = tileIdx; });
+}, 30);
+
+const getTileIdxFromCoords = (x, y) => {
+  const X = ~~(x / 512 * WIDTH) - game.cameraOffset[0];
+  const Y = ~~(y / 512 * HEIGHT) - game.cameraOffset[1];
+  if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) { return; }
+  const tileIdx = xyIdx(X, Y);
+
+  return tileIdx;
+}
+
+const shiftTileType = idx => {
+  const tileTypes = [
+    CellType.FLOOR,
+    CellType.WALL,
+    CellType.GRASS,
+    CellType.GRASSY_WALL,
+    CellType.DOOR_OPEN,
+    CellType.DOOR_CLOSED
+  ];
+  const map = game.getState().map;
+  if (idx < 0 || idx >= map.length) { return; }
+  const current = map[idx];
+  let currentIdx = tileTypes.indexOf(current);
+  if (currentIdx === tileTypes.length - 1) { currentIdx = -1 }
+
+  const newType = tileTypes[currentIdx + 1];
+
+  game.setState(state => {
+    state.map[idx] = newType;
+    state.scores = getNeighborScores(state.map);
+  });
+
+  touchEntityViewshed(game.player);  
 }
 
 const setupKeys = (game): void => {
@@ -128,8 +190,9 @@ const setupKeys = (game): void => {
   keymage('m', toggleMinimap);
   keymage('shift-f1', toggleHelp);
 
-  document.querySelector('.main-container canvas').addEventListener('mouseup', handleMouseUp)
-
+  const canvas = document.querySelector('.main-container canvas');
+  canvas.addEventListener('mouseup', handleCanvasMouseUp)
+  canvas.addEventListener('mousemove', handleCanvasMouseMove);
 };
 
 export default setupKeys;

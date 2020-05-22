@@ -1,4 +1,6 @@
-import * as ROT from 'rot-js';import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
+import * as ROT from 'rot-js';
+import { match } from 'egna';
+import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
 import { Name, Position, Light, Viewshed } from './ecs/components';
 import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
@@ -138,17 +140,26 @@ const addStaticLight = (light: Color, fg: Color): Color => {
 
 const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): string => {
   const glyphs = {
-    [CellType.FLOOR]: '∙',
-    [CellType.DOOR_OPEN]: '\'',
-    [CellType.DOOR_CLOSED]: '+',
-    [CellType.DOOR_LOCKED]: '+',
-    [CellType.GRASS]: '"',
-  };
-  if ([CellType.WALL, CellType.GRASSY_WALL].includes(map[idx])) {
-    return getWallGlyph(scores[idx]);
-  } else {
-    return glyphs[map[idx]];
+    [CellType.FLOOR]: ['∙'],
+    [CellType.DOOR_OPEN]: ['\''],
+    [CellType.DOOR_CLOSED]: ['+'],
+    [CellType.DOOR_LOCKED]: ['+'],
+    [CellType.GRASS]: ['`', '"'],
   }
+  const glyph = match(
+    CellType.WALL, () => getWallGlyph(scores[idx]),
+    CellType.GRASSY_WALL, () => getWallGlyph(scores[idx]),
+    () => {
+      
+      const glyphChoices = glyphs[map[idx]];
+      const x = idx % MAPWIDTH;
+      const y = ~~(idx / MAPWIDTH);
+      const noiseAbs = Math.abs(mapNoise.get(x / 2, y / 2));
+      const _idx = Math.min(glyphChoices.length - 1, Math.max(0, Math.round(noiseAbs * glyphChoices.length)));
+      return glyphChoices[_idx]
+    },
+  )(map[idx]);  
+  return glyph;
 };
 
 const tileColors: { [type: string]: Color } = {
