@@ -40,6 +40,7 @@
     "dat.gui": "^0.7.7",
     "delaunator": "^4.0.1",
     "ecsy": "^0.2.3",
+    "egna": "^2.0.2",
     "file-loader": "^6.0.0",
     "graphlib": "^2.1.8",
     "immer": "^6.0.5",

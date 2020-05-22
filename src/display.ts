@@ -31,7 +31,11 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
     tileColorize: true
   });
 
-  document.querySelector('.main-container').appendChild(display.getContainer());
+  const canvas = display.getContainer();
+
+  document.querySelector('.main-container').appendChild(canvas);
+
+  canvas.setAttribute('oncontextmenu', 'return false;');
 
   return display;
 };
@@ -193,7 +197,7 @@ export const drawHoveredInfo = () => {
     }
   }
 
-  if (window.clairvoyance) {
+  if (window.DEBUG) {
     const x = hoveredTileIdx % MAPWIDTH;
     const y = ~~(hoveredTileIdx / MAPWIDTH);
     display.drawText(1, 1, `x: ${x}, y: ${y}, idx: ${hoveredTileIdx}`);
@@ -216,7 +220,7 @@ export const drawMap = (map: Map): void => {
     const tileVisible = viewshed && viewshed.visibleTiles && viewshed.visibleTiles.has(idx);
     const tileExplored = viewshed && viewshed.exploredTiles && viewshed.exploredTiles.has(idx);
     if (
-      window.clairvoyance === true ||
+      window.DEBUG === true ||
       tileVisible || tileExplored
     ) {
       const tileHovered = game.getState().hoveredTileIdx === idx;

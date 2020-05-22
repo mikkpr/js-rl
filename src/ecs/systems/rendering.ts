@@ -68,7 +68,7 @@ const drawMinimap = () => {
   const { exploredTiles } = playerViewshed;
   const ctx = (minimap as HTMLCanvasElement).getContext('2d');
   ctx.clearRect(0, 0, MAPWIDTH * 2, MAPHEIGHT * 2);
-  const tiles = !window.clairvoyance ? playerViewshed.exploredTiles : new Set(Object.keys(map));
+  const tiles = !window.DEBUG ? playerViewshed.exploredTiles : new Set(Object.keys(map));
   for (const idx of (tiles as Set<number>).values()) {
     if ([CellType.WALL, CellType.GRASSY_WALL].includes(map[idx])) { continue; }
     const x = idx % MAPWIDTH;

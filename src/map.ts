@@ -263,11 +263,11 @@ export const createNewMap2 = async (w: number, h: number) => {
     }, {
         ...MapGen.defaultParams,
         maxRoomSize: 8,
-        numRects: 280,
+        numRects: 180,
         spawnRadiusVertical: w / 2,
         spawnRadiusHorizontal: h / 2,
         cohesion: 100,
-        cohesionCoeff: 0.3,
+        cohesionCoeff: 0.2,
         separation: 8,
         friction: 0.9,
         seed: 1337 

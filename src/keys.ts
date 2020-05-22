@@ -39,8 +39,9 @@ const tryMove = (dir: Direction) => (game) => (): void => {
   });
 };
 
-const idclip = () => {
-  window.clairvoyance = !(window.clairvoyance);
+const debug = () => {
+  console.log('?')
+  window.DEBUG = !(window.DEBUG);
 };
 
 const toggleLight = () => {
@@ -93,7 +94,23 @@ const toggleMinimap = () => {
   game.render(0, game.lastTime);
 };
 
+const toggleHelp = () => {
+  const help: HTMLElement = document.querySelector('.help');
+  if (help.style.display !== 'none') {
+    help.style.display = 'none';
+  } else {
+    help.style.display = 'block';
+  }
+}
+
+const handleMouseUp = e => {
+  e.preventDefault();
+  e.stopPropagation();
+  console.log('?')
+}
+
 const setupKeys = (game): void => {
+  keymage('shift-d shift-e shift-b shift-u shift-g', debug);
   keymage('k', tryMove('N')(game));
   keymage('up', tryMove('N')(game));
   keymage('w', tryMove('N')(game));
@@ -106,10 +123,13 @@ const setupKeys = (game): void => {
   keymage('h', tryMove('W')(game));
   keymage('left', tryMove('W')(game));
   keymage('a', tryMove('W')(game));
-  keymage('i d c l i p', idclip);
   keymage('t', toggleLight);
   keymage('space', dwim);
   keymage('m', toggleMinimap);
+  keymage('shift-f1', toggleHelp);
+
+  document.querySelector('.main-container canvas').addEventListener('mouseup', handleMouseUp)
+
 };
 
 export default setupKeys;

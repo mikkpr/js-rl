@@ -1,5 +1,5 @@
 import * as ROT from 'rot-js';
-import setupKeys from './player';
+import setupKeys from './keys';
 import { World } from 'ecsy';
 import throttle from 'lodash/throttle';
 
@@ -25,7 +25,7 @@ import './assets/main.css';
 
 declare global {
   interface Window {
-    clairvoyance?: boolean;
+    DEBUG?: boolean;
     game?: GameState;
   }
 
@@ -34,8 +34,8 @@ declare global {
 
 const WIDTH = 64;
 const HEIGHT = 32;
-const MAPWIDTH = 128;
-const MAPHEIGHT = 128;
+const MAPWIDTH = 64;
+const MAPHEIGHT = 64;
 
 export const TILEWIDTH = 8;
 export const TILEHEIGHT = 16;
@@ -46,20 +46,6 @@ let ECS;
 let map;
 let game;
 let player;
-
-document.addEventListener('keyup', e => {
-  if (e.key === 'F1') {
-    e.preventDefault();
-
-    const help: HTMLElement = document.querySelector('.help');
-    if (help.style.display !== 'none') {
-      help.style.display = 'none';
-    } else {
-      help.style.display = 'block';
-    }
-    
-  }
-})
 
 const main = async (): Promise<any> => {
   ECS = new World();
