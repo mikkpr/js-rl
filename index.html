@@ -1,49 +1,18 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>JS RL</title>
-
-    <style>
-     body {
-       background: black;
-       color: white;
-     }
-     .main {
-       background: black;
-       display: flex;
-       justify-content: center;
-       padding: 32px;
-     }
-
-     .main > * + * {
-       margin-left: 32px;
-     }
-
-     .main__canvas {
-       outline: 1px solid white;
-       width: 320px;
-       height: 320px;
-     }
-
-     .main__log {
-       font-size: 12px;
-       line-height: 16px;
-       font-family: monospace;
-       width: 320px;
-       line-height: 16px;
-       max-height: 320px;
-       overflow: auto;
-     }
-    </style>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>JS RL</title>
+  <link rel="stylesheet" type="text/css" href="dist/styles/main.css">
 </head>
-<body>
-  <section class="main">
-    <canvas id="canvas" class="main__canvas" width="320" height="320"></canvas>
-    <div id="log" class="main__log"></div>
-  </section>
 
-    <script type="text/javascript" src="dist/bundle.js"></script>
+<body>
+  <section class="main-container scanlines">
+    <div class="loading">Loading</div>
+  </section>
+  <script type="text/javascript" src="dist/bundle.js"></script>
 </body>
+
 </html>
