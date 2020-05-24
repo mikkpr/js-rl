@@ -1,6 +1,7 @@
 import { Entity, World } from 'ecsy';
 import produce from 'immer';
 import * as ROT from 'rot-js';
+import raf from 'raf';
 import { RenderingSystem, VisibilitySystem } from './ecs/systems';
 import { CellType } from './map';
 import { drawHoveredInfo, drawGUI, drawAltInfo } from './display';
@@ -41,12 +42,17 @@ class GameState {
   lastTime: number;
   player?: Entity;
   cameraOffset?: [number, number];
+  rafID?: number;
+  elapsedSinceLastTick: number;
 
   constructor(initialState: State, display: ROT.Display, ecs: World) {
     this.state = initialState;
     this.display = display;
     this.ecs = ecs;
     this.lastTime = performance.now();
+    this.elapsedSinceLastTick = 0;
+
+    this.rafID = null;
   }
 
   getState(getter?: StateGetter): any {
@@ -94,14 +100,9 @@ class GameState {
     if (this.getState().altPressed) drawAltInfo(this);
   }
 
-  tick = (): void => {
-    const FPS = 45;
+  tick = (elapsed): void => {
+    const delta = elapsed * 1000; 
     const time = performance.now();
-    const delta = time - this.lastTime;
-    if (delta < 1000/FPS) { 
-      requestAnimationFrame(this.tick);
-      return;
-    }
     this.lastTime = time;
     const runState = this.getState(state => state.runState);
     if (runState !== RunState.MAINMENU) {
@@ -131,12 +132,10 @@ class GameState {
     } else if (runState === RunState.RUNNING) {
     } else if (runState === RunState.PAUSED) {
     }
-
-    requestAnimationFrame(this.tick);
   }
 
   gameLoop = (): void => {
-    this.tick();
+    this.rafID = raf.start(this.tick);
   }
 }
 

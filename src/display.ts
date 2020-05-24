@@ -1,8 +1,8 @@
 import * as ROT from 'rot-js';
 import { match } from 'egna';
-import { display, game, LOGHEIGHT, SIDEBARWIDTH, HEIGHT, MAPWIDTH, WIDTH } from '.';
+import { ECS, display, game, LOGHEIGHT, SIDEBARWIDTH, HEIGHT, MAPWIDTH, WIDTH } from '.';
 import GameState from './state';
-import { Name, Position, Light, Viewshed } from './ecs/components';
+import { Renderable, Name, Position, Light, Viewshed } from './ecs/components';
 import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
@@ -64,7 +64,9 @@ const getWallGlyph = (score: number): string => {
     '╬', '╔', '╔', '╠', '║', '╦', '╬', '╬',
     '╣', '╗', '═', '╩', '╚', '╝', ' ', pillar
   ];
-  const scoreLookup = {
+  const scoreLookup: {
+    [score: number]: number
+  } = {
     0: 47,
     2: 1,
     8: 2,
@@ -179,7 +181,7 @@ const tileColors: { [type: string]: Color } = {
   [CellType.GRASSY_WALL]: [120, 150, 100],
 };
 
-export const drawHoveredInfo = (game) => {
+export const drawHoveredInfo = (game: GameState) => {
   const { hoveredTileIdx, map } = game.getState();
   if (!hoveredTileIdx) { return; }
 
@@ -193,9 +195,9 @@ export const drawHoveredInfo = (game) => {
     [CellType.GRASSY_WALL]: 'Grassy wall',
   }
   const hoveredItems = [];
-  hoveredItems.push(tileNames[map[hoveredTileIdx]]);
+  hoveredItems.push(tileNames[map[hoveredTileIdx as number] as CellType]);
 
-  game.ecs.getSystem(InfoSystem).queries.info.results.forEach(e => {
+  ECS.getSystem(InfoSystem).queries.info.results.forEach(e => {
     const pos = e.getComponent(Position);
     const idx = xyIdx(pos.x, pos.y);
     if (idx === hoveredTileIdx) {
@@ -208,30 +210,32 @@ export const drawHoveredInfo = (game) => {
   const y = HEIGHT - 1;
   const x = WIDTH - 1 - hoveredItems.filter(x => x).reduce((len, item) => Math.max(len, item.length), 0);
 
+  if (!game || !game.player || !game.display) { return; }
   const viewshed = game.player.getComponent(Viewshed);
-  if (viewshed.exploredTiles.has(hoveredTileIdx)) {
+  if (viewshed && viewshed.exploredTiles.has(hoveredTileIdx)) {
     for (let idx = 0; idx < hoveredItems.length; idx++) {
-      display.drawText(x, y - idx, hoveredItems[idx]);
+      game.display.drawText(x, y - idx, hoveredItems[idx]);
     }
   }
 
   if (window.DEBUG) {
     const x = hoveredTileIdx % MAPWIDTH;
     const y = ~~(hoveredTileIdx / MAPWIDTH);
-    display.drawText(1, 1, `x: ${x}, y: ${y}, idx: ${hoveredTileIdx}`);
+    game.display.drawText(1, 1, `x: ${x}, y: ${y}, idx: ${hoveredTileIdx}`);
   }
 }
 
 export const drawMap = (game: GameState, map: Map): void => {
-  const player = game.player;
+  const { player, cameraOffset, display } = game;
+  if (!player || !cameraOffset || !display) { return; }
   const viewshed = player.getComponent(Viewshed);
-  const { mapScores, altPressed } = game.getState(state => ({ mapScores: state.scores, altPressed: state.altPressed }));
+  const { mapScores } = game.getState(state => ({ mapScores: state.scores, altPressed: state.altPressed }));
   const getTile = getGlyphForCellType(map, mapScores);
   for (let idx = 0; idx < map.length; idx++) {
     const x = idx % MAPWIDTH;
     const y = ~~(idx / MAPWIDTH);
-    const X = x + game.cameraOffset[0];
-    const Y = y + game.cameraOffset[1];
+    const X = x + cameraOffset[0];
+    const Y = y + cameraOffset[1];
     if (X < 0 || X >= WIDTH || Y < 0 || Y >= HEIGHT) {
       continue;
     }
@@ -315,7 +319,7 @@ export const drawGUI = (game: GameState) => {
 
   drawLog(game, game.getState().log);
 
-  drawSidebar(game);
+  drawSidebar();
 }
 
 const drawLog = (game: GameState, log: string) => {
@@ -331,10 +335,78 @@ const drawLog = (game: GameState, log: string) => {
   }
 }
 
-const drawSidebar = (game) => {
+const drawSidebar = () => {
   
 }
 
-export const drawAltInfo = (game) => {
-  console.log('draw alt info')
+export const drawAltInfo = (game: GameState) => {
+  const renderables = ECS.systemManager.getSystem(RenderingSystem).queries.renderables;
+  const player = game.player;
+  const playerX = player.getComponent(Position).x;
+  const playerY = player.getComponent(Position).y;
+  const cameraOffset = game.cameraOffset;
+  const { visibleTiles } = player.getComponent(Viewshed);
+  const renderablesInView = renderables.results.filter(r => {
+    if (r.name === 'player') { return false; }
+    const { x, y } = r.getComponent(Position);
+    const idx = xyIdx(x, y);
+    return visibleTiles.has(idx);
+  });
+  const labels = [];
+  for (const entity of renderablesInView) {
+    const { x, y } = entity.getComponent(Position);
+    const { name } = entity.getComponent(Name);
+    const { fg } = entity.getComponent(Renderable);
+    
+    labels.push({
+      x,
+      y,
+      name,
+      fg,
+      bg: '#333'
+    });
+  }
+  const positionedLabels = labels.reduce((acc, label, idx, labels) => {
+    const { x, y, name } = label;
+    const offset = 1;
+    let _x = x;
+    let _y = y;
+    let positionLeft;
+    if (x <= playerX && x + name.length + 1 + offset >= WIDTH - cameraOffset[0]) {
+      positionLeft = true;
+    } else if (x >= playerX && x - name.length - offset <= 0 - cameraOffset[1]) {
+      positionLeft = false; 
+    } else if (x + name.length + 1 + offset >= playerX && x + offset <= playerX) {
+      positionLeft = true;
+    }
+
+    if (positionLeft) {
+      _x = x - name.length - offset;
+    } else {
+      _x = x + 1 + offset;
+    }
+
+    if (idx > 0) {  
+      // adjust x and y to not overlap any existing labels
+      for (const other of labels.slice(idx)) {
+        if (_y === other.y && !positionLeft && _x + name.length + 1 + offset >= other.x + offset + 1) {
+          _y += 1;
+        }
+      }
+    }
+     
+    return acc.concat([{
+        ...label,
+        x: _x,
+        y: _y
+      }]);
+  }, []);
+
+  for (const label of positionedLabels) {
+    game.display.drawText(
+      label.x + cameraOffset[0],
+      label.y + cameraOffset[1],
+      `%c{${label.fg}}%b{${label.bg}}${label.name}%c{}%b{}`
+    );
+  }
 }

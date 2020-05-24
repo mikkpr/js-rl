@@ -11,22 +11,15 @@ const byZIndex = (a: Entity, b: Entity): number => b.getComponent(Renderable).z 
 
 class RenderingSystem extends System {
   game: GameState;
-  display?: ROT.Display;
-
-  init(world, attributes) {
-    super(world, attributes);
-    this.game = attributes.game;
-    this.display = this.game.display;
-  }
+  display?: ROT.Display; 
 
   execute = (delta: number, time: number): void => {
-    if (!this.display) { return; }
-    const { map, hoveredTileIdx } = this.game.getState();
-    drawMap(this.game, map);
+    const { map, hoveredTileIdx } = game.getState();
+    drawMap(game, map);
 
     drawMinimap();
 
-    const viewshed = this.game.player.getComponent(Viewshed);
+    const viewshed = game.player.getComponent(Viewshed);
 
     this.queries.renderables.results.sort(byZIndex).forEach(entity => {
       const position = entity.getComponent(Position);
@@ -39,9 +32,9 @@ class RenderingSystem extends System {
         const fg = ROT.Color.toHex(fgWithLights);
         const bg = renderable.bg || '#000';
         const entityHovered = idx === hoveredTileIdx;
-        this.display.draw(
-          position.x + this.game.cameraOffset[0],
-          position.y + this.game.cameraOffset[1],
+        game.display.draw(
+          position.x + game.cameraOffset[0],
+          position.y + game.cameraOffset[1],
           renderable.glyph,
           entityHovered ? bg : fg,
           entityHovered ? fg : bg

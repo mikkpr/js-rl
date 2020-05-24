@@ -112,7 +112,7 @@ const main = async (): Promise<any> => {
 
   ECS.registerSystem(VisibilitySystem);
   ECS.registerSystem(AISystem);
-  ECS.registerSystem(RenderingSystem, { game });
+  ECS.registerSystem(RenderingSystem);
   ECS.registerSystem(InfoSystem);
 
 
