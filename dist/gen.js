@@ -274,7 +274,7 @@ if (true) {
       constant: __webpack_require__(79),
       each: __webpack_require__(172),
       filter: __webpack_require__(178),
-      has:  __webpack_require__(33),
+      has:  __webpack_require__(34),
       isArray: __webpack_require__(1),
       isEmpty: __webpack_require__(189),
       isFunction: __webpack_require__(20),
@@ -303,7 +303,7 @@ module.exports = lodash;
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var freeGlobal = __webpack_require__(58);
+var freeGlobal = __webpack_require__(56);
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -922,8 +922,8 @@ module.exports = isArrayLike;
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(12),
-    getRawTag = __webpack_require__(94),
-    objectToString = __webpack_require__(95);
+    getRawTag = __webpack_require__(93),
+    objectToString = __webpack_require__(94);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -6120,7 +6120,7 @@ module.exports = isArguments;
 /* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isSymbol = __webpack_require__(34);
+var isSymbol = __webpack_require__(33);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -6335,8 +6335,43 @@ module.exports = baseIteratee;
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseHas = __webpack_require__(92),
-    hasPath = __webpack_require__(56);
+var baseGetTag = __webpack_require__(11),
+    isObjectLike = __webpack_require__(5);
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag(value) == symbolTag);
+}
+
+module.exports = isSymbol;
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseHas = __webpack_require__(95),
+    hasPath = __webpack_require__(57);
 
 /**
  * Checks if `path` is a direct property of `object`.
@@ -6373,46 +6408,11 @@ module.exports = has;
 
 
 /***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var baseGetTag = __webpack_require__(11),
-    isObjectLike = __webpack_require__(5);
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && baseGetTag(value) == symbolTag);
-}
-
-module.exports = isSymbol;
-
-
-/***/ }),
 /* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(1),
-    isSymbol = __webpack_require__(34);
+    isSymbol = __webpack_require__(33);
 
 /** Used to match property names within property paths. */
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -6776,7 +6776,7 @@ module.exports = baseUnary;
 /* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(58);
+/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(56);
 
 /** Detect free variable `exports`. */
 var freeExports =  true && exports && !exports.nodeType && exports;
@@ -7582,7 +7582,18 @@ module.exports = baseIsEqual;
 /* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(57),
+/* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+module.exports = freeGlobal;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(92)))
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var castPath = __webpack_require__(58),
     isArguments = __webpack_require__(24),
     isArray = __webpack_require__(1),
     isIndex = __webpack_require__(60),
@@ -7624,7 +7635,7 @@ module.exports = hasPath;
 
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(1),
@@ -7649,17 +7660,6 @@ function castPath(value, object) {
 
 module.exports = castPath;
 
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
-
-module.exports = freeGlobal;
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(93)))
 
 /***/ }),
 /* 59 */
@@ -9696,7 +9696,7 @@ module.exports = matchesStrictComparable;
 /* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(57),
+var castPath = __webpack_require__(58),
     toKey = __webpack_require__(25);
 
 /**
@@ -10296,31 +10296,6 @@ process.umask = function() { return 0; };
 /* 92 */
 /***/ (function(module, exports) {
 
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * The base implementation of `_.has` without support for deep paths.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {Array|string} key The key to check.
- * @returns {boolean} Returns `true` if `key` exists, else `false`.
- */
-function baseHas(object, key) {
-  return object != null && hasOwnProperty.call(object, key);
-}
-
-module.exports = baseHas;
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, exports) {
-
 var g;
 
 // This works in non-strict mode
@@ -10344,7 +10319,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 94 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(12);
@@ -10396,7 +10371,7 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 95 */
+/* 94 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -10421,6 +10396,31 @@ function objectToString(value) {
 }
 
 module.exports = objectToString;
+
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports) {
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * The base implementation of `_.has` without support for deep paths.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {Array|string} key The key to check.
+ * @returns {boolean} Returns `true` if `key` exists, else `false`.
+ */
+function baseHas(object, key) {
+  return object != null && hasOwnProperty.call(object, key);
+}
+
+module.exports = baseHas;
 
 
 /***/ }),
@@ -11177,7 +11177,7 @@ module.exports = toString;
 var Symbol = __webpack_require__(12),
     arrayMap = __webpack_require__(39),
     isArray = __webpack_require__(1),
-    isSymbol = __webpack_require__(34);
+    isSymbol = __webpack_require__(33);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -11947,7 +11947,7 @@ const victor_1 = __importDefault(__webpack_require__(72));
 const id_1 = __webpack_require__(146);
 const flocking_1 = __webpack_require__(147);
 const graphlib_1 = __webpack_require__(148);
-const FPS = 0;
+const FPS = 1000 / 10.0;
 var MapGenState;
 (function (MapGenState) {
     MapGenState["PRERUN"] = "PRERUN";
@@ -17050,7 +17050,7 @@ module.exports = get;
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseHasIn = __webpack_require__(186),
-    hasPath = __webpack_require__(56);
+    hasPath = __webpack_require__(57);
 
 /**
  * Checks if `path` is a direct or inherited property of `object`.

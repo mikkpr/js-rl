@@ -4,7 +4,7 @@ import { World } from 'ecsy';
 
 import GameState, { RunState } from './state';
 import { setupDisplay, setupMinimap } from './display';
-import { xyIdx, createNewMap2 } from './map';
+import { createNewMap2 } from './map';
 
 import {
   AISystem,
@@ -31,6 +31,10 @@ declare global {
   type Color = [number, number, number];
 }
 
+const LOGHEIGHT = 10;
+const SIDEBARWIDTH = 24;
+
+
 const WIDTH = 64;
 const HEIGHT = 32;
 const MAPWIDTH = 64;
@@ -47,29 +51,18 @@ let game;
 let player;
 
 const main = async (): Promise<any> => {
-  ECS = new World();
-  ECS.registerComponent(Position);
-  ECS.registerComponent(Viewshed);
-  ECS.registerComponent(Renderable);
-  ECS.registerComponent(Monster);
-  ECS.registerComponent(Light);
-  ECS.registerComponent(Name);
-
-  ECS.registerSystem(VisibilitySystem);
-  ECS.registerSystem(AISystem);
-  ECS.registerSystem(RenderingSystem);
-  ECS.registerSystem(InfoSystem);
-
+  ECS = new World(); 
   display = setupDisplay({
-    width: WIDTH,
-    height: HEIGHT
+    width: WIDTH + SIDEBARWIDTH,
+    height: HEIGHT + LOGHEIGHT
   });
   minimap = setupMinimap({
     width: MAPWIDTH,
     height: MAPHEIGHT,
   });
   map = await createNewMap2(MAPWIDTH, MAPHEIGHT);
-  document.querySelector('.loading').remove();
+  const loading = document.querySelector('.loading');
+  if (loading) loading.remove();
  
   game = new GameState({
     runState: RunState.PRERUN,
@@ -77,7 +70,9 @@ const main = async (): Promise<any> => {
     rooms: map.rooms,
     centers: map.centers,
     scores: map.scores,
-    minimapVisible: false
+    minimapVisible: false,
+    log: [],
+    altPressed: false
   }, display, ECS);
   eval('window.game = game;');
 
@@ -108,6 +103,19 @@ const main = async (): Promise<any> => {
     createLight(ECS, c[0] + 1, c[1], range, color);
   }
 
+  ECS.registerComponent(Position);
+  ECS.registerComponent(Viewshed);
+  ECS.registerComponent(Renderable);
+  ECS.registerComponent(Monster);
+  ECS.registerComponent(Light);
+  ECS.registerComponent(Name);
+
+  ECS.registerSystem(VisibilitySystem);
+  ECS.registerSystem(AISystem);
+  ECS.registerSystem(RenderingSystem, { game });
+  ECS.registerSystem(InfoSystem);
+
+
   setupKeys(game);
 
   game.setState(state => { state.runState = RunState.PRERUN; });
@@ -130,6 +138,8 @@ export {
   player,
   WIDTH,
   HEIGHT,
+  LOGHEIGHT,
+  SIDEBARWIDTH,
   MAPWIDTH,
   MAPHEIGHT,
 };

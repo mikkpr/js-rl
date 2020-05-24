@@ -154,6 +154,7 @@ export type MapGenResult = {
     y: number;
     w: number;
     h: number;
+    id: string;
   }>,
   corridors: Array<[
     {x: number; y: number},
@@ -172,7 +173,7 @@ const defaultOptions = {
 
 export class MapGen implements MapGenParams {
   autoGen: boolean;
-  canvas: HTMLCanvasElement;
+  canvas?: HTMLCanvasElement;
   cohesion: number;
   cohesionCoeff: number;
   corridors: Vector[][];
@@ -183,16 +184,16 @@ export class MapGen implements MapGenParams {
   drawing: boolean;
   drawingInterval: NodeJS.Timeout;
   friction: number;
-  gui: GUI;
+  gui?: GUI;
   height: number;
   loadingCallback: Function;
   maxRoomSize: number;
   minRoomSize: number;
-  MSTGraph: Graph;
+  MSTGraph?: Graph;
   numRects: number;
   rectCenter: Vector;
   rects: MovableRect[];
-  roomGraph: Graph;
+  roomGraph?: Graph;
   roomHeightWidthRatio: number;
   running: boolean;
   seed: number;
@@ -757,7 +758,7 @@ export class MapGen implements MapGenParams {
 
   finish = () => {
     const output = {
-      rooms: this.rects.filter(r => r.final).map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h })),
+      rooms: this.rects.filter(r => r.final).map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h, id: r.id })),
       corridors: this.corridors.map(([v, w]) => ([{ x: v.x, y: v.y }, { x: w.x, y: w.y }])),
       graph: this.MSTGraph
     }

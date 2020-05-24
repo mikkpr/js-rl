@@ -80,6 +80,7 @@ const dwim = () => {
         game.player.getMutableComponent(Viewshed).dirty = true;
         const light = game.player.getMutableComponent(Light);
         if (light) game.player.getMutableComponent(Light).dirty = true;
+        game.log('You open the door.');
         break;
       } else if (map[idx] === CellType.DOOR_OPEN) {
         game.setState(state => {
@@ -88,6 +89,7 @@ const dwim = () => {
         game.player.getMutableComponent(Viewshed).dirty = true;
         const light = game.player.getMutableComponent(Light);
         if (light) game.player.getMutableComponent(Light).dirty = true;
+        game.log('You close the door.');
         break;
       }
     }
@@ -171,6 +173,13 @@ const shiftTileType = idx => {
   touchEntityViewshed(game.player);  
 }
 
+const wait = () => {
+  game.setState(state => {
+    state.runState = RunState.PLAYERTURN;
+    state.hoveredTileIdx = null;
+  });
+}
+
 const setupKeys = (game): void => {
   keymage('shift-d shift-e shift-b shift-u shift-g', debug);
   keymage('k', tryMove('N')(game));
@@ -189,10 +198,27 @@ const setupKeys = (game): void => {
   keymage('space', dwim);
   keymage('m', toggleMinimap);
   keymage('shift-f1', toggleHelp);
+  keymage('.', wait);
 
   const canvas = document.querySelector('.main-container canvas');
   canvas.addEventListener('mouseup', handleCanvasMouseUp)
   canvas.addEventListener('mousemove', handleCanvasMouseMove);
+
+  document.addEventListener('keydown', e => {
+    if (e.which === 18) {
+      game.setState(state => {
+        state.altPressed = true;
+      });
+    };
+  });
+
+  document.addEventListener('keyup', e => {
+    if (e.which === 18) {
+      game.setState(state => {
+        state.altPressed = false;
+      });
+    };
+  })
 };
 
 export default setupKeys;

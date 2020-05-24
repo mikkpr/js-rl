@@ -5,19 +5,28 @@ import { display } from '../..';
 import { drawMap, addLight } from '../../display';
 import { CellType, xyIdx } from '../../map';
 import { game, player, minimap, MAPWIDTH, MAPHEIGHT } from '../..';
+import GameState from '../../state';
 
 const byZIndex = (a: Entity, b: Entity): number => b.getComponent(Renderable).z - a.getComponent(Renderable).z;
 
 class RenderingSystem extends System {
-  display: ROT.Display;
+  game: GameState;
+  display?: ROT.Display;
 
-  execute(delta: number, time: number): void {
-    const { map, hoveredTileIdx } = game.getState();
-    drawMap(map);
+  init(world, attributes) {
+    super(world, attributes);
+    this.game = attributes.game;
+    this.display = this.game.display;
+  }
+
+  execute = (delta: number, time: number): void => {
+    if (!this.display) { return; }
+    const { map, hoveredTileIdx } = this.game.getState();
+    drawMap(this.game, map);
 
     drawMinimap();
 
-    const viewshed = game.player.getComponent(Viewshed);
+    const viewshed = this.game.player.getComponent(Viewshed);
 
     this.queries.renderables.results.sort(byZIndex).forEach(entity => {
       const position = entity.getComponent(Position);
@@ -30,9 +39,9 @@ class RenderingSystem extends System {
         const fg = ROT.Color.toHex(fgWithLights);
         const bg = renderable.bg || '#000';
         const entityHovered = idx === hoveredTileIdx;
-        display.draw(
-          position.x + game.cameraOffset[0],
-          position.y + game.cameraOffset[1],
+        this.display.draw(
+          position.x + this.game.cameraOffset[0],
+          position.y + this.game.cameraOffset[1],
           renderable.glyph,
           entityHovered ? bg : fg,
           entityHovered ? fg : bg
@@ -78,5 +87,4 @@ const drawMinimap = () => {
   }
   ctx.fillStyle = "rgba(255, 0, 0, 1)";
   ctx.fillRect( X * 2, Y * 2, 2, 2 );
-  minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.5;`);
 }

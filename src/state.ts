@@ -1,11 +1,9 @@
 import { Entity, World } from 'ecsy';
 import produce from 'immer';
 import * as ROT from 'rot-js';
-import { Position, Viewshed } from './ecs/components';
 import { RenderingSystem, VisibilitySystem } from './ecs/systems';
 import { CellType } from './map';
-import { drawHoveredInfo } from './display';
-import { MAPWIDTH, player, minimap } from '.';
+import { drawHoveredInfo, drawGUI, drawAltInfo } from './display';
 
 export enum RunState {
   PRERUN = 'PRERUN',
@@ -24,11 +22,13 @@ export enum RunState {
 export type State = {
   runState: RunState;
   map: CellType[];
-  rooms: number[][];
+  rooms: { x: number; y: number; w: number; h: number; id: string; }[];
   centers: number[][];
   scores: number[];
   hoveredTileIdx?: number;
   minimapVisible: boolean;
+  log: string[];
+  altPressed: boolean;
 }
 
 type StateGetter = (state: State) => any;
@@ -36,11 +36,11 @@ type StateSetter = (state: State) => void;
 
 class GameState {
   state: State;
-  display: ROT.Display;
+  display?: ROT.Display;
   ecs: World;
   lastTime: number;
   player?: Entity;
-  cameraOffset: [number, number];
+  cameraOffset?: [number, number];
 
   constructor(initialState: State, display: ROT.Display, ecs: World) {
     this.state = initialState;
@@ -57,7 +57,7 @@ class GameState {
     return this.state;
   }
 
-  setState(setter: StateSetter): GameState {
+  setState = (setter: StateSetter): GameState => {
     this.state = produce(this.state, setter);
 
     this.render(0, this.lastTime);
@@ -65,27 +65,43 @@ class GameState {
     return this;
   }
 
+  log = (line: string) => {
+    if (!line) { return; }
+    this.setState(state => {
+      state.log.push(line);
+    });
+  }
+
   executeSystemsAndProceed = (nextRunState: RunState, delta: number, time: number): void => {
-    requestAnimationFrame(() => this.ecs.execute(delta, time));
+    this.ecs.execute(delta, time);
     this.setState(state => {state.runState = nextRunState; });
   }
 
-  proceed = (nextRunState): void => {
+  proceed = (nextRunState: RunState): void => {
     this.setState(state => {state.runState = nextRunState; });
   } 
 
-  render = (delta, time): void => {
-    this.display.clear();
+  render = (delta: number, time: number): void => {
+    this.display && this.display.clear();
 
     this.ecs.getSystem(VisibilitySystem).execute(delta, time);
     this.ecs.getSystem(RenderingSystem).execute(delta, time);
 
-    drawHoveredInfo();
+    drawHoveredInfo(this);
+
+    drawGUI(this);
+
+    if (this.getState().altPressed) drawAltInfo(this);
   }
 
   tick = (): void => {
+    const FPS = 45;
     const time = performance.now();
     const delta = time - this.lastTime;
+    if (delta < 1000/FPS) { 
+      requestAnimationFrame(this.tick);
+      return;
+    }
     this.lastTime = time;
     const runState = this.getState(state => state.runState);
     if (runState !== RunState.MAINMENU) {

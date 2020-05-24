@@ -1,16 +1,15 @@
 import {RNG, Noise} from 'rot-js';
-import isEqual from 'lodash/isEqual';
-import { TILEWIDTH, TILEHEIGHT, MAPWIDTH, MAPHEIGHT } from '.';
-import { applyRoomTemplate, RoomType, createRoomTemplate } from './mapgen/roomTemplates';
+import { MAPWIDTH, MAPHEIGHT } from '.';
+//import { applyRoomTemplate, RoomType, createRoomTemplate } from './mapgen/roomTemplates';
 import { MapGen, MapGenResult } from './mapgen';
 import { matchNeighborScore } from './utils/map';
 
 // Map generation parameters
-const MIN_SIZE = 3;
-const MAX_SIZE = 8;
-const MAX_ROOMS = 20;
-const MIN_ROOMS = 10;
-const DOOR_CHANCE = 0.5;
+// const MIN_SIZE = 3;
+// const MAX_SIZE = 8;
+// const MAX_ROOMS = 20;
+// const MIN_ROOMS = 10;
+// const DOOR_CHANCE = 0.5;
 const CA_ALIVE = 4;
 const CA_DEAD = 5;
 const CA_ITER = 5;
@@ -18,13 +17,13 @@ const CA_ITER = 5;
 export type Rect = [number, number, number, number];
 
 export enum CellType {
-  FLOOR,
-  WALL,
-  DOOR_OPEN,
-  DOOR_CLOSED,
-  DOOR_LOCKED,
-  GRASS,
-  GRASSY_WALL,
+  FLOOR = 'FLOOR',
+  WALL = 'WALL',
+  DOOR_OPEN = 'DOOR_OPEN',
+  DOOR_CLOSED = 'DOOR_CLOSED',
+  DOOR_LOCKED = 'DOOR_LOCKED',
+  GRASS = 'GRASS',
+  GRASSY_WALL = 'GRASSY_WALL',
 }
 
 export type Map = CellType[];
@@ -47,28 +46,28 @@ export const isPassable = (map: Map, idx: number): boolean => {
   ].includes(map[idx]));
 };
 
-const fillSquare = (map: Map, x: number, y: number, w: number, h: number, type: CellType = CellType.FLOOR): void => {
-  for (let _x = x; _x < x + w; _x++) {
-    for (let _y = y; _y < y + h; _y++) {
-      const idx = xyIdx(_x, _y);
-      if (idx < 0 || idx >= MAPWIDTH * MAPHEIGHT) { continue; }
-      map[idx] = type;
-    }
-  }
-};
+// const fillSquare = (map: Map, x: number, y: number, w: number, h: number, type: CellType = CellType.FLOOR): void => {
+//   for (let _x = x; _x < x + w; _x++) {
+//     for (let _y = y; _y < y + h; _y++) {
+//       const idx = xyIdx(_x, _y);
+//       if (idx < 0 || idx >= MAPWIDTH * MAPHEIGHT) { continue; }
+//       map[idx] = type;
+//     }
+//   }
+// };
 
-const overlaps = (rect1: Rect, rect2: Rect): boolean => {
-  const [rect1x, rect1y, rect1w, rect1h] = rect1;
-  const [rect2x, rect2y, rect2w, rect2h] = rect2;
+// const overlaps = (rect1: Rect, rect2: Rect): boolean => {
+//   const [rect1x, rect1y, rect1w, rect1h] = rect1;
+//   const [rect2x, rect2y, rect2w, rect2h] = rect2;
 
-  return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
-};
+//   return rect1x <= rect2x + rect2w && rect1x + rect1w >= rect2x && rect1y <= rect2y + rect2h && rect1y + rect1h >= rect2y;
+// };
 
-const getCenter = (rect: Rect): number[] => {
-  const [x, y, w, h] = rect;
+// const getCenter = (rect: Rect): number[] => {
+//   const [x, y, w, h] = rect;
 
-  return [~~((x + x + w)/2), ~~((y + y + h)/2)];
-};
+//   return [~~((x + x + w)/2), ~~((y + y + h)/2)];
+// };
 
 export const drawHorizontalLine = (
   map: Map,
@@ -188,7 +187,7 @@ export const applyCellularAutomataToArea = (
     for (let _y = y; _y < y + h; _y++) {
       const idx = xyIdx(_x, _y);
       if (idx > MAPWIDTH * MAPHEIGHT) { continue; }
-      initial[idx] = map[idx];
+      initial[idx] = map[idx] === CellType.FLOOR ? 0 : 1;
     }
   }
   const simulateCells = (cells: number[]): number[] => {
@@ -206,10 +205,10 @@ export const applyCellularAutomataToArea = (
         }
       }
       // a tile becomes a wall if it was a wall and 4 or more of its eight neighbors were walls, or if it was not a wall and 5 or more neighbors were.
-      if (cells[i] === CellType.FLOOR) {
-        out[i] = count <= params.dead ? CellType.FLOOR : CellType.WALL;
-      } else if (cells[i] === CellType.WALL) {
-        out[i] = count >= params.alive ? CellType.WALL : CellType.FLOOR;
+      if (cells[i] === 0) {
+        out[i] = count <= params.dead ? 0 : 1;
+      } else if (cells[i] === 1) {
+        out[i] = count >= params.alive ? 1 : 0;
       }
     }
     return out;
@@ -229,22 +228,22 @@ export const applyCellularAutomataToArea = (
   return out;
 };
 
-const createRoom = (
-  coordinates: [number, number],
-  minWidth: number,
-  maxWidth: number,
-  minHeight: number,
-  maxHeight: number
-): Rect => {
-  const size = [
-    RNG.getUniformInt(minWidth, maxWidth),
-    RNG.getUniformInt(minHeight, maxHeight),
-  ];
-  return [coordinates[0] - ~~(size[0] / 2), coordinates[1] - ~~(size[1] / 2), size[0], size[1]];
+// const createRoom = (
+//   coordinates: [number, number],
+//   minWidth: number,
+//   maxWidth: number,
+//   minHeight: number,
+//   maxHeight: number
+// ): Rect => {
+//   const size = [
+//     RNG.getUniformInt(minWidth, maxWidth),
+//     RNG.getUniformInt(minHeight, maxHeight),
+//   ];
+//   return [coordinates[0] - ~~(size[0] / 2), coordinates[1] - ~~(size[1] / 2), size[0], size[1]];
 
-};
+// };
 
-const drawMapBorders = map => {
+const drawMapBorders = (map: CellType[]) => {
   drawVerticalLine(map, 0, MAPHEIGHT - 1, 0, CellType.WALL);
   drawVerticalLine(map, 0, MAPHEIGHT - 1, MAPWIDTH - 1, CellType.WALL);
   drawHorizontalLine(map, 0, MAPWIDTH - 1, 0, CellType.WALL);
@@ -254,7 +253,7 @@ const drawMapBorders = map => {
 export const grassNoise = new Noise.Simplex(8);
 
 export const createNewMap2 = async (w: number, h: number) => {
-  const mapGenPromise: Promise<MapGenResult> = new Promise((resolve, reject) => {
+  const mapGenPromise: Promise<MapGenResult> = new Promise((resolve) => {
     const gen = new MapGen({
       W: w, 
       H: h,
@@ -304,14 +303,6 @@ export const createNewMap2 = async (w: number, h: number) => {
       drawHorizontalLine(map, start.x, end.x, start.y, CellType.FLOOR)
     }
   });
-
-
-
-  const {
-    rooms,
-    corridors,
-    graph
-  } = data;
 
   drawMapBorders(map);
 
@@ -377,207 +368,207 @@ export const createNewMap2 = async (w: number, h: number) => {
 
 }
 
-export const createNewMap = (w: number, h: number): {
-  map: Map;
-  rooms: number[][];
-  centers: number[][];
-  scores: number[];
-} => {
-  const map = new Array(w * h).fill(CellType.WALL);
-  const mapCenter: [number, number] = [
-    ~~(w / 2),
-    ~~(h / 2)
-  ];
-  const caCreator = createRoomTemplate(RoomType.CELLULAR_AUTOMATA)
-  const initialRoomTemplate = caCreator({
-    minWidth: 7,
-    maxWidth: 11,
-    minHeight: 7,
-    maxHeight: 11
-  });
-  const initialRoom: Rect = [
-    mapCenter[0] - initialRoomTemplate[1].centerOffset[0],
-    mapCenter[1] - initialRoomTemplate[1].centerOffset[1],
-    initialRoomTemplate[1].width,
-    initialRoomTemplate[1].height,
-  ];
-  applyRoomTemplate(map, mapCenter, initialRoomTemplate);
-  let prevCenter = mapCenter;
-  let centers = [mapCenter];
-  let rooms = [initialRoom];
-  let tries = 0;
-  while (rooms.length < 15 && tries++ < 100) {
-    const dirs = {
-      's': [0, 10],
-      'n': [0, -10],
-      'e': [10, 0],
-      'w': [-10, 0]
-    };
-    const dir = RNG.getItem(Object.keys(dirs));
-    const offset = dirs[dir];
-    const newCenter: [number, number] = [prevCenter[0] + offset[0], prevCenter[1] + offset[1]];
-    if (newCenter[0] <= 0 || newCenter[0] > w || newCenter[1] <= 0 || newCenter[1] > h) { continue; }
-    const room = createRoom(newCenter, 5, 9, 5, 9);
-    let ok = true;
-    for (const other of rooms) {
-      if (overlaps(room, other)) {
-        ok = false;
-        break;
-      }
-    }
-    if (ok) {
-      fillSquare(map, room[0], room[1], room[2], room[3], CellType.FLOOR);
-      if (dir === 'n' || dir === 's') {
-        drawVerticalLine(map, prevCenter[1], newCenter[1], prevCenter[0], CellType.FLOOR);
-      } else {
-        drawHorizontalLine(map, prevCenter[0], newCenter[0], prevCenter[1], CellType.FLOOR);
-      }
-      centers.push(newCenter);
-      rooms.push(room);
-      prevCenter = RNG.getItem(centers);
-    }
-  }
+// export const createNewMap = (w: number, h: number): {
+//   map: Map;
+//   rooms: number[][];
+//   centers: number[][];
+//   scores: number[];
+// } => {
+//   const map = new Array(w * h).fill(CellType.WALL);
+//   const mapCenter: [number, number] = [
+//     ~~(w / 2),
+//     ~~(h / 2)
+//   ];
+//   const caCreator = createRoomTemplate(RoomType.CELLULAR_AUTOMATA)
+//   const initialRoomTemplate = caCreator({
+//     minWidth: 7,
+//     maxWidth: 11,
+//     minHeight: 7,
+//     maxHeight: 11
+//   });
+//   const initialRoom: Rect = [
+//     mapCenter[0] - initialRoomTemplate[1].centerOffset[0],
+//     mapCenter[1] - initialRoomTemplate[1].centerOffset[1],
+//     initialRoomTemplate[1].width,
+//     initialRoomTemplate[1].height,
+//   ];
+//   applyRoomTemplate(map, mapCenter, initialRoomTemplate);
+//   let prevCenter = mapCenter;
+//   let centers = [mapCenter];
+//   let rooms = [initialRoom];
+//   let tries = 0;
+//   while (rooms.length < 15 && tries++ < 100) {
+//     const dirs = {
+//       's': [0, 10],
+//       'n': [0, -10],
+//       'e': [10, 0],
+//       'w': [-10, 0]
+//     };
+//     const dir = RNG.getItem(Object.keys(dirs));
+//     const offset = dirs[dir];
+//     const newCenter: [number, number] = [prevCenter[0] + offset[0], prevCenter[1] + offset[1]];
+//     if (newCenter[0] <= 0 || newCenter[0] > w || newCenter[1] <= 0 || newCenter[1] > h) { continue; }
+//     const room = createRoom(newCenter, 5, 9, 5, 9);
+//     let ok = true;
+//     for (const other of rooms) {
+//       if (overlaps(room, other)) {
+//         ok = false;
+//         break;
+//       }
+//     }
+//     if (ok) {
+//       fillSquare(map, room[0], room[1], room[2], room[3], CellType.FLOOR);
+//       if (dir === 'n' || dir === 's') {
+//         drawVerticalLine(map, prevCenter[1], newCenter[1], prevCenter[0], CellType.FLOOR);
+//       } else {
+//         drawHorizontalLine(map, prevCenter[0], newCenter[0], prevCenter[1], CellType.FLOOR);
+//       }
+//       centers.push(newCenter);
+//       rooms.push(room);
+//       prevCenter = RNG.getItem(centers);
+//     }
+//   }
 
-  for (let idx = 0; idx < map.length; idx++) {
-    if (typeof map[idx] === 'undefined') {
-      map[idx] = CellType.FLOOR;
-    }
-  }
+//   for (let idx = 0; idx < map.length; idx++) {
+//     if (typeof map[idx] === 'undefined') {
+//       map[idx] = CellType.FLOOR;
+//     }
+//   }
 
-  drawMapBorders(map);
+//   drawMapBorders(map);
 
-  // generate grass
-  for (let idx = 0; idx < map.length; idx++) {
-    if (map[idx] === CellType.FLOOR) {
-      const x = idx % MAPWIDTH;
-      const y = ~~(idx / MAPWIDTH);
-      if (grassNoise.get(x / 10, y / 10) > 0.25) {
-        map[idx] = CellType.GRASS;
-      }
-    }
-  }
+//   // generate grass
+//   for (let idx = 0; idx < map.length; idx++) {
+//     if (map[idx] === CellType.FLOOR) {
+//       const x = idx % MAPWIDTH;
+//       const y = ~~(idx / MAPWIDTH);
+//       if (grassNoise.get(x / 10, y / 10) > 0.25) {
+//         map[idx] = CellType.GRASS;
+//       }
+//     }
+//   }
 
-  return {
-    map,
-    rooms,
-    centers,
-    scores: getNeighborScores(map)
-  };
-};
+//   return {
+//     map,
+//     rooms,
+//     centers,
+//     scores: getNeighborScores(map)
+//   };
+// };
 
-export const createMap = (w: number, h: number): {
-  map: Map;
-  rooms: number[][];
-  centers: number[][];
-  scores: number[];
-} => {
-  const map = (new Array(w * h)).fill(CellType.WALL);
+// export const createMap = (w: number, h: number): {
+//   map: Map;
+//   rooms: number[][];
+//   centers: number[][];
+//   scores: number[];
+// } => {
+//   const map = (new Array(w * h)).fill(CellType.WALL);
 
-  for (let y = 0; y < MAPHEIGHT; y++) {
-    for (let x = 0; x < MAPWIDTH; x++) {
-      map[xyIdx(x, y)] = CellType.WALL;
-    }
-  }
+//   for (let y = 0; y < MAPHEIGHT; y++) {
+//     for (let x = 0; x < MAPWIDTH; x++) {
+//       map[xyIdx(x, y)] = CellType.WALL;
+//     }
+//   }
 
-  // create random rooms
-  const rooms: Rect[] = [];
-  const nRooms = RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
-  let i = 0;
-  while (rooms.length < nRooms || i++ > 300) {
-    const width = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-    const height = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-    const x = RNG.getUniformInt(1, MAPWIDTH - 1 - MAX_SIZE);
-    const y = RNG.getUniformInt(1, MAPHEIGHT - 1 - MAX_SIZE);
-    const room: Rect = [x, y, width, height];
-    if (rooms.length === 0) {
-      rooms.push(room);
-    } else {
-      let ok = true;
-      rooms.forEach(other => {
-        if (overlaps(room, other)) { ok = false; }
-      });
-      if (ok) {
-        rooms.push(room);
-      }
-    }
-  }
+//   // create random rooms
+//   const rooms: Rect[] = [];
+//   const nRooms = RNG.getUniformInt(MIN_ROOMS, MAX_ROOMS);
+//   let i = 0;
+//   while (rooms.length < nRooms || i++ > 300) {
+//     const width = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+//     const height = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+//     const x = RNG.getUniformInt(1, MAPWIDTH - 1 - MAX_SIZE);
+//     const y = RNG.getUniformInt(1, MAPHEIGHT - 1 - MAX_SIZE);
+//     const room: Rect = [x, y, width, height];
+//     if (rooms.length === 0) {
+//       rooms.push(room);
+//     } else {
+//       let ok = true;
+//       rooms.forEach(other => {
+//         if (overlaps(room, other)) { ok = false; }
+//       });
+//       if (ok) {
+//         rooms.push(room);
+//       }
+//     }
+//   }
 
-  rooms.forEach(([x, y, width, height]) => fillSquare(map, x, y, width, height, CellType.FLOOR));
-  const centers = rooms.map(getCenter);
+//   rooms.forEach(([x, y, width, height]) => fillSquare(map, x, y, width, height, CellType.FLOOR));
+//   const centers = rooms.map(getCenter);
 
-  let finalMap = map.slice(0);
-  for (const center of centers) {
-    const [cx, cy] = center;
-    const hpad = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-    const vpad = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
-    const x = cx - hpad;
-    const y = cy - vpad;
-    const w = hpad * 2;
-    const h = vpad * 2;
-    finalMap = applyCellularAutomataToArea(finalMap, x, y, w, h);
-  }
+//   let finalMap = map.slice(0);
+//   for (const center of centers) {
+//     const [cx, cy] = center;
+//     const hpad = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+//     const vpad = RNG.getUniformInt(MIN_SIZE, MAX_SIZE);
+//     const x = cx - hpad;
+//     const y = cy - vpad;
+//     const w = hpad * 2;
+//     const h = vpad * 2;
+//     finalMap = applyCellularAutomataToArea(finalMap, x, y, w, h);
+//   }
 
-  const doors = [];
-  centers.sort((a, b) => {
-    return b[0] + b[1] - a[0] - a[1];
-  }).forEach((center, idx) => {
-    if (idx === centers.length - 1) { return; }
-    const c1 = center;
-    const c2 = centers[idx + 1];
-    const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
-    const turn = RNG.getItem(turns);
+//   const doors = [];
+//   centers.sort((a, b) => {
+//     return b[0] + b[1] - a[0] - a[1];
+//   }).forEach((center, idx) => {
+//     if (idx === centers.length - 1) { return; }
+//     const c1 = center;
+//     const c2 = centers[idx + 1];
+//     const turns = [[c1[0], c2[1]], [c2[0], c1[1]]];
+//     const turn = RNG.getItem(turns);
 
-    const room = rooms.find(r => isEqual(getCenter(r), c1));
+//     const room = rooms.find(r => isEqual(getCenter(r), c1));
 
-    let possibleDoorLocation: [number, number];
+//     let possibleDoorLocation: [number, number];
 
-    if (c1[0] === turn[0]) { // if on same Y axis as center
-      if (c1[1] > turn[1]) { // below the center
-        possibleDoorLocation = [c1[0], c1[1] - ~~(room[3]/2) - 1];
-      } else { // above the center
-        possibleDoorLocation = [c1[0], c1[1] + ~~(room[3]/2) + 1];
-      }
-    } else { // on same X axis as center
-      if (c1[0] > turn[0]) { // left of center
-        possibleDoorLocation = [c1[0] - ~~(room[2]/2) - 1, c1[1]];
-      } else { // right of center
-        possibleDoorLocation = [c1[0] + ~~(room[2]/2) + 1, c1[1]];
-      }
-    }
+//     if (c1[0] === turn[0]) { // if on same Y axis as center
+//       if (c1[1] > turn[1]) { // below the center
+//         possibleDoorLocation = [c1[0], c1[1] - ~~(room[3]/2) - 1];
+//       } else { // above the center
+//         possibleDoorLocation = [c1[0], c1[1] + ~~(room[3]/2) + 1];
+//       }
+//     } else { // on same X axis as center
+//       if (c1[0] > turn[0]) { // left of center
+//         possibleDoorLocation = [c1[0] - ~~(room[2]/2) - 1, c1[1]];
+//       } else { // right of center
+//         possibleDoorLocation = [c1[0] + ~~(room[2]/2) + 1, c1[1]];
+//       }
+//     }
 
-    const type = RNG.getItem([CellType.DOOR_OPEN, CellType.DOOR_CLOSED]);
-    doors.push([possibleDoorLocation, type]);
+//     const type = RNG.getItem([CellType.DOOR_OPEN, CellType.DOOR_CLOSED]);
+//     doors.push([possibleDoorLocation, type]);
 
-    if (c1[0] === turn[0]) {
-      drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
-      drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
-    } else {
-      drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
-      drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
-    }
+//     if (c1[0] === turn[0]) {
+//       drawVerticalLine(finalMap, c1[1], turn[1], turn[0]);
+//       drawHorizontalLine(finalMap, c2[0], turn[0], turn[1]);
+//     } else {
+//       drawHorizontalLine(finalMap, c1[0], turn[0], turn[1]);
+//       drawVerticalLine(finalMap, c2[1], turn[1], turn[0]);
+//     }
 
-    for (const [loc, type] of doors) {
-      if (RNG.getUniform() < DOOR_CHANCE) {
-        const idx = xyIdx(loc[0], loc[1]);
-        finalMap[idx] = type;
-      }
-    }
-  });
+//     for (const [loc, type] of doors) {
+//       if (RNG.getUniform() < DOOR_CHANCE) {
+//         const idx = xyIdx(loc[0], loc[1]);
+//         finalMap[idx] = type;
+//       }
+//     }
+//   });
 
-  drawVerticalLine(finalMap, 0, MAPHEIGHT-1, 0, CellType.WALL);
-  drawVerticalLine(finalMap, 0, MAPHEIGHT-1, MAPWIDTH-1, CellType.WALL);
-  drawHorizontalLine(finalMap, 0, MAPWIDTH-1, 0, CellType.WALL);
-  drawHorizontalLine(finalMap, 0, MAPWIDTH-1, MAPHEIGHT-1, CellType.WALL);
+//   drawVerticalLine(finalMap, 0, MAPHEIGHT-1, 0, CellType.WALL);
+//   drawVerticalLine(finalMap, 0, MAPHEIGHT-1, MAPWIDTH-1, CellType.WALL);
+//   drawHorizontalLine(finalMap, 0, MAPWIDTH-1, 0, CellType.WALL);
+//   drawHorizontalLine(finalMap, 0, MAPWIDTH-1, MAPHEIGHT-1, CellType.WALL);
 
-  // generate grass
-  for (let idx = 0; idx < finalMap.length; idx++) {
-    if (finalMap[idx] === CellType.FLOOR) {
-      const x = idx % MAPWIDTH;
-      const y = ~~(idx / MAPWIDTH);
-      if (grassNoise.get(x / 100, y / 100) > 0.25) {
-        finalMap[idx] = CellType.GRASS;
-      }
-    }
-  }
-  return {map: finalMap, rooms, centers, scores: getNeighborScores(finalMap)};
-};
+//   // generate grass
+//   for (let idx = 0; idx < finalMap.length; idx++) {
+//     if (finalMap[idx] === CellType.FLOOR) {
+//       const x = idx % MAPWIDTH;
+//       const y = ~~(idx / MAPWIDTH);
+//       if (grassNoise.get(x / 100, y / 100) > 0.25) {
+//         finalMap[idx] = CellType.GRASS;
+//       }
+//     }
+//   }
+//   return {map: finalMap, rooms, centers, scores: getNeighborScores(finalMap)};
+// };

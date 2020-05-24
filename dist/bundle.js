@@ -274,7 +274,7 @@ if (true) {
       constant: __webpack_require__(79),
       each: __webpack_require__(172),
       filter: __webpack_require__(178),
-      has:  __webpack_require__(33),
+      has:  __webpack_require__(34),
       isArray: __webpack_require__(1),
       isEmpty: __webpack_require__(189),
       isFunction: __webpack_require__(20),
@@ -303,7 +303,7 @@ module.exports = lodash;
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var freeGlobal = __webpack_require__(58);
+var freeGlobal = __webpack_require__(56);
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -922,8 +922,8 @@ module.exports = isArrayLike;
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(12),
-    getRawTag = __webpack_require__(94),
-    objectToString = __webpack_require__(95);
+    getRawTag = __webpack_require__(93),
+    objectToString = __webpack_require__(94);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -2865,17 +2865,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const renderable_1 = __importDefault(__webpack_require__(241));
+const renderable_1 = __importDefault(__webpack_require__(247));
 exports.Renderable = renderable_1.default;
-const position_1 = __importDefault(__webpack_require__(242));
+const position_1 = __importDefault(__webpack_require__(248));
 exports.Position = position_1.default;
-const viewshed_1 = __importDefault(__webpack_require__(243));
+const viewshed_1 = __importDefault(__webpack_require__(249));
 exports.Viewshed = viewshed_1.default;
-const monster_1 = __importDefault(__webpack_require__(244));
+const monster_1 = __importDefault(__webpack_require__(250));
 exports.Monster = monster_1.default;
-const light_1 = __importDefault(__webpack_require__(245));
+const light_1 = __importDefault(__webpack_require__(251));
 exports.Light = light_1.default;
-const name_1 = __importDefault(__webpack_require__(246));
+const name_1 = __importDefault(__webpack_require__(252));
 exports.Name = name_1.default;
 
 
@@ -7909,7 +7909,7 @@ module.exports = isArguments;
 /* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isSymbol = __webpack_require__(34);
+var isSymbol = __webpack_require__(33);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -8137,28 +8137,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(18));
-const player_1 = __importDefault(__webpack_require__(236));
+const keys_1 = __importDefault(__webpack_require__(238));
 const ecsy_1 = __webpack_require__(15);
-const throttle_1 = __importDefault(__webpack_require__(253));
-const state_1 = __importStar(__webpack_require__(235));
+const state_1 = __importStar(__webpack_require__(236));
 const display_1 = __webpack_require__(123);
 const map_1 = __webpack_require__(41);
 const systems_1 = __webpack_require__(90);
-const entities_1 = __webpack_require__(257);
+const entities_1 = __webpack_require__(259);
 const components_1 = __webpack_require__(17);
-__webpack_require__(261);
-__webpack_require__(262);
 __webpack_require__(263);
 __webpack_require__(264);
 __webpack_require__(265);
 __webpack_require__(266);
+__webpack_require__(267);
+__webpack_require__(268);
 const WIDTH = 64;
 exports.WIDTH = WIDTH;
 const HEIGHT = 32;
 exports.HEIGHT = HEIGHT;
-const MAPWIDTH = 128;
+const MAPWIDTH = 64;
 exports.MAPWIDTH = MAPWIDTH;
-const MAPHEIGHT = 128;
+const MAPHEIGHT = 64;
 exports.MAPHEIGHT = MAPHEIGHT;
 exports.TILEWIDTH = 8;
 exports.TILEHEIGHT = 16;
@@ -8173,18 +8172,6 @@ let game;
 exports.game = game;
 let player;
 exports.player = player;
-document.addEventListener('keyup', e => {
-    if (e.key === 'F1') {
-        e.preventDefault();
-        const help = document.querySelector('.help');
-        if (help.style.display !== 'none') {
-            help.style.display = 'none';
-        }
-        else {
-            help.style.display = 'block';
-        }
-    }
-});
 const main = async () => {
     exports.ECS = ECS = new ecsy_1.World();
     ECS.registerComponent(components_1.Position);
@@ -8207,18 +8194,6 @@ const main = async () => {
     });
     map = await map_1.createNewMap2(MAPWIDTH, MAPHEIGHT);
     document.querySelector('.loading').remove();
-    const handleCanvasMouseMove = throttle_1.default((e) => {
-        if (display.getContainer().contains(e.target)) {
-            const { layerX, layerY } = e;
-            const X = ~~(layerX / 512 * WIDTH) - game.cameraOffset[0];
-            const Y = ~~(layerY / 512 * HEIGHT) - game.cameraOffset[1];
-            if (X < 0 || Y < 0 || X >= MAPWIDTH || Y >= MAPHEIGHT) {
-                return;
-            }
-            const tileIdx = map_1.xyIdx(X, Y);
-            game.setState(state => { state.hoveredTileIdx = tileIdx; });
-        }
-    }, 30);
     exports.game = game = new state_1.default({
         runState: state_1.RunState.PRERUN,
         map: map.map,
@@ -8228,7 +8203,6 @@ const main = async () => {
         minimapVisible: false
     }, display, ECS);
     eval('window.game = game;');
-    document.addEventListener('mousemove', handleCanvasMouseMove);
     const randomCenter = ROT.RNG.getItem(map.centers);
     const mapCenter = [~~(WIDTH / 2), ~~(HEIGHT / 2)];
     const cameraOffset = [mapCenter[0] - randomCenter[0], mapCenter[1] - randomCenter[1]];
@@ -8252,7 +8226,7 @@ const main = async () => {
         const c = ROT.RNG.getItem(map.centers);
         entities_1.createLight(ECS, c[0] + 1, c[1], range, color);
     }
-    player_1.default(game);
+    keys_1.default(game);
     game.setState(state => { state.runState = state_1.RunState.PRERUN; });
     game.gameLoop();
     game.player.getMutableComponent(components_1.Viewshed).dirty = true;
@@ -8267,8 +8241,43 @@ eval('window.main = main;');
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseHas = __webpack_require__(92),
-    hasPath = __webpack_require__(56);
+var baseGetTag = __webpack_require__(11),
+    isObjectLike = __webpack_require__(5);
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && baseGetTag(value) == symbolTag);
+}
+
+module.exports = isSymbol;
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var baseHas = __webpack_require__(95),
+    hasPath = __webpack_require__(57);
 
 /**
  * Checks if `path` is a direct property of `object`.
@@ -8305,46 +8314,11 @@ module.exports = has;
 
 
 /***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var baseGetTag = __webpack_require__(11),
-    isObjectLike = __webpack_require__(5);
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && baseGetTag(value) == symbolTag);
-}
-
-module.exports = isSymbol;
-
-
-/***/ }),
 /* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(1),
-    isSymbol = __webpack_require__(34);
+    isSymbol = __webpack_require__(33);
 
 /** Used to match property names within property paths. */
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -8547,10 +8521,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const rot_js_1 = __webpack_require__(18);
-const isEqual_1 = __importDefault(__webpack_require__(247));
+const isEqual_1 = __importDefault(__webpack_require__(253));
 const _1 = __webpack_require__(32);
-const roomTemplates_1 = __webpack_require__(248);
+const roomTemplates_1 = __webpack_require__(254);
 const mapgen_1 = __webpack_require__(143);
+const map_1 = __webpack_require__(237);
 const MIN_SIZE = 3;
 const MAX_SIZE = 8;
 const MAX_ROOMS = 20;
@@ -8655,16 +8630,16 @@ exports.getNeighborScores = (map) => {
         if (neighbors.W) {
             total += 8;
         }
-        if (neighbors.NW && neighbors.W && neighbors.N) {
+        if (neighbors.NW) {
             total += 1;
         }
-        if (neighbors.NE && neighbors.N && neighbors.E) {
+        if (neighbors.NE) {
             total += 4;
         }
-        if (neighbors.SE && neighbors.E && neighbors.S) {
+        if (neighbors.SE) {
             total += 128;
         }
-        if (neighbors.SW && neighbors.S && neighbors.W) {
+        if (neighbors.SW) {
             total += 32;
         }
         return total;
@@ -8748,11 +8723,11 @@ exports.createNewMap2 = async (w, h) => {
         }, {
             ...mapgen_1.MapGen.defaultParams,
             maxRoomSize: 8,
-            numRects: 280,
+            numRects: 180,
             spawnRadiusVertical: w / 2,
             spawnRadiusHorizontal: h / 2,
             cohesion: 100,
-            cohesionCoeff: 0.3,
+            cohesionCoeff: 0.2,
             separation: 8,
             friction: 0.9,
             seed: 1337
@@ -8766,8 +8741,8 @@ exports.createNewMap2 = async (w, h) => {
         const y = r.y;
         const w = r.w;
         const h = r.h;
-        for (let _x = ~~(x - w / 2); _x < x + w / 2; _x++) {
-            for (let _y = ~~(y - h / 2); _y < y + h / 2; _y++) {
+        for (let _x = ~~(x - w / 2); _x < ~~(x + w / 2); _x++) {
+            for (let _y = ~~(y - h / 2); _y < ~~(y + h / 2); _y++) {
                 map[exports.xyIdx(_x, _y)] = CellType.FLOOR;
             }
         }
@@ -8799,7 +8774,37 @@ exports.createNewMap2 = async (w, h) => {
             map[idx] = CellType.WALL;
         }
     }
-    const scores = exports.getNeighborScores(map);
+    let scores = exports.getNeighborScores(map);
+    let doorCandidates = [];
+    const masks = {
+        N: '?0?11000',
+        E: '01?0001?',
+        S: '00011?0?',
+        W: '?1000?10',
+    };
+    for (let idx = 0; idx < map.length; idx++) {
+        if (![CellType.FLOOR, CellType.GRASS].includes(map[idx])) {
+            continue;
+        }
+        for (const mask of Object.values(masks)) {
+            if (map_1.matchNeighborScore(mask)(scores[idx])) {
+                doorCandidates.push(idx);
+            }
+        }
+    }
+    const DOORS = [CellType.DOOR_OPEN, CellType.DOOR_CLOSED, CellType.DOOR_LOCKED];
+    for (let candidate of doorCandidates) {
+        if (rot_js_1.RNG.getUniformInt(0, 1)) {
+            if (DOORS.includes(map[candidate - 1]) ||
+                DOORS.includes(map[candidate + 1]) ||
+                DOORS.includes(map[candidate - _1.MAPWIDTH]) ||
+                DOORS.includes(map[candidate + _1.MAPWIDTH])) {
+                continue;
+            }
+            map[candidate] = rot_js_1.RNG.getItem(DOORS.slice(0, 2));
+        }
+    }
+    scores = exports.getNeighborScores(map);
     return {
         map,
         rooms: data.rooms,
@@ -9165,7 +9170,7 @@ module.exports = baseUnary;
 /* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(58);
+/* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__(56);
 
 /** Detect free variable `exports`. */
 var freeExports =  true && exports && !exports.nodeType && exports;
@@ -9971,7 +9976,18 @@ module.exports = baseIsEqual;
 /* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(57),
+/* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+module.exports = freeGlobal;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(92)))
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var castPath = __webpack_require__(58),
     isArguments = __webpack_require__(24),
     isArray = __webpack_require__(1),
     isIndex = __webpack_require__(60),
@@ -10013,7 +10029,7 @@ module.exports = hasPath;
 
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isArray = __webpack_require__(1),
@@ -10038,17 +10054,6 @@ function castPath(value, object) {
 
 module.exports = castPath;
 
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
-
-module.exports = freeGlobal;
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(93)))
 
 /***/ }),
 /* 59 */
@@ -12085,7 +12090,7 @@ module.exports = matchesStrictComparable;
 /* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var castPath = __webpack_require__(57),
+var castPath = __webpack_require__(58),
     toKey = __webpack_require__(25);
 
 /**
@@ -12500,13 +12505,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const rendering_1 = __importDefault(__webpack_require__(240));
+const rendering_1 = __importDefault(__webpack_require__(246));
 exports.RenderingSystem = rendering_1.default;
-const visibility_1 = __importDefault(__webpack_require__(250));
+const visibility_1 = __importDefault(__webpack_require__(256));
 exports.VisibilitySystem = visibility_1.default;
-const ai_1 = __importDefault(__webpack_require__(251));
+const ai_1 = __importDefault(__webpack_require__(257));
 exports.AISystem = ai_1.default;
-const info_1 = __importDefault(__webpack_require__(252));
+const info_1 = __importDefault(__webpack_require__(258));
 exports.InfoSystem = info_1.default;
 
 
@@ -12704,31 +12709,6 @@ process.umask = function() { return 0; };
 /* 92 */
 /***/ (function(module, exports) {
 
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * The base implementation of `_.has` without support for deep paths.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {Array|string} key The key to check.
- * @returns {boolean} Returns `true` if `key` exists, else `false`.
- */
-function baseHas(object, key) {
-  return object != null && hasOwnProperty.call(object, key);
-}
-
-module.exports = baseHas;
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, exports) {
-
 var g;
 
 // This works in non-strict mode
@@ -12752,7 +12732,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 94 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(12);
@@ -12804,7 +12784,7 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 95 */
+/* 94 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -12829,6 +12809,31 @@ function objectToString(value) {
 }
 
 module.exports = objectToString;
+
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports) {
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * The base implementation of `_.has` without support for deep paths.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {Array|string} key The key to check.
+ * @returns {boolean} Returns `true` if `key` exists, else `false`.
+ */
+function baseHas(object, key) {
+  return object != null && hasOwnProperty.call(object, key);
+}
+
+module.exports = baseHas;
 
 
 /***/ }),
@@ -13585,7 +13590,7 @@ module.exports = toString;
 var Symbol = __webpack_require__(12),
     arrayMap = __webpack_require__(39),
     isArray = __webpack_require__(1),
-    isSymbol = __webpack_require__(34);
+    isSymbol = __webpack_require__(33);
 
 /** Used as references for various `Number` constants. */
 var INFINITY = 1 / 0;
@@ -13663,11 +13668,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ROT = __importStar(__webpack_require__(18));
+const egna_1 = __webpack_require__(235);
 const _1 = __webpack_require__(32);
 const components_1 = __webpack_require__(17);
 const systems_1 = __webpack_require__(90);
 const map_1 = __webpack_require__(41);
-const tileMap_1 = __importDefault(__webpack_require__(249));
+const tileMap_1 = __importDefault(__webpack_require__(255));
+const map_2 = __webpack_require__(237);
 exports.setupMinimap = (options) => {
     const container = document.querySelector('.minimap');
     const canvas = document.createElement('canvas');
@@ -13690,10 +13697,13 @@ exports.setupDisplay = (options) => {
         height: options.height,
         tileColorize: true
     });
-    document.querySelector('.main-container').appendChild(display.getContainer());
+    const canvas = display.getContainer();
+    document.querySelector('.main-container').appendChild(canvas);
+    canvas.setAttribute('oncontextmenu', 'return false;');
     return display;
 };
 const getWallGlyph = (score) => {
+    let normalizedScore = map_2.normalizeScore(score);
     const pillar = '○';
     const wallN = '▀';
     const wallW = '▌';
@@ -13756,7 +13766,7 @@ const getWallGlyph = (score) => {
         254: 45,
         255: 46
     };
-    const idx = scoreLookup[score];
+    const idx = scoreLookup[normalizedScore];
     if (!idx) {
         return ' ';
     }
@@ -13779,18 +13789,21 @@ const addStaticLight = (light, fg) => {
 };
 const getGlyphForCellType = (map, scores) => (idx) => {
     const glyphs = {
-        [map_1.CellType.FLOOR]: '∙',
-        [map_1.CellType.DOOR_OPEN]: '\'',
-        [map_1.CellType.DOOR_CLOSED]: '+',
-        [map_1.CellType.DOOR_LOCKED]: '+',
-        [map_1.CellType.GRASS]: '"',
+        [map_1.CellType.FLOOR]: ['∙'],
+        [map_1.CellType.DOOR_OPEN]: ['\''],
+        [map_1.CellType.DOOR_CLOSED]: ['+'],
+        [map_1.CellType.DOOR_LOCKED]: ['+'],
+        [map_1.CellType.GRASS]: ['`', '"'],
     };
-    if ([map_1.CellType.WALL, map_1.CellType.GRASSY_WALL].includes(map[idx])) {
-        return getWallGlyph(scores[idx]);
-    }
-    else {
-        return glyphs[map[idx]];
-    }
+    const glyph = egna_1.match(map_1.CellType.WALL, () => getWallGlyph(scores[idx]), map_1.CellType.GRASSY_WALL, () => getWallGlyph(scores[idx]), () => {
+        const glyphChoices = glyphs[map[idx]];
+        const x = idx % _1.MAPWIDTH;
+        const y = ~~(idx / _1.MAPWIDTH);
+        const noiseAbs = Math.abs(mapNoise.get(x / 2, y / 2));
+        const _idx = Math.min(glyphChoices.length - 1, Math.max(0, Math.round(noiseAbs * glyphChoices.length)));
+        return glyphChoices[_idx];
+    })(map[idx]);
+    return glyph;
 };
 const tileColors = {
     [map_1.CellType.FLOOR]: [200, 200, 200],
@@ -13836,6 +13849,11 @@ exports.drawHoveredInfo = () => {
             _1.display.drawText(x, y - idx, hoveredItems[idx]);
         }
     }
+    if (window.DEBUG) {
+        const x = hoveredTileIdx % _1.MAPWIDTH;
+        const y = ~~(hoveredTileIdx / _1.MAPWIDTH);
+        _1.display.drawText(1, 1, `x: ${x}, y: ${y}, idx: ${hoveredTileIdx}`);
+    }
 };
 exports.drawMap = (map) => {
     const player = _1.game.player;
@@ -13852,7 +13870,7 @@ exports.drawMap = (map) => {
         }
         const tileVisible = viewshed && viewshed.visibleTiles && viewshed.visibleTiles.has(idx);
         const tileExplored = viewshed && viewshed.exploredTiles && viewshed.exploredTiles.has(idx);
-        if (window.clairvoyance === true ||
+        if (window.DEBUG === true ||
             tileVisible || tileExplored) {
             const tileHovered = _1.game.getState().hoveredTileIdx === idx;
             const noise = mapNoise.get(x / 100, y / 100);
@@ -14603,7 +14621,7 @@ const victor_1 = __importDefault(__webpack_require__(72));
 const id_1 = __webpack_require__(146);
 const flocking_1 = __webpack_require__(147);
 const graphlib_1 = __webpack_require__(148);
-const FPS = 0;
+const FPS = 1000 / 10.0;
 var MapGenState;
 (function (MapGenState) {
     MapGenState["PRERUN"] = "PRERUN";
@@ -19706,7 +19724,7 @@ module.exports = get;
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseHasIn = __webpack_require__(186),
-    hasPath = __webpack_require__(56);
+    hasPath = __webpack_require__(57);
 
 /**
  * Checks if `path` is a direct or inherited property of `object`.
@@ -21414,6 +21432,78 @@ function prim(g, weightFunc) {
 
 /***/ }),
 /* 235 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "match", function() { return match; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "gt", function() { return gt; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lt", function() { return lt; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "op", function() { return op; });
+
+
+function useHandler(handler, matchValue) {
+  return typeof handler === 'function' ? handler(matchValue) : handler;
+}
+
+function match(...patterns) {
+
+  return obj => {
+    for (var i = 0; i < patterns.length - 1; i += 2) {
+      if (matchAny(patterns[i], obj))
+        return useHandler(patterns[i + 1], obj);
+    }
+    if (patterns.length % 2 === 1)
+      return useHandler(patterns[patterns.length - 1], obj);
+    return null;
+  };
+};
+
+function matchObject(pat, obj) {
+
+  return Object.keys(pat).reduce((totalMatch, prop) => {
+    return totalMatch && matchAny(pat[prop], obj[prop]);
+  }, true);
+}
+
+function matchAny(v1, v2) {
+
+  if (typeof v1 === 'object' && typeof v2 == 'object') {
+    return matchObject(v1, v2);
+  }
+  else if (typeof v1 === 'function') {
+    return v1(v2);
+  }
+  else if (v1 !== v2) {
+    return false;
+  }
+  return true;
+}
+
+// Useful Matchlets
+const gt = (c) => ((n) => n > c);
+const lt = (c) => ((n) => n < c);
+const op = (c) => ((n) => c.includes(n));
+
+// Promise chaining
+if(!Promise.prototype.match) {
+  Object.defineProperty(Promise.prototype, 'match', {
+    value: function(...patterns) {
+      return this.then(
+        match(...patterns)
+      );
+    },
+    enumerable: false,
+    writable: true,
+    configurable: true
+  });
+}
+
+
+
+
+/***/ }),
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21422,7 +21512,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const immer_1 = __importDefault(__webpack_require__(239));
+const immer_1 = __importDefault(__webpack_require__(245));
 const systems_1 = __webpack_require__(90);
 const display_1 = __webpack_require__(123);
 var RunState;
@@ -21505,6 +21595,7 @@ class GameState {
     }
     setState(setter) {
         this.state = immer_1.default(this.state, setter);
+        this.render(0, this.lastTime);
         return this;
     }
 }
@@ -21512,7 +21603,69 @@ exports.default = GameState;
 
 
 /***/ }),
-/* 236 */
+/* 237 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.normalizeScore = (score) => {
+    let normalizedScore = score;
+    const masks = {
+        NW: 0b00000001,
+        N: 0b00000010,
+        NE: 0b00000100,
+        W: 0b00001000,
+        E: 0b00010000,
+        SW: 0b00100000,
+        S: 0b01000000,
+        SE: 0b10000000,
+    };
+    if ((normalizedScore & masks.NW) != 0) {
+        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.W) == 0) {
+            normalizedScore &= ~masks.NW;
+        }
+    }
+    if ((normalizedScore & masks.NE) != 0) {
+        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.E) == 0) {
+            normalizedScore &= ~masks.NE;
+        }
+    }
+    if ((normalizedScore & masks.SW) != 0) {
+        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.W) == 0) {
+            normalizedScore &= ~masks.SW;
+        }
+    }
+    if ((normalizedScore & masks.SE) != 0) {
+        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.E) == 0) {
+            normalizedScore &= ~masks.SE;
+        }
+    }
+    return normalizedScore;
+};
+exports.matchNeighborScore = (mask) => (score) => {
+    const scoreInBinary = score.toString(2);
+    const scoreSignificantBits = scoreInBinary.length;
+    const padding = (new Array(8 - scoreSignificantBits)).fill('0');
+    const scoreSplit = [...padding, ...score.toString(2).split('')];
+    const maskBits = mask.split('');
+    let match = true;
+    for (let bit = 7; bit >= 0; bit--) {
+        const value = scoreSplit[bit];
+        const compare = maskBits[bit];
+        if (compare === '?') {
+            continue;
+        }
+        if (value !== compare) {
+            return false;
+        }
+    }
+    return match;
+};
+
+
+/***/ }),
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21521,8 +21674,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const keymage_1 = __importDefault(__webpack_require__(237));
-const state_1 = __webpack_require__(235);
+const egna_1 = __webpack_require__(235);
+const keymage_1 = __importDefault(__webpack_require__(239));
+const throttle_1 = __importDefault(__webpack_require__(241));
+const state_1 = __webpack_require__(236);
 const components_1 = __webpack_require__(17);
 const systems_1 = __webpack_require__(90);
 const map_1 = __webpack_require__(41);
@@ -21548,20 +21703,23 @@ const tryMove = (dir) => (game) => () => {
         game.cameraOffset[1] -= dy;
         position.x += dx;
         position.y += dy;
-        const viewshed = player.getMutableComponent(components_1.Viewshed);
-        if (viewshed)
-            viewshed.dirty = true;
-        const light = player.getMutableComponent(components_1.Light);
-        if (light)
-            light.dirty = true;
+        touchEntityViewshed(game.player);
     }
     game.setState(state => {
         state.runState = state_1.RunState.PLAYERTURN;
         state.hoveredTileIdx = null;
     });
 };
-const idclip = () => {
-    window.clairvoyance = !(window.clairvoyance);
+const touchEntityViewshed = (entity) => {
+    const viewshed = entity.getMutableComponent(components_1.Viewshed);
+    if (viewshed)
+        viewshed.dirty = true;
+    const light = entity.getMutableComponent(components_1.Light);
+    if (light)
+        light.dirty = true;
+};
+const debug = () => {
+    window.DEBUG = !(window.DEBUG);
 };
 const toggleLight = () => {
     const player = _1.game.player;
@@ -21611,9 +21769,72 @@ const dwim = () => {
 };
 const toggleMinimap = () => {
     _1.game.setState(state => { state.minimapVisible = !state.minimapVisible; });
-    _1.game.render(0, _1.game.runState);
+    _1.game.render(0, _1.game.lastTime);
+};
+const toggleHelp = () => {
+    const help = document.querySelector('.help');
+    if (help.style.display !== 'none') {
+        help.style.display = 'none';
+    }
+    else {
+        help.style.display = 'block';
+    }
+};
+const handleCanvasMouseUp = (e) => {
+    egna_1.match({ which: 3 }, () => handleRightClick(e), { which: 2 }, () => handleMiddleClick(e), { which: 1 }, () => handleLeftClick(e))(e);
+};
+const handleRightClick = e => {
+    const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+};
+const handleMiddleClick = e => {
+    const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+};
+const handleLeftClick = e => {
+    const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+    if (window.DEBUG && e.shiftKey) {
+        shiftTileType(tileIdx);
+    }
+};
+const handleCanvasMouseMove = throttle_1.default((e) => {
+    const tileIdx = getTileIdxFromCoords(e.layerX, e.layerY);
+    _1.game.setState(state => { state.hoveredTileIdx = tileIdx; });
+}, 30);
+const getTileIdxFromCoords = (x, y) => {
+    const X = ~~(x / 512 * _1.WIDTH) - _1.game.cameraOffset[0];
+    const Y = ~~(y / 512 * _1.HEIGHT) - _1.game.cameraOffset[1];
+    if (X < 0 || Y < 0 || X >= _1.MAPWIDTH || Y >= _1.MAPHEIGHT) {
+        return;
+    }
+    const tileIdx = map_1.xyIdx(X, Y);
+    return tileIdx;
+};
+const shiftTileType = idx => {
+    const tileTypes = [
+        map_1.CellType.FLOOR,
+        map_1.CellType.WALL,
+        map_1.CellType.GRASS,
+        map_1.CellType.GRASSY_WALL,
+        map_1.CellType.DOOR_OPEN,
+        map_1.CellType.DOOR_CLOSED
+    ];
+    const map = _1.game.getState().map;
+    if (idx < 0 || idx >= map.length) {
+        return;
+    }
+    const current = map[idx];
+    let currentIdx = tileTypes.indexOf(current);
+    if (currentIdx === tileTypes.length - 1) {
+        currentIdx = -1;
+    }
+    const newType = tileTypes[currentIdx + 1];
+    _1.game.setState(state => {
+        state.map[idx] = newType;
+        state.scores = map_1.getNeighborScores(state.map);
+    });
+    touchEntityViewshed(_1.game.player);
 };
 const setupKeys = (game) => {
+    keymage_1.default('shift-d shift-e shift-b shift-u shift-g', debug);
     keymage_1.default('k', tryMove('N')(game));
     keymage_1.default('up', tryMove('N')(game));
     keymage_1.default('w', tryMove('N')(game));
@@ -21626,16 +21847,19 @@ const setupKeys = (game) => {
     keymage_1.default('h', tryMove('W')(game));
     keymage_1.default('left', tryMove('W')(game));
     keymage_1.default('a', tryMove('W')(game));
-    keymage_1.default('i d c l i p', idclip);
     keymage_1.default('t', toggleLight);
     keymage_1.default('space', dwim);
     keymage_1.default('m', toggleMinimap);
+    keymage_1.default('shift-f1', toggleHelp);
+    const canvas = document.querySelector('.main-container canvas');
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
 };
 exports.default = setupKeys;
 
 
 /***/ }),
-/* 237 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings handling
@@ -21982,11 +22206,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/// keymage.js - Javascript keyboard bindings 
     return keymage;
 }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-})(__webpack_require__(238));
+})(__webpack_require__(240));
 
 
 /***/ }),
-/* 238 */
+/* 240 */
 /***/ (function(module, exports) {
 
 module.exports = function() {
@@ -21995,7 +22219,380 @@ module.exports = function() {
 
 
 /***/ }),
-/* 239 */
+/* 241 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var debounce = __webpack_require__(242),
+    isObject = __webpack_require__(7);
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/**
+ * Creates a throttled function that only invokes `func` at most once per
+ * every `wait` milliseconds. The throttled function comes with a `cancel`
+ * method to cancel delayed `func` invocations and a `flush` method to
+ * immediately invoke them. Provide `options` to indicate whether `func`
+ * should be invoked on the leading and/or trailing edge of the `wait`
+ * timeout. The `func` is invoked with the last arguments provided to the
+ * throttled function. Subsequent calls to the throttled function return the
+ * result of the last `func` invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is
+ * invoked on the trailing edge of the timeout only if the throttled function
+ * is invoked more than once during the `wait` timeout.
+ *
+ * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+ * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+ *
+ * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+ * for details over the differences between `_.throttle` and `_.debounce`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to throttle.
+ * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
+ * @param {Object} [options={}] The options object.
+ * @param {boolean} [options.leading=true]
+ *  Specify invoking on the leading edge of the timeout.
+ * @param {boolean} [options.trailing=true]
+ *  Specify invoking on the trailing edge of the timeout.
+ * @returns {Function} Returns the new throttled function.
+ * @example
+ *
+ * // Avoid excessively updating the position while scrolling.
+ * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
+ *
+ * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
+ * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
+ * jQuery(element).on('click', throttled);
+ *
+ * // Cancel the trailing throttled invocation.
+ * jQuery(window).on('popstate', throttled.cancel);
+ */
+function throttle(func, wait, options) {
+  var leading = true,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  if (isObject(options)) {
+    leading = 'leading' in options ? !!options.leading : leading;
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+  return debounce(func, wait, {
+    'leading': leading,
+    'maxWait': wait,
+    'trailing': trailing
+  });
+}
+
+module.exports = throttle;
+
+
+/***/ }),
+/* 242 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(7),
+    now = __webpack_require__(243),
+    toNumber = __webpack_require__(244);
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max,
+    nativeMin = Math.min;
+
+/**
+ * Creates a debounced function that delays invoking `func` until after `wait`
+ * milliseconds have elapsed since the last time the debounced function was
+ * invoked. The debounced function comes with a `cancel` method to cancel
+ * delayed `func` invocations and a `flush` method to immediately invoke them.
+ * Provide `options` to indicate whether `func` should be invoked on the
+ * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+ * with the last arguments provided to the debounced function. Subsequent
+ * calls to the debounced function return the result of the last `func`
+ * invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is
+ * invoked on the trailing edge of the timeout only if the debounced function
+ * is invoked more than once during the `wait` timeout.
+ *
+ * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+ * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+ *
+ * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+ * for details over the differences between `_.debounce` and `_.throttle`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to debounce.
+ * @param {number} [wait=0] The number of milliseconds to delay.
+ * @param {Object} [options={}] The options object.
+ * @param {boolean} [options.leading=false]
+ *  Specify invoking on the leading edge of the timeout.
+ * @param {number} [options.maxWait]
+ *  The maximum time `func` is allowed to be delayed before it's invoked.
+ * @param {boolean} [options.trailing=true]
+ *  Specify invoking on the trailing edge of the timeout.
+ * @returns {Function} Returns the new debounced function.
+ * @example
+ *
+ * // Avoid costly calculations while the window size is in flux.
+ * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
+ *
+ * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+ * jQuery(element).on('click', _.debounce(sendMail, 300, {
+ *   'leading': true,
+ *   'trailing': false
+ * }));
+ *
+ * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
+ * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
+ * var source = new EventSource('/stream');
+ * jQuery(source).on('message', debounced);
+ *
+ * // Cancel the trailing debounced invocation.
+ * jQuery(window).on('popstate', debounced.cancel);
+ */
+function debounce(func, wait, options) {
+  var lastArgs,
+      lastThis,
+      maxWait,
+      result,
+      timerId,
+      lastCallTime,
+      lastInvokeTime = 0,
+      leading = false,
+      maxing = false,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  wait = toNumber(wait) || 0;
+  if (isObject(options)) {
+    leading = !!options.leading;
+    maxing = 'maxWait' in options;
+    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+
+  function invokeFunc(time) {
+    var args = lastArgs,
+        thisArg = lastThis;
+
+    lastArgs = lastThis = undefined;
+    lastInvokeTime = time;
+    result = func.apply(thisArg, args);
+    return result;
+  }
+
+  function leadingEdge(time) {
+    // Reset any `maxWait` timer.
+    lastInvokeTime = time;
+    // Start the timer for the trailing edge.
+    timerId = setTimeout(timerExpired, wait);
+    // Invoke the leading edge.
+    return leading ? invokeFunc(time) : result;
+  }
+
+  function remainingWait(time) {
+    var timeSinceLastCall = time - lastCallTime,
+        timeSinceLastInvoke = time - lastInvokeTime,
+        timeWaiting = wait - timeSinceLastCall;
+
+    return maxing
+      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
+      : timeWaiting;
+  }
+
+  function shouldInvoke(time) {
+    var timeSinceLastCall = time - lastCallTime,
+        timeSinceLastInvoke = time - lastInvokeTime;
+
+    // Either this is the first call, activity has stopped and we're at the
+    // trailing edge, the system time has gone backwards and we're treating
+    // it as the trailing edge, or we've hit the `maxWait` limit.
+    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
+      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+  }
+
+  function timerExpired() {
+    var time = now();
+    if (shouldInvoke(time)) {
+      return trailingEdge(time);
+    }
+    // Restart the timer.
+    timerId = setTimeout(timerExpired, remainingWait(time));
+  }
+
+  function trailingEdge(time) {
+    timerId = undefined;
+
+    // Only invoke if we have `lastArgs` which means `func` has been
+    // debounced at least once.
+    if (trailing && lastArgs) {
+      return invokeFunc(time);
+    }
+    lastArgs = lastThis = undefined;
+    return result;
+  }
+
+  function cancel() {
+    if (timerId !== undefined) {
+      clearTimeout(timerId);
+    }
+    lastInvokeTime = 0;
+    lastArgs = lastCallTime = lastThis = timerId = undefined;
+  }
+
+  function flush() {
+    return timerId === undefined ? result : trailingEdge(now());
+  }
+
+  function debounced() {
+    var time = now(),
+        isInvoking = shouldInvoke(time);
+
+    lastArgs = arguments;
+    lastThis = this;
+    lastCallTime = time;
+
+    if (isInvoking) {
+      if (timerId === undefined) {
+        return leadingEdge(lastCallTime);
+      }
+      if (maxing) {
+        // Handle invocations in a tight loop.
+        clearTimeout(timerId);
+        timerId = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
+    }
+    if (timerId === undefined) {
+      timerId = setTimeout(timerExpired, wait);
+    }
+    return result;
+  }
+  debounced.cancel = cancel;
+  debounced.flush = flush;
+  return debounced;
+}
+
+module.exports = debounce;
+
+
+/***/ }),
+/* 243 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var root = __webpack_require__(3);
+
+/**
+ * Gets the timestamp of the number of milliseconds that have elapsed since
+ * the Unix epoch (1 January 1970 00:00:00 UTC).
+ *
+ * @static
+ * @memberOf _
+ * @since 2.4.0
+ * @category Date
+ * @returns {number} Returns the timestamp.
+ * @example
+ *
+ * _.defer(function(stamp) {
+ *   console.log(_.now() - stamp);
+ * }, _.now());
+ * // => Logs the number of milliseconds it took for the deferred invocation.
+ */
+var now = function() {
+  return root.Date.now();
+};
+
+module.exports = now;
+
+
+/***/ }),
+/* 244 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(7),
+    isSymbol = __webpack_require__(33);
+
+/** Used as references for various `Number` constants. */
+var NAN = 0 / 0;
+
+/** Used to match leading and trailing whitespace. */
+var reTrim = /^\s+|\s+$/g;
+
+/** Used to detect bad signed hexadecimal string values. */
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+/** Used to detect binary string values. */
+var reIsBinary = /^0b[01]+$/i;
+
+/** Used to detect octal string values. */
+var reIsOctal = /^0o[0-7]+$/i;
+
+/** Built-in method references without a dependency on `root`. */
+var freeParseInt = parseInt;
+
+/**
+ * Converts `value` to a number.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to process.
+ * @returns {number} Returns the number.
+ * @example
+ *
+ * _.toNumber(3.2);
+ * // => 3.2
+ *
+ * _.toNumber(Number.MIN_VALUE);
+ * // => 5e-324
+ *
+ * _.toNumber(Infinity);
+ * // => Infinity
+ *
+ * _.toNumber('3.2');
+ * // => 3.2
+ */
+function toNumber(value) {
+  if (typeof value == 'number') {
+    return value;
+  }
+  if (isSymbol(value)) {
+    return NAN;
+  }
+  if (isObject(value)) {
+    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+    value = isObject(other) ? (other + '') : other;
+  }
+  if (typeof value != 'string') {
+    return value === 0 ? value : +value;
+  }
+  value = value.replace(reTrim, '');
+  var isBinary = reIsBinary.test(value);
+  return (isBinary || reIsOctal.test(value))
+    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+    : (reIsBadHex.test(value) ? NAN : +value);
+}
+
+module.exports = toNumber;
+
+
+/***/ }),
+/* 245 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22024,7 +22621,7 @@ function n(n){for(var t=arguments.length,r=Array(t>1?t-1:0),e=1;e<t;e++)r[e-1]=a
 
 
 /***/ }),
-/* 240 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22091,7 +22688,7 @@ const drawMinimap = () => {
     const { exploredTiles } = playerViewshed;
     const ctx = __2.minimap.getContext('2d');
     ctx.clearRect(0, 0, __2.MAPWIDTH * 2, __2.MAPHEIGHT * 2);
-    const tiles = !window.clairvoyance ? playerViewshed.exploredTiles : new Set(Object.keys(map));
+    const tiles = !window.DEBUG ? playerViewshed.exploredTiles : new Set(Object.keys(map));
     for (const idx of tiles.values()) {
         if ([map_1.CellType.WALL, map_1.CellType.GRASSY_WALL].includes(map[idx])) {
             continue;
@@ -22103,12 +22700,12 @@ const drawMinimap = () => {
     }
     ctx.fillStyle = "rgba(255, 0, 0, 1)";
     ctx.fillRect(X * 2, Y * 2, 2, 2);
-    __2.minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.15;`);
+    __2.minimap.setAttribute('style', `display: block;position: absolute; margin-left: -${X * 2}px; margin-top: -${Y * 2 + 256}px;opacity:0.5;`);
 };
 
 
 /***/ }),
-/* 241 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22118,7 +22715,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(15);
-const has_1 = __importDefault(__webpack_require__(33));
+const has_1 = __importDefault(__webpack_require__(34));
 class Renderable extends ecsy_1.Component {
     constructor() {
         super();
@@ -22151,7 +22748,7 @@ exports.default = Renderable;
 
 
 /***/ }),
-/* 242 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22161,7 +22758,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(15);
-const has_1 = __importDefault(__webpack_require__(33));
+const has_1 = __importDefault(__webpack_require__(34));
 class Position extends ecsy_1.Component {
     constructor() {
         super();
@@ -22188,7 +22785,7 @@ exports.default = Position;
 
 
 /***/ }),
-/* 243 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22198,7 +22795,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(15);
-const has_1 = __importDefault(__webpack_require__(33));
+const has_1 = __importDefault(__webpack_require__(34));
 class Viewshed extends ecsy_1.Component {
     constructor() {
         super();
@@ -22231,7 +22828,7 @@ exports.default = Viewshed;
 
 
 /***/ }),
-/* 244 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22244,7 +22841,7 @@ exports.default = Monster;
 
 
 /***/ }),
-/* 245 */
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22254,7 +22851,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(15);
-const has_1 = __importDefault(__webpack_require__(33));
+const has_1 = __importDefault(__webpack_require__(34));
 class Light extends ecsy_1.Component {
     constructor() {
         super();
@@ -22290,7 +22887,7 @@ exports.default = Light;
 
 
 /***/ }),
-/* 246 */
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22300,7 +22897,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecsy_1 = __webpack_require__(15);
-const has_1 = __importDefault(__webpack_require__(33));
+const has_1 = __importDefault(__webpack_require__(34));
 class Name extends ecsy_1.Component {
     constructor() {
         super();
@@ -22324,7 +22921,7 @@ exports.default = Name;
 
 
 /***/ }),
-/* 247 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var baseIsEqual = __webpack_require__(55);
@@ -22365,7 +22962,7 @@ module.exports = isEqual;
 
 
 /***/ }),
-/* 248 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22557,7 +23154,7 @@ exports.createRoomTemplate = (type) => (params) => {
 
 
 /***/ }),
-/* 249 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22824,7 +23421,7 @@ exports.default = tileMap;
 
 
 /***/ }),
-/* 250 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22966,7 +23563,7 @@ exports.default = VisibilitySystem;
 
 
 /***/ }),
-/* 251 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23013,7 +23610,7 @@ exports.default = AISystem;
 
 
 /***/ }),
-/* 252 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23031,380 +23628,7 @@ exports.default = InfoSystem;
 
 
 /***/ }),
-/* 253 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var debounce = __webpack_require__(254),
-    isObject = __webpack_require__(7);
-
-/** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/**
- * Creates a throttled function that only invokes `func` at most once per
- * every `wait` milliseconds. The throttled function comes with a `cancel`
- * method to cancel delayed `func` invocations and a `flush` method to
- * immediately invoke them. Provide `options` to indicate whether `func`
- * should be invoked on the leading and/or trailing edge of the `wait`
- * timeout. The `func` is invoked with the last arguments provided to the
- * throttled function. Subsequent calls to the throttled function return the
- * result of the last `func` invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the throttled function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.throttle` and `_.debounce`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to throttle.
- * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=true]
- *  Specify invoking on the leading edge of the timeout.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new throttled function.
- * @example
- *
- * // Avoid excessively updating the position while scrolling.
- * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
- *
- * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
- * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
- * jQuery(element).on('click', throttled);
- *
- * // Cancel the trailing throttled invocation.
- * jQuery(window).on('popstate', throttled.cancel);
- */
-function throttle(func, wait, options) {
-  var leading = true,
-      trailing = true;
-
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  if (isObject(options)) {
-    leading = 'leading' in options ? !!options.leading : leading;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
-  return debounce(func, wait, {
-    'leading': leading,
-    'maxWait': wait,
-    'trailing': trailing
-  });
-}
-
-module.exports = throttle;
-
-
-/***/ }),
-/* 254 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(7),
-    now = __webpack_require__(255),
-    toNumber = __webpack_require__(256);
-
-/** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
-
-/**
- * Creates a debounced function that delays invoking `func` until after `wait`
- * milliseconds have elapsed since the last time the debounced function was
- * invoked. The debounced function comes with a `cancel` method to cancel
- * delayed `func` invocations and a `flush` method to immediately invoke them.
- * Provide `options` to indicate whether `func` should be invoked on the
- * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
- * with the last arguments provided to the debounced function. Subsequent
- * calls to the debounced function return the result of the last `func`
- * invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the debounced function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.debounce` and `_.throttle`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to debounce.
- * @param {number} [wait=0] The number of milliseconds to delay.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=false]
- *  Specify invoking on the leading edge of the timeout.
- * @param {number} [options.maxWait]
- *  The maximum time `func` is allowed to be delayed before it's invoked.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new debounced function.
- * @example
- *
- * // Avoid costly calculations while the window size is in flux.
- * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
- *
- * // Invoke `sendMail` when clicked, debouncing subsequent calls.
- * jQuery(element).on('click', _.debounce(sendMail, 300, {
- *   'leading': true,
- *   'trailing': false
- * }));
- *
- * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
- * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
- * var source = new EventSource('/stream');
- * jQuery(source).on('message', debounced);
- *
- * // Cancel the trailing debounced invocation.
- * jQuery(window).on('popstate', debounced.cancel);
- */
-function debounce(func, wait, options) {
-  var lastArgs,
-      lastThis,
-      maxWait,
-      result,
-      timerId,
-      lastCallTime,
-      lastInvokeTime = 0,
-      leading = false,
-      maxing = false,
-      trailing = true;
-
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  wait = toNumber(wait) || 0;
-  if (isObject(options)) {
-    leading = !!options.leading;
-    maxing = 'maxWait' in options;
-    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
-
-  function invokeFunc(time) {
-    var args = lastArgs,
-        thisArg = lastThis;
-
-    lastArgs = lastThis = undefined;
-    lastInvokeTime = time;
-    result = func.apply(thisArg, args);
-    return result;
-  }
-
-  function leadingEdge(time) {
-    // Reset any `maxWait` timer.
-    lastInvokeTime = time;
-    // Start the timer for the trailing edge.
-    timerId = setTimeout(timerExpired, wait);
-    // Invoke the leading edge.
-    return leading ? invokeFunc(time) : result;
-  }
-
-  function remainingWait(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime,
-        timeWaiting = wait - timeSinceLastCall;
-
-    return maxing
-      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
-      : timeWaiting;
-  }
-
-  function shouldInvoke(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime;
-
-    // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, the system time has gone backwards and we're treating
-    // it as the trailing edge, or we've hit the `maxWait` limit.
-    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
-      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-  }
-
-  function timerExpired() {
-    var time = now();
-    if (shouldInvoke(time)) {
-      return trailingEdge(time);
-    }
-    // Restart the timer.
-    timerId = setTimeout(timerExpired, remainingWait(time));
-  }
-
-  function trailingEdge(time) {
-    timerId = undefined;
-
-    // Only invoke if we have `lastArgs` which means `func` has been
-    // debounced at least once.
-    if (trailing && lastArgs) {
-      return invokeFunc(time);
-    }
-    lastArgs = lastThis = undefined;
-    return result;
-  }
-
-  function cancel() {
-    if (timerId !== undefined) {
-      clearTimeout(timerId);
-    }
-    lastInvokeTime = 0;
-    lastArgs = lastCallTime = lastThis = timerId = undefined;
-  }
-
-  function flush() {
-    return timerId === undefined ? result : trailingEdge(now());
-  }
-
-  function debounced() {
-    var time = now(),
-        isInvoking = shouldInvoke(time);
-
-    lastArgs = arguments;
-    lastThis = this;
-    lastCallTime = time;
-
-    if (isInvoking) {
-      if (timerId === undefined) {
-        return leadingEdge(lastCallTime);
-      }
-      if (maxing) {
-        // Handle invocations in a tight loop.
-        clearTimeout(timerId);
-        timerId = setTimeout(timerExpired, wait);
-        return invokeFunc(lastCallTime);
-      }
-    }
-    if (timerId === undefined) {
-      timerId = setTimeout(timerExpired, wait);
-    }
-    return result;
-  }
-  debounced.cancel = cancel;
-  debounced.flush = flush;
-  return debounced;
-}
-
-module.exports = debounce;
-
-
-/***/ }),
-/* 255 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var root = __webpack_require__(3);
-
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
-var now = function() {
-  return root.Date.now();
-};
-
-module.exports = now;
-
-
-/***/ }),
-/* 256 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(7),
-    isSymbol = __webpack_require__(34);
-
-/** Used as references for various `Number` constants. */
-var NAN = 0 / 0;
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
-
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
-
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
-
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
-
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return NAN;
-  }
-  if (isObject(value)) {
-    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = value.replace(reTrim, '');
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
-}
-
-module.exports = toNumber;
-
-
-/***/ }),
-/* 257 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23413,16 +23637,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const player_1 = __importDefault(__webpack_require__(258));
+const player_1 = __importDefault(__webpack_require__(260));
 exports.createPlayer = player_1.default;
-const mobs_1 = __webpack_require__(259);
+const mobs_1 = __webpack_require__(261);
 exports.createOrc = mobs_1.createOrc;
-const lights_1 = __webpack_require__(260);
+const lights_1 = __webpack_require__(262);
 exports.createLight = lights_1.createLight;
 
 
 /***/ }),
-/* 258 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23443,7 +23667,7 @@ exports.default = createPlayer;
 
 
 /***/ }),
-/* 259 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23463,7 +23687,7 @@ exports.createOrc = (ecs, x, y) => {
 
 
 /***/ }),
-/* 260 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23482,7 +23706,7 @@ exports.createLight = (ECS, x, y, range = 7, color = [255, 255, 235]) => {
 
 
 /***/ }),
-/* 261 */
+/* 263 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23490,7 +23714,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "images/VGA8x16.png");
 
 /***/ }),
-/* 262 */
+/* 264 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23498,7 +23722,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.eot");
 
 /***/ }),
-/* 263 */
+/* 265 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23506,7 +23730,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff");
 
 /***/ }),
-/* 264 */
+/* 266 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23514,7 +23738,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.woff2");
 
 /***/ }),
-/* 265 */
+/* 267 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -23522,7 +23746,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "fonts/ibm_vga8.ttf");
 
 /***/ }),
-/* 266 */
+/* 268 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

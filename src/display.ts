@@ -1,14 +1,17 @@
 import * as ROT from 'rot-js';
 import { match } from 'egna';
-import { display, game, HEIGHT, MAPWIDTH, WIDTH } from '.';
+import { display, game, LOGHEIGHT, SIDEBARWIDTH, HEIGHT, MAPWIDTH, WIDTH } from '.';
+import GameState from './state';
 import { Name, Position, Light, Viewshed } from './ecs/components';
 import { InfoSystem, RenderingSystem } from './ecs/systems';
 import { xyIdx, grassNoise, CellType, Map } from './map';
 import tileMap from './utils/tileMap';
 import { normalizeScore } from './utils/map';
 
-export const setupMinimap = (options: { width: number; height: number; }): HTMLCanvasElement => {
+export const setupMinimap = (options: { width: number; height: number; }): HTMLCanvasElement | null => {
   const container = document.querySelector('.minimap');
+  if (!container) { return null; }
+
   const canvas: HTMLCanvasElement = document.createElement('canvas');
   container.appendChild(canvas);
   canvas.setAttribute('width', (options.width * 2).toString());
@@ -17,7 +20,9 @@ export const setupMinimap = (options: { width: number; height: number; }): HTMLC
   return canvas;
 }
 
-export const setupDisplay = (options: { width: number; height: number }): ROT.Display => {
+export const setupDisplay = (options: { width: number; height: number }): ROT.Display | null => {
+  const container = document.querySelector('.main-container');
+  if (!container) { return null; }
   const tileSet = document.createElement("img");
   tileSet.src = "dist/images/VGA8x16.png";
 
@@ -34,10 +39,10 @@ export const setupDisplay = (options: { width: number; height: number }): ROT.Di
   });
 
   const canvas = display.getContainer();
-
-  document.querySelector('.main-container').appendChild(canvas);
-
-  canvas.setAttribute('oncontextmenu', 'return false;');
+  if (canvas) {
+    container.appendChild(canvas);
+    canvas.setAttribute('oncontextmenu', 'return false;');
+  } 
 
   return display;
 };
@@ -139,7 +144,9 @@ const addStaticLight = (light: Color, fg: Color): Color => {
 };
 
 const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): string => {
-  const glyphs = {
+  const glyphs: {
+    [id: string]: string[]
+  } = {
     [CellType.FLOOR]: ['∙'],
     [CellType.DOOR_OPEN]: ['\''],
     [CellType.DOOR_CLOSED]: ['+'],
@@ -163,16 +170,16 @@ const getGlyphForCellType = (map: Map, scores: number[]) => (idx: number): strin
 };
 
 const tileColors: { [type: string]: Color } = {
-  [CellType.FLOOR]: [200, 200, 200],
-  [CellType.WALL]: [255, 255, 255],
-  [CellType.DOOR_OPEN]: [255, 255, 255],
-  [CellType.DOOR_CLOSED]: [255, 255, 255],
-  [CellType.DOOR_LOCKED]: [255, 255, 255],
+  [CellType.FLOOR]: [120, 120, 120],
+  [CellType.WALL]: [200, 200, 200],
+  [CellType.DOOR_OPEN]: [120, 80, 60],
+  [CellType.DOOR_CLOSED]: [120, 80, 60],
+  [CellType.DOOR_LOCKED]: [120, 80, 60],
   [CellType.GRASS]: [150, 255, 150],
   [CellType.GRASSY_WALL]: [120, 150, 100],
 };
 
-export const drawHoveredInfo = () => {
+export const drawHoveredInfo = (game) => {
   const { hoveredTileIdx, map } = game.getState();
   if (!hoveredTileIdx) { return; }
 
@@ -215,10 +222,10 @@ export const drawHoveredInfo = () => {
   }
 }
 
-export const drawMap = (map: Map): void => {
+export const drawMap = (game: GameState, map: Map): void => {
   const player = game.player;
   const viewshed = player.getComponent(Viewshed);
-  const mapScores = game.getState().scores;
+  const { mapScores, altPressed } = game.getState(state => ({ mapScores: state.scores, altPressed: state.altPressed }));
   const getTile = getGlyphForCellType(map, mapScores);
   for (let idx = 0; idx < map.length; idx++) {
     const x = idx % MAPWIDTH;
@@ -276,3 +283,58 @@ export const drawMap = (map: Map): void => {
     }
   }
 };
+
+export const drawGUI = (game: GameState) => {
+  if (!game || !game.display) { return; }
+  const FG = '#777';
+  const BG = '#000';
+  // top line
+  game.display.draw(0, 0, '┌', FG, BG);
+  game.display.drawText(1, 0, (new Array(WIDTH - 1)).fill('─').join(''))   
+  game.display.draw(WIDTH, 0, '╥', FG, BG);
+  game.display.drawText(WIDTH + 1, 0, (new Array(SIDEBARWIDTH - 1)).fill('─').join(''))   
+  game.display.draw(WIDTH + SIDEBARWIDTH - 1, 0, '┐', FG, BG);
+
+  // bottom line
+  game.display.draw(0, HEIGHT + LOGHEIGHT - 1, '└', FG, BG);
+  game.display.drawText(1, HEIGHT + LOGHEIGHT - 1, (new Array(WIDTH - 1)).fill('─').join(''))   
+  game.display.draw(WIDTH, HEIGHT + LOGHEIGHT - 1, '╨', FG, BG);
+  game.display.drawText(WIDTH + 1, HEIGHT + LOGHEIGHT - 1, (new Array(SIDEBARWIDTH - 1)).fill('─').join(''))   
+  game.display.draw(WIDTH + SIDEBARWIDTH - 1, HEIGHT + LOGHEIGHT - 1, '┘', FG, BG);
+
+  for (let y = 1; y < HEIGHT + LOGHEIGHT - 1; y++) {
+    game.display.draw(0, y, '│', FG, BG)
+    game.display.draw(WIDTH + SIDEBARWIDTH - 1, y, '│', FG, BG)
+    game.display.draw(WIDTH, y, '║', FG, BG)
+    if (y === HEIGHT) {
+      game.display.draw(0, y, '╞', FG, BG);
+      game.display.draw(WIDTH, y, '╣', FG, BG);
+      game.display.drawText(1, y, '%c{#777}' + (new Array(WIDTH - 1)).fill('═').join(''))   
+    }
+  }
+
+  drawLog(game, game.getState().log);
+
+  drawSidebar(game);
+}
+
+const drawLog = (game: GameState, log: string) => {
+  if (!game.display) { return; }
+  const N = 8;
+  const colorOffset = Math.max(8 - log.length, 0);
+  const lastLines = (log.length <= N ? [...log] : [...log].slice(log.length - N)).reverse();
+  for (let i = 0; i < lastLines.length; i++) {
+    const line = lastLines[lastLines.length - i - 1];
+    const chars = '89abcdef'.split('');
+    const lineColor = `#${ (new Array(3)).fill(chars[i + colorOffset]).join('') }`;
+    game.display.drawText(2, HEIGHT + 1 + i, `%c{${lineColor}}${line}`);
+  }
+}
+
+const drawSidebar = (game) => {
+  
+}
+
+export const drawAltInfo = (game) => {
+  console.log('draw alt info')
+}
