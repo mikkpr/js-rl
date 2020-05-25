@@ -1,13 +1,14 @@
 {
-  "include": ["./src/**/*"],
-  "exclude": ["./dist"],
   "compilerOptions": {
-    "outDir": "./dist/",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "module": "es6",
-    "target": "es5",
+    "outDir": "./dist",
+    "module": "commonjs",
+    "target": "ESNext",
     "allowJs": false,
-    "strict": true
-  }
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop" : true,
+    "strict": false 
+  },
+  "exclude": ["node_modules", "**/*.test.ts"]
 }
