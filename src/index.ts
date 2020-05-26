@@ -62,6 +62,8 @@ const main = () => {
     playerY: ~~(HEIGHT / 2),
   });
 
+  state.setState(state => { state.player = player; });
+
   loop = createGameLoop({
     updateTimeStep: 1000/30,
     fpsFilterStrength: 2,
