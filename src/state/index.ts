@@ -1,11 +1,10 @@
 import { World } from 'ecs-machina';
 import produce from 'immer';
-import Alea from 'alea';
-import { ID } from '../utils/id';
+import { Display } from 'rot-js';
+import { Map } from '../map';
 import { createPlayer, createKobold } from './spawner';
-
-import { Player, Position, Glyph, AI } from './components';
-import { MovementSystem, RenderingSystem, AISystem } from './systems';
+import { MAPWIDTH, MAPHEIGHT } from '../constants';
+import { IntentSystem, RenderingSystem, AISystem } from './systems';
 
 type State = {
   [key: string]: any
@@ -16,13 +15,16 @@ export type WorldWithRNG = World & { rng?: () => number };
 class GameState {
   world: WorldWithRNG;
   state: State;
+  map: Map;
+  display: Display;
 
   constructor(initialState = {}) {
     this.world = new World();
     this.world.rng = Math.random;
     this.state = initialState;
+    this.map = new Map(MAPWIDTH, MAPHEIGHT);
 
-    this.world.registerSystem(new MovementSystem());
+    this.world.registerSystem(new IntentSystem());
     this.world.registerSystem(new AISystem());
     this.world.registerSystem(new RenderingSystem());
   }

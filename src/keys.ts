@@ -13,5 +13,6 @@ inputs.bindInputMap(Eylem.KEY_DOWN, {
   89: { action: 'MOVE', value: 'NW' },
   85: { action: 'MOVE', value: 'NE' },
   66: { action: 'MOVE', value: 'SW' },
-  78: { action: 'MOVE', value: 'SE' }
+  78: { action: 'MOVE', value: 'SE' },
+  32: { action: 'DWIM', value: 'DWIM' },
 });

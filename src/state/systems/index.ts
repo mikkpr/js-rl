@@ -1,9 +1,9 @@
 import { RenderingSystem } from './rendering';
-import { MovementSystem } from './movement';
 import { AISystem } from './ai';
+import { IntentSystem } from './intent';
 
 export {
   RenderingSystem,
-  MovementSystem,
-  AISystem
+  AISystem,
+  IntentSystem,
 }

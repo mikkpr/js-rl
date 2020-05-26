@@ -4,10 +4,11 @@ import { inputs } from './keys';
 import { match } from 'egna';
 
 import { setupDisplay } from './setup';
-import { WIDTH, HEIGHT } from './constants';
-import state, { setupEntities } from './ecs';
-import { Intent } from './ecs/components/intent';
-import { RenderingSystem } from './ecs/systems';
+import { WIDTH, HEIGHT, DIRS } from './constants';
+import state, { setupEntities } from './state';
+import { Intent, isPosition } from './state/components';
+import { RenderingSystem } from './state/systems';
+import { CellType } from './map';
 import './assets';
 
 export let loop;
@@ -18,17 +19,18 @@ const update = (delta: number) => {
 
 const input = (player: string) => () => {
   const move = inputs.getValue('MOVE');
+  const dwim = inputs.getValue('DWIM');
   if (move) {
     const { dx, dy } = match(
-      'N', () => ({ dx: 0, dy: -1 }),
-      'E', () => ({ dx: 1, dy: 0 }),
-      'S', () => ({ dx: 0, dy: 1 }),
-      'W', () => ({ dx: -1, dy: 0 }),
-      'NW', () => ({ dx: -1, dy: -1 }),
-      'NE', () => ({ dx: 1, dy: -1 }),
-      'SW', () => ({ dx: -1, dy: 1 }),
-      'SE', () => ({ dx: 1, dy: 1 }),
-      { dx: 0, dy: 0 }
+      'N', () => DIRS.N,
+      'E', () => DIRS.E,
+      'S', () => DIRS.S,
+      'W', () => DIRS.W,
+      'NW', () => DIRS.NW,
+      'NE', () => DIRS.NE,
+      'SW', () => DIRS.SW,
+      'SE', () => DIRS.SE,
+      DIRS.NONE 
     )(move);
 
     state.world.registerComponent(player, {
@@ -38,7 +40,30 @@ const input = (player: string) => () => {
         dx, dy
       }
     } as Intent)
-
+  } else if (dwim) {
+    const pos = state.world.getComponents(player).find(isPosition);
+    const neighbors = state.map.getNeighbors(pos.x, pos.y);
+    let intent: string;
+    let dir; 
+    for (const key of Object.keys(neighbors)) {
+      const cell = neighbors[key];
+      if (cell === CellType.DOOR_CLOSED) {
+        intent = 'OPEN_DOOR';
+        dir = key;
+        break;  
+      } else if (cell === CellType.DOOR_OPEN) {
+        intent = 'CLOSE_DOOR';
+        dir = key;
+        break;
+      }
+    }
+    if (intent) {
+      state.world.registerComponent(player, {
+        _type: Intent,
+        intent: intent,
+        payload: DIRS[dir] 
+      } as Intent)
+    }
   }
   inputs.clear();
 };
@@ -55,6 +80,8 @@ const main = () => {
     height: HEIGHT
   });
 
+  state.display = display;
+
   document.querySelector('.main-container .loading').remove();
 
   const { player } = setupEntities({
@@ -66,7 +93,7 @@ const main = () => {
 
   loop = createGameLoop({
     updateTimeStep: 1000/30,
-    fpsFilterStrength: 2,
+    fpsFilterStrength: 1,
     input: input(player),
     update,
     render: render(display),

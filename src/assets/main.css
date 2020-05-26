@@ -80,10 +80,10 @@ canvas {
             animation: scanline 6s linear infinite;
 }
 .scanlines:after {
-    top: 16px;
-    right: 196px;
-    bottom: 168px;
-    left: 10px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 2147483648;
     background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, transparent), color-stop(51%, rgba(0, 0, 0, 0.3)));
     background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 51%);
