@@ -1,0 +1,43 @@
+import state from '.';
+import { Position, Player, Glyph, AI } from './components';
+
+export const createPlayer = ({x, y}) => {
+  const player = state.world.createEntity();
+  state.world.registerComponent(player, {
+    _type: Player
+  });
+  state.world.registerComponent(player, {
+    x: x,
+    y: y,
+    _type: Position
+  } as Position);
+  state.world.registerComponent(player, {
+    glyph: '@',
+    fg: '#fa0',
+    bg: '#000',
+    _type: Glyph
+  } as Glyph);
+
+  return player;
+}
+
+export const createKobold = ({x, y}) => {
+  const kobold = state.world.createEntity();
+  state.world.registerComponent(kobold, {
+    x,
+    y,
+    _type: Position
+  } as Position);
+  state.world.registerComponent(kobold, {
+    glyph: 'k',
+    fg: '#666',
+    bg: '#000',
+    _type: Glyph
+  } as Glyph);
+  state.world.registerComponent(kobold, {
+    _type: AI,
+    ai: ['AVOID_PLAYER', 'RANDOM_WALK']
+  } as AI);
+
+  return kobold;
+}

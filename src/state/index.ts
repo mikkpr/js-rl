@@ -2,6 +2,7 @@ import { World } from 'ecs-machina';
 import produce from 'immer';
 import Alea from 'alea';
 import { ID } from '../utils/id';
+import { createPlayer, createKobold } from './spawner';
 
 import { Player, Position, Glyph, AI } from './components';
 import { MovementSystem, RenderingSystem, AISystem } from './systems';
@@ -63,45 +64,4 @@ export const setupEntities = ({
     player,
     kobold
   };
-}
-
-const createPlayer = ({x, y}) => {
-  const player = state.world.createEntity();
-  state.world.registerComponent(player, {
-    _type: Player
-  });
-  state.world.registerComponent(player, {
-    x: x,
-    y: y,
-    _type: Position
-  } as Position);
-  state.world.registerComponent(player, {
-    glyph: '@',
-    fg: '#fa0',
-    bg: '#000',
-    _type: Glyph
-  } as Glyph);
-
-  return player;
-}
-
-const createKobold = ({x, y}) => {
-  const kobold = state.world.createEntity();
-  state.world.registerComponent(kobold, {
-    x: 10,
-    y: 10,
-    _type: Position
-  } as Position);
-  state.world.registerComponent(kobold, {
-    glyph: 'k',
-    fg: '#666',
-    bg: '#000',
-    _type: Glyph
-  } as Glyph);
-  state.world.registerComponent(kobold, {
-    _type: AI,
-    ai: ['AVOID_PLAYER', 'RANDOM_WALK']
-  } as AI);
-
-  return kobold;
 }
