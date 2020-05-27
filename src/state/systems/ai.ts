@@ -41,7 +41,7 @@ export class AISystem extends System {
         }
       } else if (AIType === 'RANDOM_WALK') {
         const rng = (this.world as WorldWithRNG).rng;
-        if (Math.abs(rng()) > 0.95) {
+        if (Math.abs(rng()) > 0.75) {
 
           const dx = [-1, 0, 1][Math.round(rng() * 2)];
           const dy = [-1, 0, 1][Math.round(rng() * 2)];

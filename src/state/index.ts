@@ -1,10 +1,12 @@
 import { World } from 'ecs-machina';
 import produce from 'immer';
+import { match } from 'egna';
 import { Display } from 'rot-js';
 import { Map } from '../map';
 import { createPlayer, createKobold } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
 import { IntentSystem, RenderingSystem, AISystem } from './systems';
+import { RunState } from './fsm';
 
 type State = {
   [key: string]: any
@@ -18,7 +20,7 @@ class GameState {
   map: Map;
   display: Display;
 
-  constructor(initialState = {}) {
+  constructor(initialState = { runState: RunState.PRERUN }) {
     this.world = new World();
     this.world.rng = Math.random;
     this.state = initialState;
@@ -41,7 +43,23 @@ class GameState {
   }
 
   update = () => {
-    this.world.update();
+    const runState = this.getState().runState;
+    const foo = match(
+      RunState.PRERUN, () => {
+        this.world.update();
+        this.setState(state => { state.runState = RunState.WAITING_INPUT; });
+      },
+      RunState.WAITING_INPUT, () => {
+      },
+      RunState.PLAYER_TURN, () => {
+        this.setState(state => { state.runState = RunState.MONSTER_TURN; });
+      },
+      RunState.MONSTER_TURN, () => {
+        this.world.update();
+        this.setState(state => { state.runState = RunState.WAITING_INPUT; });
+      },
+      () => {}
+    )(runState);
   }
 }
 

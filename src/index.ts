@@ -9,6 +9,7 @@ import state, { setupEntities } from './state';
 import { Intent, isPosition } from './state/components';
 import { RenderingSystem } from './state/systems';
 import { CellType } from './map';
+import { RunState } from './state/fsm';
 import './assets';
 
 export let loop;
@@ -18,6 +19,7 @@ const update = (delta: number) => {
 };
 
 const input = (player: string) => () => {
+  if (state.getState().runState !== RunState.WAITING_INPUT) { return; }
   const move = inputs.getValue('MOVE');
   const dwim = inputs.getValue('DWIM');
   if (move) {
@@ -40,6 +42,7 @@ const input = (player: string) => () => {
         dx, dy
       }
     } as Intent)
+    state.setState(state => { state.runState = RunState.PLAYER_TURN; });
   } else if (dwim) {
     const pos = state.world.getComponents(player).find(isPosition);
     const neighbors = state.map.getNeighbors(pos.x, pos.y);
@@ -63,6 +66,7 @@ const input = (player: string) => () => {
         intent: intent,
         payload: DIRS[dir] 
       } as Intent)
+      state.setState(state => { state.runState = RunState.PLAYER_TURN; });
     }
   }
   inputs.clear();
@@ -92,7 +96,7 @@ const main = () => {
   state.setState(state => { state.player = player; });
 
   loop = createGameLoop({
-    updateTimeStep: 1000/30,
+    updateTimeStep: 1000/60,
     fpsFilterStrength: 1,
     input: input(player),
     update,
