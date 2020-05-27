@@ -9,6 +9,7 @@ import {
   isIntentOfType, 
   Position,
   isPosition,
+  Viewshed,
   isViewshed,
 } from '../components';
 
@@ -59,6 +60,11 @@ const handleOpenDoor = (entity: string, components: BaseComponent[]): void => {
 
   if (target === CellType.DOOR_CLOSED) {
     state.map.setCell(targetX, targetY, CellType.DOOR_OPEN);
+    const entities = state.world.findEntitiesByComponents([Viewshed]);
+    for (const [entity, cmp] of entities) {
+      const viewshed = cmp.find(isViewshed);
+      if (viewshed) viewshed.dirty = true;
+    }
   } 
 }
 
@@ -74,5 +80,10 @@ const handleCloseDoor = (entity: string, components: BaseComponent[]): void => {
 
   if (target === CellType.DOOR_OPEN) {
     state.map.setCell(targetX, targetY, CellType.DOOR_CLOSED);
+    const entities = state.world.findEntitiesByComponents([Viewshed]);
+    for (const [entity, cmp] of entities) {
+      const viewshed = cmp.find(isViewshed);
+      if (viewshed) viewshed.dirty = true;
+    }
   }
 }

@@ -98,6 +98,7 @@ const main = () => {
   loop = createGameLoop({
     updateTimeStep: 1000/60,
     fpsFilterStrength: 1,
+    slow: 1,
     input: input(player),
     update,
     render: render(display),
