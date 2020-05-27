@@ -4,4 +4,4 @@ export { Intent, isIntent, isIntentOfType } from './intent';
 export { AI, isAI, isAIOfType } from './ai';
 export { Player, isPlayer } from './player';
 export { Viewshed, isViewshed } from './viewshed';
-
+export { Body, isBody } from './body';

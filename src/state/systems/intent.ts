@@ -11,6 +11,7 @@ import {
   isPosition,
   Viewshed,
   isViewshed,
+  isBody
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -37,10 +38,21 @@ const handleMove = (entity: string, components: BaseComponent[]): void => {
   const viewshed = components.find(isViewshed);
   const nextPosX = position.x + movementIntent.payload.dx;
   const nextPosY = position.y + movementIntent.payload.dy;
+  const nextPosSolid = state.map.isSolid(nextPosX, nextPosY);
+  const nextPosOccupant = state.map.entities.get(state.map.getIdx(nextPosX, nextPosY));
+  const blocker = nextPosOccupant
+    ? state.world
+      .getComponents(nextPosOccupant)
+      .filter(isBody)
+      .filter(c => c.solid).length > 0
+    : undefined;
+  const nextPosFree = (!nextPosSolid && !blocker);
 
-  if (!state.map.isSolid(nextPosX, nextPosY)) {
+  if (nextPosFree) {
     position.x = Math.min(Math.max(1, nextPosX), WIDTH - 2);
     position.y = Math.min(Math.max(1, nextPosY), HEIGHT - 2);
+
+    state.map.setEntityLocation(entity, state.map.getIdx(position.x, position.y));
 
     if (viewshed) {
       viewshed.dirty = true;

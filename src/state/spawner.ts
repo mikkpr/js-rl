@@ -1,5 +1,12 @@
 import state from '.';
-import { Position, Player, Glyph, AI, Viewshed } from './components';
+import {
+  Position,
+  Player,
+  Glyph,
+  AI,
+  Viewshed,
+  Body,
+} from './components';
 
 export const createPlayer = ({x, y}) => {
   const player = state.world.createEntity();
@@ -24,6 +31,10 @@ export const createPlayer = ({x, y}) => {
     dirty: true,
     _type: Viewshed
   } as Viewshed);
+  state.world.registerComponent(player, {
+    solid: true,
+    _type: Body
+  } as Body);
 
   return player;
 }
@@ -52,7 +63,10 @@ export const createKobold = ({x, y}) => {
     dirty: true,
     _type: Viewshed
   } as Viewshed);
-
+  state.world.registerComponent(kobold, {
+    solid: true,
+    _type: Body
+  } as Body);
 
   return kobold;
 }
