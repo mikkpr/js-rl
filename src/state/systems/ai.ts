@@ -2,13 +2,13 @@ import Alea from 'alea';
 
 import { BaseComponent, System } from 'ecs-machina';
 import { WorldWithRNG } from '..';
-import { Player, isPosition } from '../components';
 import state from '..';
 
 import {
   Intent,
   AI,
-  isAI 
+  isAI,
+  isPosition
 } from '../components';
 
 export class AISystem extends System {  

@@ -1,9 +1,5 @@
-import { RenderingSystem } from './rendering';
-import { AISystem } from './ai';
-import { IntentSystem } from './intent';
+export { RenderingSystem } from './rendering';
+export { AISystem } from './ai';
+export { IntentSystem } from './intent';
+export { VisibilitySystem } from './visibility';
 
-export {
-  RenderingSystem,
-  AISystem,
-  IntentSystem,
-}

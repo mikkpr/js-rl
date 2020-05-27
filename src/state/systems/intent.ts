@@ -8,7 +8,8 @@ import {
   isIntent,
   isIntentOfType, 
   Position,
-  isPosition 
+  isPosition,
+  isViewshed,
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -32,12 +33,17 @@ export class IntentSystem extends System {
 const handleMove = (entity: string, components: BaseComponent[]): void => {
   const movementIntent = components.find(isIntentOfType('MOVE'));
   const position = components.find(isPosition);
+  const viewshed = components.find(isViewshed);
   const nextPosX = position.x + movementIntent.payload.dx;
   const nextPosY = position.y + movementIntent.payload.dy;
 
   if (!state.map.isSolid(nextPosX, nextPosY)) {
     position.x = Math.min(Math.max(1, nextPosX), WIDTH - 2);
     position.y = Math.min(Math.max(1, nextPosY), HEIGHT - 2);
+
+    if (viewshed) {
+      viewshed.dirty = true;
+    }
   }
 }
 

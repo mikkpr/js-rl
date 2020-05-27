@@ -1,5 +1,5 @@
 import state from '.';
-import { Position, Player, Glyph, AI } from './components';
+import { Position, Player, Glyph, AI, Viewshed } from './components';
 
 export const createPlayer = ({x, y}) => {
   const player = state.world.createEntity();
@@ -17,6 +17,13 @@ export const createPlayer = ({x, y}) => {
     bg: '#000',
     _type: Glyph
   } as Glyph);
+  state.world.registerComponent(player, {
+    range: 7,
+    exploredCells: new Set<number>(),
+    visibleCells: new Set<number>(),
+    dirty: true,
+    _type: Viewshed
+  } as Viewshed);
 
   return player;
 }
@@ -38,6 +45,14 @@ export const createKobold = ({x, y}) => {
     _type: AI,
     ai: ['AVOID_PLAYER', 'RANDOM_WALK']
   } as AI);
+  state.world.registerComponent(kobold, {
+    range: 5,
+    exploredCells: new Set<number>(),
+    visibleCells: new Set<number>(),
+    dirty: true,
+    _type: Viewshed
+  } as Viewshed);
+
 
   return kobold;
 }

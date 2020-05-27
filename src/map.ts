@@ -1,4 +1,5 @@
 import { match } from 'egna';
+import { Mrpas } from 'mrpas';
 import { DIRS } from './constants';
 
 export enum CellType {
@@ -26,15 +27,22 @@ export class Map {
   cells: CellType[];
   width: number;
   height: number;
+  fov: Mrpas;
 
   constructor(w: number, h: number) {
     this.width = w;
     this.height = h;
     this.cells = (new Array(w * h)).fill(CellType.FLOOR);
     this.setMapFromString(DEBUGMAP);
+
+    this.fov = new Mrpas(this.width, this.height, this.isTransparent);
   }
 
-  setMapFromString(str) {
+  getIdx = (x: number, y: number): number => {
+    return y * this.width + x;
+  }
+
+  setMapFromString(str: string) {
     const rows = str.trim().split('\n');
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -51,13 +59,13 @@ export class Map {
     } 
   }
 
-  getCell(...args: number[]): CellType | null {
+  getCell = (...args: number[]): CellType | null => {
     let idx: number;
     if (args.length === 1) {
       [idx] = args;
     } else if (args.length === 2) {
       const [x, y] = args;
-      idx = y * this.width + x;
+      idx = this.getIdx(x, y);
     }
 
     if (idx >= 0 && idx < this.cells.length) {
@@ -67,7 +75,7 @@ export class Map {
     }
   } 
 
-  setCell(...args: [number, CellType] | [number, number, CellType]) {
+  setCell = (...args: [number, CellType] | [number, number, CellType]) => {
     let idx: number;
     let type: CellType;
     if (args.length === 2) {
@@ -76,7 +84,7 @@ export class Map {
       let x: number;
       let y: number;
       [x, y, type] = args;
-      idx = y * this.width + x;
+      idx = this.getIdx(x, y);
     }
     if (idx >= 0 && idx < this.cells.length) {  
       this.cells[idx] = type;
@@ -86,7 +94,7 @@ export class Map {
     }
   }
 
-  getNeighbors(...args: number[]) {
+  getNeighbors = (...args: number[]) => {
     let x: number;
     let y: number;
     if (args.length === 1) {
@@ -110,17 +118,17 @@ export class Map {
     return neighbors;
   }
 
-  getCellGlyph(...args: number[]) {
+  getCellGlyph = (...args: number[]) => {
     const cell = this.getCell(...args);
     return CellGlyphs[cell];
   }
 
-  getCellColor(...args: number[]) {
+  getCellColor = (...args: number[]) => {
     const cell = this.getCell(...args);
     return CellColors[cell];
   }
 
-  isSolid(...args: number[]) {
+  isSolid = (...args: number[]) => {
     const cell = this.getCell(...args);
     const solidCellTypes = [
       CellType.WALL,
@@ -128,6 +136,16 @@ export class Map {
     ];
 
     return solidCellTypes.includes(cell);
+  }
+
+  isTransparent = (...args: number[]) => {
+    const cell = this.getCell(...args);
+    const transparentCellTypes = [
+      CellType.FLOOR,
+      CellType.DOOR_OPEN,
+    ];
+
+    return transparentCellTypes.includes(cell);
   }
 }
 

@@ -5,7 +5,7 @@ import { Display } from 'rot-js';
 import { Map } from '../map';
 import { createPlayer, createKobold } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
-import { IntentSystem, RenderingSystem, AISystem } from './systems';
+import { VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
 import { RunState } from './fsm';
 
 type State = {
@@ -26,8 +26,9 @@ class GameState {
     this.state = initialState;
     this.map = new Map(MAPWIDTH, MAPHEIGHT);
 
-    this.world.registerSystem(new IntentSystem());
     this.world.registerSystem(new AISystem());
+    this.world.registerSystem(new IntentSystem());
+    this.world.registerSystem(new VisibilitySystem());
     this.world.registerSystem(new RenderingSystem());
   }
 
