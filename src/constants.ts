@@ -1,5 +1,5 @@
-export const WIDTH = 50;
-export const HEIGHT = 50;
+export const WIDTH = 49;
+export const HEIGHT = 25;
 
 export const MAPWIDTH = WIDTH * 1;
 export const MAPHEIGHT = HEIGHT * 1;

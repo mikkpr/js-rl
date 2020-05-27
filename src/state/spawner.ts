@@ -6,6 +6,7 @@ import {
   AI,
   Viewshed,
   Body,
+  Camera,
 } from './components';
 
 export const createPlayer = ({x, y}) => {
@@ -14,27 +15,31 @@ export const createPlayer = ({x, y}) => {
     _type: Player
   });
   state.world.registerComponent(player, {
+    _type: Position,
     x: x,
     y: y,
-    _type: Position
   } as Position);
   state.world.registerComponent(player, {
+    _type: Glyph,
     glyph: '@',
     fg: '#fa0',
     bg: '#000',
-    _type: Glyph
   } as Glyph);
   state.world.registerComponent(player, {
-    range: 7,
+    _type: Viewshed,
+    range: 24,
     exploredCells: new Set<number>(),
     visibleCells: new Set<number>(),
     dirty: true,
-    _type: Viewshed
   } as Viewshed);
   state.world.registerComponent(player, {
+    _type: Body,
     solid: true,
-    _type: Body
   } as Body);
+  state.world.registerComponent(player, {
+    _type: Camera,
+    active: true,
+  } as Camera);
 
   return player;
 }

@@ -1,26 +1,38 @@
 import { BaseComponent, System } from 'ecs-machina';
-import { isViewshed } from '../components';
 import state from '..';
+import { WIDTH, HEIGHT } from '../../constants';
 
 import {
   Glyph,
   isGlyph, 
   Position,
-  isPosition 
+  isPosition,
+  isViewshed,
 } from '../components';
 
 export class RenderingSystem extends System { 
   public requiredComponents = [Glyph, Position];
 
   public beforeDraw() {
-    const { width, height } = state.map;
+    const { map, camera } = state;
+    const { width, height } = map;
     state.display.clear();
-    const { visibleCells } = state.world.getComponents(state.getState().player).find(isViewshed);
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
+    const [cameraX, cameraY] = camera;
+    const cameraBounds = [
+      ~~(cameraX - WIDTH/2),
+      ~~(cameraY - HEIGHT/2),
+      ~~(cameraX + WIDTH/2),
+      ~~(cameraY + HEIGHT/2)
+    ];
+    const { visibleCells, exploredCells } = state.world.getComponents(state.getState().player).find(isViewshed);
+    for (let x = cameraBounds[0]; x < cameraBounds[2]; x++) {
+      for (let y = cameraBounds[1]; y < cameraBounds[3]; y++) {
+        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) { continue; }
         const idx = state.map.getIdx(x, y);
         if (visibleCells.has(idx)) {
-          state.display.draw(x, y, state.map.getCellGlyph(x, y), state.map.getCellColor(x, y), 'black');
+          state.display.draw(x - cameraBounds[0], y - cameraBounds[1], state.map.getCellGlyph(x, y), state.map.getCellColor(x, y), 'black');
+        } else if (exploredCells.has(idx)) {
+          state.display.draw(x - cameraBounds[0], y - cameraBounds[1], state.map.getCellGlyph(x, y), '#111', 'black');
         }
       }
     }
@@ -28,11 +40,22 @@ export class RenderingSystem extends System {
   }
 
   public drawEntity(entity: string, components: BaseComponent[], { display }): void {
-    const { visibleCells } = state.world.getComponents(state.getState().player).find(isViewshed);
     const position = components.find(isPosition);
+    const { x, y } = position;
+    if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) { return; }
+    const { camera } = state;
+    const [cameraX, cameraY] = camera;
+    const cameraBounds = [
+      ~~(cameraX - WIDTH/2),
+      ~~(cameraY - HEIGHT/2),
+      ~~(cameraX + WIDTH/2),
+      ~~(cameraY + HEIGHT/2)
+    ];
+ 
+    const { visibleCells } = state.world.getComponents(state.getState().player).find(isViewshed);
     const glyph = components.find(isGlyph);
     if (visibleCells.has(state.map.getIdx(position.x, position.y))) {
-      display.draw(position.x, position.y, glyph.glyph, glyph.fg, glyph.bg);
+      display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
     }
   }
 }

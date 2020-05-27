@@ -89,8 +89,8 @@ const main = () => {
   document.querySelector('.main-container .loading').remove();
 
   const { player } = setupEntities({
-    playerX: ~~(WIDTH / 2),
-    playerY: ~~(HEIGHT / 2),
+    playerX: 5,
+    playerY: 5,
   });
 
   state.setState(state => { state.player = player; });

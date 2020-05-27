@@ -45,12 +45,18 @@ const handleMove = (entity: string, components: BaseComponent[]): void => {
       .getComponents(nextPosOccupant)
       .filter(isBody)
       .filter(c => c.solid).length > 0
-    : undefined;
-  const nextPosFree = (!nextPosSolid && !blocker);
+    : undefined; 
+  const nextPosOutOfBounds = (
+    nextPosX < 0 ||
+    nextPosY < 0 ||
+    nextPosX >= state.map.width ||
+    nextPosY >= state.map.height
+  );
+  const nextPosFree = (!nextPosSolid && !blocker && !nextPosOutOfBounds);
 
   if (nextPosFree) {
-    position.x = Math.min(Math.max(1, nextPosX), WIDTH - 2);
-    position.y = Math.min(Math.max(1, nextPosY), HEIGHT - 2);
+    position.x = nextPosX;
+    position.y = nextPosY;
 
     state.map.setEntityLocation(entity, state.map.getIdx(position.x, position.y));
 

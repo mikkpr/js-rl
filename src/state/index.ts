@@ -5,7 +5,7 @@ import { Display } from 'rot-js';
 import { WorldMap } from '../map';
 import { createPlayer, createKobold } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
-import { VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
+import { CameraSystem, VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
 import { RunState } from './fsm';
 
 type State = {
@@ -19,15 +19,18 @@ class GameState {
   state: State;
   map: WorldMap;
   display: Display;
+  camera: [number, number];
 
   constructor(initialState = { runState: RunState.PRERUN }) {
     this.world = new World();
     this.world.rng = Math.random;
     this.state = initialState;
     this.map = new WorldMap(MAPWIDTH, MAPHEIGHT);
+    this.camera = [0, 0];
 
     this.world.registerSystem(new AISystem());
     this.world.registerSystem(new IntentSystem());
+    this.world.registerSystem(new CameraSystem());
     this.world.registerSystem(new VisibilitySystem());
     this.world.registerSystem(new RenderingSystem());
   }
@@ -41,6 +44,15 @@ class GameState {
   getState = (getter?: (state: State) => State): State => {
     if (!getter) { return this.state; }
     return getter(this.state);
+  }
+
+  shiftCamera = (dx, dy) => {
+    this.camera[0] += dx;
+    this.camera[1] += dy;
+  }
+
+  setCamera = (x, y) => {
+    this.camera = [x, y];
   }
 
   update = () => {
@@ -82,7 +94,7 @@ export const setupEntities = ({
   const player = createPlayer({x: playerX, y: playerY});
   state.map.setEntityLocation(player, state.map.getIdx(playerX, playerY));
 
-  const kobold = createKobold({x: 10, y: 10});
+  const kobold = createKobold({x: 2, y: 2});
   state.map.setEntityLocation(kobold, state.map.getIdx(10, 10));
 
   return {

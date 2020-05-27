@@ -26,15 +26,17 @@ body {
 * {
     box-sizing: border-box;
 }
-.main-contianer {
+.main-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 512px;
-    width: 512px;
-    outline: 1px solid rgba(255, 255, 255, 0.15);
+    width: 384px;
+    height: 384px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
+    margin: 32px;
 }
+
 .main-container .loading {
     position: absolute;
     top: 0;
