@@ -24,6 +24,7 @@ export class VisibilitySystem extends System {
     viewshed.visibleCells.clear();
     state.map.fov.compute(position.x, position.y, viewshed.range, state.map.isTransparent, (x, y) => {
       const idx = state.map.getIdx(x, y);
+      if (idx == null) { return; }
       viewshed.visibleCells.add(idx);
       viewshed.exploredCells.add(idx);
     });

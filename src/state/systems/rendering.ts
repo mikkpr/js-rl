@@ -27,11 +27,10 @@ export class RenderingSystem extends System {
     const { visibleCells, exploredCells } = state.world.getComponents(state.getState().player).find(isViewshed);
     for (let x = cameraBounds[0]; x < cameraBounds[2]; x++) {
       for (let y = cameraBounds[1]; y < cameraBounds[3]; y++) {
-        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) { continue; }
         const idx = state.map.getIdx(x, y);
-        if (visibleCells.has(idx)) {
+        if (idx != null && visibleCells.has(idx)) {
           state.display.draw(x - cameraBounds[0], y - cameraBounds[1], state.map.getCellGlyph(x, y), state.map.getCellColor(x, y), 'black');
-        } else if (exploredCells.has(idx)) {
+        } else if (idx != null && exploredCells.has(idx)) {
           state.display.draw(x - cameraBounds[0], y - cameraBounds[1], state.map.getCellGlyph(x, y), '#111', 'black');
         }
       }
@@ -54,7 +53,8 @@ export class RenderingSystem extends System {
  
     const { visibleCells } = state.world.getComponents(state.getState().player).find(isViewshed);
     const glyph = components.find(isGlyph);
-    if (visibleCells.has(state.map.getIdx(position.x, position.y))) {
+    const idx = state.map.getIdx(position.x, position.y);
+    if (idx != null && visibleCells.has(idx)) {
       display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
     }
   }

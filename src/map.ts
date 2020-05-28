@@ -1,6 +1,7 @@
 import { match } from 'egna';
 import { Mrpas } from 'mrpas';
 import { DIRS } from './constants';
+import { getWallGlyphForMask, normalizeScore } from './utils/map';
 
 export enum CellType {
   FLOOR = 'FLOOR',
@@ -11,7 +12,7 @@ export enum CellType {
 
 const CellGlyphs = {
   [CellType.FLOOR]: '∙',
-  [CellType.WALL]: '▓',
+  [CellType.WALL]: '#',
   [CellType.DOOR_OPEN]: '\'',
   [CellType.DOOR_CLOSED]: '+',
 }
@@ -43,11 +44,13 @@ export class WorldMap {
     this.fov = new Mrpas(this.width, this.height, this.isTransparent);
   }
 
-  getIdx = (x: number, y: number): number => {
+  getIdx = (x: number, y: number): number | null => {
+    if (!(x >= 0 && x < this.width && y >= 0 && y < this.height)) { return null; }
+    
     return y * this.width + x;
   }
 
-  setMapFromString(str: string) {
+  setMapFromString = (str: string) => {
     const rows = str.trim().split('\n');
     this.height = rows.length;
     this.width = rows[0].split('').length;
@@ -77,7 +80,7 @@ export class WorldMap {
       idx = this.getIdx(x, y);
     }
 
-    if (idx >= 0 && idx < this.cells.length) {
+    if (idx != null && idx >= 0 && idx < this.cells.length) {
       return this.cells[idx];
     } else {
       return null;
@@ -95,7 +98,7 @@ export class WorldMap {
       [x, y, type] = args;
       idx = this.getIdx(x, y);
     }
-    if (idx >= 0 && idx < this.cells.length) {  
+    if (idx != null && idx >= 0 && idx < this.cells.length) {  
       this.cells[idx] = type;
       return true;
     } else {
@@ -114,7 +117,7 @@ export class WorldMap {
       [x, y] = args;
     }
 
-    const cell = this.getCell(...args);
+    const cell = this.getCell(x, y);
     if (!cell) { return []; }
 
     const neighbors = {};  
@@ -127,8 +130,12 @@ export class WorldMap {
     return neighbors;
   }
 
-  getCellGlyph = (...args: number[]) => {
+  getCellGlyph = (...args: number[]) => { 
     const cell = this.getCell(...args);
+    if (cell === CellType.WALL) {
+      const mask = this.getBitmask(...args);
+      return getWallGlyphForMask(mask);
+    }
     return CellGlyphs[cell];
   }
 
@@ -158,6 +165,7 @@ export class WorldMap {
   }
 
   setEntityLocation = (entity: string, idx: number) => {
+    if (idx == null) { return; }
     const prevIdx = this.getEntityLocation(entity);
     this.locations.set(entity, idx);
     if (typeof prevIdx !== 'undefined') {
@@ -176,6 +184,31 @@ export class WorldMap {
     if (typeof prevIdx !== 'undefined') {
       this.entities.delete(prevIdx);
     }
+  }
+
+  getBitmask = (...args: number[]) => {  
+    const scores = {
+      NW: 1,
+      N: 2,
+      NE: 4,
+      W: 8,
+      E: 16,
+      SW: 32,
+      S: 64,
+      SE: 128,
+    };
+    const neighbors = this.getNeighbors(...args);
+    let score = 0;
+    const wallCells = [
+      CellType.WALL
+    ];
+    for (let dir of Object.keys(scores).filter(k => ['N', 'E', 'S', 'W'].includes(k))) {
+      const neighbor = neighbors[dir];
+      if (neighbor && wallCells.includes(neighbor)) {
+        score += scores[dir];
+      }
+    }
+    return score;
   }
 };
 
