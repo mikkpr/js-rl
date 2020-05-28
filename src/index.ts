@@ -4,7 +4,7 @@ import { inputs } from './keys';
 import { match } from 'egna';
 
 import { setupDisplay } from './setup';
-import { WIDTH, HEIGHT, DIRS } from './constants';
+import { LOG_HEIGHT, WIDTH, HEIGHT, DIRS } from './constants';
 import state, { setupEntities } from './state';
 import { Intent, isPosition } from './state/components';
 import { RenderingSystem } from './state/systems';
@@ -81,7 +81,7 @@ const render = (display) => (interpolation: number) => {
 const main = () => {
   const display = setupDisplay({
     width: WIDTH,
-    height: HEIGHT
+    height: HEIGHT + LOG_HEIGHT
   });
 
   state.display = display;
@@ -93,7 +93,10 @@ const main = () => {
     playerY: 5,
   });
 
-  state.setState(state => { state.player = player; });
+  state.setState(state => {
+    state.player = player;
+    state.log = [];
+  });
 
   loop = createGameLoop({
     updateTimeStep: 1000/60,

@@ -16,3 +16,4 @@ export const DIRS = {
   NONE: { dx: 0, dy: 0 }
 };
 
+export const LOG_HEIGHT = 7;

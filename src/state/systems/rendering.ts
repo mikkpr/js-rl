@@ -1,6 +1,7 @@
 import { BaseComponent, System } from 'ecs-machina';
 import state from '..';
 import { WIDTH, HEIGHT } from '../../constants';
+import { drawGUI } from '../../gui';
 
 import {
   Glyph,
@@ -35,7 +36,7 @@ export class RenderingSystem extends System {
         }
       }
     }
-
+    drawGUI();
   }
 
   public drawEntity(entity: string, components: BaseComponent[], { display }): void {

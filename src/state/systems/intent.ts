@@ -83,6 +83,7 @@ const handleOpenDoor = (entity: string, components: BaseComponent[]): void => {
       const viewshed = cmp.find(isViewshed);
       if (viewshed) viewshed.dirty = true;
     }
+    state.log('You open the door.');
   } 
 }
 
@@ -103,5 +104,6 @@ const handleCloseDoor = (entity: string, components: BaseComponent[]): void => {
       const viewshed = cmp.find(isViewshed);
       if (viewshed) viewshed.dirty = true;
     }
+    state.log('You close the door.');
   }
 }

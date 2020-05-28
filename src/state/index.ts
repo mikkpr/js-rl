@@ -55,6 +55,12 @@ class GameState {
     this.camera = [x, y];
   }
 
+  log = (message) => {
+    this.setState(state => {
+      state.log = state.log.concat(message);
+    });
+  }
+
   update = () => {
     const runState = this.getState().runState;
     match(
