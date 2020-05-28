@@ -35,6 +35,6 @@ const drawLog = (log) => {
     const line = lastLines[lastLines.length - i - 1];
     const chars = '4579bdf'.split('');
     const lineColor = `#${ (new Array(3)).fill(chars[i + colorOffset]).join('') }`;
-    state.display.drawText(2, HEIGHT + i, `%c{${lineColor}}${line}`);
+    state.display.drawText(1, HEIGHT + i, `%c{${lineColor}}${line}`);
   }
 }

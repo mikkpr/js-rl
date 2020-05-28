@@ -7,6 +7,9 @@ import {
   Viewshed,
   Body,
   Camera,
+  MeleeCombat,
+  Health,
+  Name,
 } from './components';
 
 export const createPlayer = ({x, y}) => {
@@ -40,6 +43,20 @@ export const createPlayer = ({x, y}) => {
     _type: Camera,
     active: true,
   } as Camera);
+  state.world.registerComponent(player, {
+    _type: MeleeCombat,
+    damage: 1
+  } as MeleeCombat);
+  state.world.registerComponent(player, {
+    _type: Health,
+    health: 5,
+    maxHealth: 5,
+    dead: false
+  } as Health);
+  state.world.registerComponent(player, {
+    _type: Name,
+    name: 'you'
+  } as Name);
 
   return player;
 }
@@ -72,6 +89,21 @@ export const createKobold = ({x, y}) => {
     solid: true,
     _type: Body
   } as Body);
+  state.world.registerComponent(kobold, {
+    _type: MeleeCombat,
+    damage: 1
+  } as MeleeCombat);
+  state.world.registerComponent(kobold, {
+    _type: Health,
+    health: 2,
+    maxHealth: 2,
+    dead: false
+  } as Health);
+  state.world.registerComponent(kobold, {
+    _type: Name,
+    name: 'kobold'
+  } as Name);
+
 
   return kobold;
 }

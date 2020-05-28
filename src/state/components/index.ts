@@ -6,3 +6,7 @@ export { Player, isPlayer } from './player';
 export { Viewshed, isViewshed } from './viewshed';
 export { Body, isBody } from './body';
 export { Camera, isCamera } from './camera';
+export { MeleeCombat, isMeleeCombat } from './combat';
+export { Health, isHealth } from './health';
+export { Name, isName } from './name';
+

@@ -170,8 +170,8 @@ export class WorldMap {
     this.locations.set(entity, idx);
     if (typeof prevIdx !== 'undefined') {
       this.entities.delete(prevIdx);
-      this.entities.set(idx, entity);
     }
+    this.entities.set(idx, entity);
   }
 
   getEntityLocation = (entity: string) => {

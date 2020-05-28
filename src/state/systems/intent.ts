@@ -11,7 +11,11 @@ import {
   isPosition,
   Viewshed,
   isViewshed,
-  isBody
+  isBody,
+  isMeleeCombat,
+  isHealth,
+  isAI,
+  isName,
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -26,7 +30,9 @@ export class IntentSystem extends System {
       handleOpenDoor(entity, components);
     } else if (isIntentOfType('CLOSE_DOOR')(intent)) {
       handleCloseDoor(entity, components);
-    } 
+    } else if (isIntentOfType('ATTACK')(intent)) {
+      handleAttack(entity, components);
+    }
 
     this.world.removeComponentByType(entity, Intent);
   }
@@ -36,6 +42,7 @@ const handleMove = (entity: string, components: BaseComponent[]): void => {
   const movementIntent = components.find(isIntentOfType('MOVE'));
   const position = components.find(isPosition);
   const viewshed = components.find(isViewshed);
+  const meleeCombat = components.find(isMeleeCombat);
   const nextPosX = position.x + movementIntent.payload.dx;
   const nextPosY = position.y + movementIntent.payload.dy;
   const nextPosSolid = state.map.isSolid(nextPosX, nextPosY);
@@ -63,6 +70,9 @@ const handleMove = (entity: string, components: BaseComponent[]): void => {
     if (viewshed) {
       viewshed.dirty = true;
     }
+  } else if (blocker && meleeCombat) {
+    movementIntent.intent = 'ATTACK';
+    handleAttack(entity, components);
   }
 }
 
@@ -106,4 +116,42 @@ const handleCloseDoor = (entity: string, components: BaseComponent[]): void => {
     }
     state.log('You close the door.');
   }
+}
+
+const handleAttack = (entity: string, components: BaseComponent[]): void => {
+  const attackIntent = components.find(isIntentOfType('ATTACK'));
+  const position = components.find(isPosition);
+  const meleeCombat = components.find(isMeleeCombat);
+  if (!meleeCombat) { return; }
+
+  const { payload } = attackIntent as Intent;
+
+  const targetX = position.x + payload.dx;
+  const targetY = position.y + payload.dy;
+
+  const target = state.map.entities.get(state.map.getIdx(targetX, targetY));
+
+  if (target) {
+    handleReceiveDamage(target, entity);
+  }
+}
+
+const handleReceiveDamage = (victim: string, attacker: string): void => {
+  const health = state.world.getComponents(victim).find(isHealth);
+  const source = state.world.getComponents(attacker).find(isMeleeCombat);
+  if (!health || !source || health.dead) { return; }
+  const nameCmp = state.world.getComponents(victim).find(isName);
+  const name = nameCmp ? `the ${nameCmp.name}` : 'it'
+  state.log(`You kick ${name} in the shins.`)
+  health.health -= source.damage;
+  if (health.health <= 0) {
+    health.dead = true;
+    const ai = state.world.getComponents(victim).find(isAI);
+    const name = state.world.getComponents(victim).find(isName);
+    const nameStr = name ? `The ${name.name}` : 'It';
+    if (ai) { ai.ai = []; }
+    state.log(`${nameStr} is dead!`);
+  }
+
+
 }
