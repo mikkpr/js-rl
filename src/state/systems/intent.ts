@@ -2,6 +2,7 @@ import { BaseComponent, System } from 'ecs-machina';
 import { WIDTH, HEIGHT } from '../../constants';
 import state from '..';
 import { CellType } from '../../map';
+import { rollDice } from '../../utils/rng';
 
 import {
   Intent,
@@ -137,13 +138,18 @@ const handleAttack = (entity: string, components: BaseComponent[]): void => {
 }
 
 const handleReceiveDamage = (victim: string, attacker: string): void => {
+  const player = state.getState().player;
   const health = state.world.getComponents(victim).find(isHealth);
   const source = state.world.getComponents(attacker).find(isMeleeCombat);
+  const name = state.world.getComponents(attacker).find(isName);
   if (!health || !source || health.dead) { return; }
-  const nameCmp = state.world.getComponents(victim).find(isName);
-  const name = nameCmp ? `the ${nameCmp.name}` : 'it'
-  state.log(`You kick ${name} in the shins.`)
-  health.health -= source.damage;
+  const victimNameCmp = state.world.getComponents(victim).find(isName);
+  const victimName = victimNameCmp ? `the ${victimNameCmp.name}` : 'someone';
+  const verb = source.verb.split('|')[attacker === player ? 0 : 1];
+  const aggressor = attacker === player ? 'You' : `The ${name.name}`;
+  const damage = typeof source.damage === 'string' ? rollDice(source.damage) : source.damage;
+  health.health -= damage;
+  state.log(`${aggressor} ${verb} ${victimName} for ${damage} damage.`)
   if (health.health <= 0) {
     health.dead = true;
     const ai = state.world.getComponents(victim).find(isAI);
@@ -152,6 +158,4 @@ const handleReceiveDamage = (victim: string, attacker: string): void => {
     if (ai) { ai.ai = []; }
     state.log(`${nameStr} is dead!`);
   }
-
-
 }

@@ -45,7 +45,8 @@ export const createPlayer = ({x, y}) => {
   } as Camera);
   state.world.registerComponent(player, {
     _type: MeleeCombat,
-    damage: 1
+    damage: '1d3',
+    verb: 'punch|punches'
   } as MeleeCombat);
   state.world.registerComponent(player, {
     _type: Health,
@@ -91,7 +92,8 @@ export const createKobold = ({x, y}) => {
   } as Body);
   state.world.registerComponent(kobold, {
     _type: MeleeCombat,
-    damage: 1
+    damage: '1d2',
+    verb: 'claw|claws'
   } as MeleeCombat);
   state.world.registerComponent(kobold, {
     _type: Health,

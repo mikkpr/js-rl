@@ -46,16 +46,16 @@ class GameState {
     return getter(this.state);
   }
 
-  shiftCamera = (dx, dy) => {
+  shiftCamera = (dx: number, dy: number) => {
     this.camera[0] += dx;
     this.camera[1] += dy;
   }
 
-  setCamera = (x, y) => {
+  setCamera = (x: number, y: number) => {
     this.camera = [x, y];
   }
 
-  log = (message) => {
+  log = (message: string) => {
     this.setState(state => {
       state.log = state.log.concat(message);
     });

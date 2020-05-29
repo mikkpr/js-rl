@@ -69,6 +69,8 @@ const handleRandomWalk = (entity, components) => {
     const dx = [-1, 0, 1][Math.round(rng() * 2)];
     const dy = [-1, 0, 1][Math.round(rng() * 2)];
 
+    if (dx === 0 && dy === 0) { return; }
+
     return {
       _type: Intent,
       intent: 'MOVE',

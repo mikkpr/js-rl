@@ -1,7 +1,8 @@
 import { BaseComponent } from 'ecs-machina';
 
 export interface MeleeCombat extends BaseComponent {
-  damage: number;
+  damage: number | string;
+  verb: string;
 }
 
 export const MeleeCombat = 'MeleeCombat';
