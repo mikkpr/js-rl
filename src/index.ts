@@ -6,7 +6,7 @@ import { match } from 'egna';
 import { setupDisplay } from './setup';
 import { STATS_HEIGHT, LOG_HEIGHT, WIDTH, HEIGHT, DIRS } from './constants';
 import state, { setupEntities } from './state';
-import { Intent, isPosition } from './state/components';
+import { Intent, Position } from './state/components';
 import { RenderingSystem } from './state/systems';
 import { CellType } from './map';
 import { RunState } from './state/fsm';
@@ -44,7 +44,7 @@ const input = (player: string) => () => {
     } as Intent)
     state.setState(state => { state.runState = RunState.PLAYER_TURN; });
   } else if (dwim) {
-    const pos = state.world.getComponents(player).find(isPosition);
+    const pos = state.world.getComponentMap(player).get(Position) as Position;
     const neighbors = state.map.getNeighbors(pos.x, pos.y);
     let intent: string;
     let dir; 
@@ -90,10 +90,7 @@ const main = () => {
 
   document.querySelector('.main-container .loading').remove();
 
-  const { player } = setupEntities({
-    playerX: 5,
-    playerY: 5,
-  });
+  const { player } = setupEntities();
 
   state.setState(state => {
     state.player = player;

@@ -1,9 +1,9 @@
-import { World } from 'ecs-machina';
+import { World, BaseComponent } from 'ecs-machina';
 import produce from 'immer';
 import { match } from 'egna';
 import { Display } from 'rot-js';
 import { WorldMap } from '../map';
-import { createPlayer, createKobold } from './spawner';
+import { createPlayer, createKobold, createKey } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
 import { CameraSystem, VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
 import { RunState } from './fsm';
@@ -12,10 +12,13 @@ type State = {
   [key: string]: any
 }
 
-export type WorldWithRNG = World & { rng?: () => number };
+export type MyWorld = World & {
+  rng?: () => number;
+  getComponentMap?: (entity: string) => Map<string, BaseComponent>
+};
 
 class GameState {
-  world: WorldWithRNG;
+  world: MyWorld;
   state: State;
   map: WorldMap;
   display: Display;
@@ -23,6 +26,13 @@ class GameState {
 
   constructor(initialState = { runState: RunState.PRERUN }) {
     this.world = new World();
+    this.world.getComponentMap = (entity: string) => {
+      const cmp = this.world.getComponents(entity);
+      const map = new Map<string, BaseComponent>();
+      cmp.forEach(c => map.set(c._type, c));
+
+      return map;
+    }
     this.world.rng = Math.random;
     this.state = initialState;
     this.map = new WorldMap(MAPWIDTH, MAPHEIGHT);
@@ -87,24 +97,20 @@ eval('window.RL = state;');
 
 export default state;
 
-export const setupEntities = ({
-  playerX,
-  playerY
-}: {
-  playerX: number;
-  playerY: number;
-}): {
+export const setupEntities = (): {
   player: string;
   kobold: string;
+  key: string;
 } => {
-  const player = createPlayer({x: playerX, y: playerY});
-  state.map.setEntityLocation(player, state.map.getIdx(playerX, playerY));
+  const player = createPlayer({x: 4, y: 6});
 
   const kobold = createKobold({x: 2, y: 2});
-  state.map.setEntityLocation(kobold, state.map.getIdx(10, 10));
+
+  const key = createKey({ x: 6, y: 6 });
 
   return {
     player,
-    kobold
+    kobold,
+    key
   };
 }

@@ -1,5 +1,4 @@
 import { BaseComponent, System } from 'ecs-machina';
-import { WIDTH, HEIGHT } from '../../constants';
 import state from '..';
 import { CellType } from '../../map';
 import { rollDice } from '../../utils/rng';
@@ -12,11 +11,16 @@ import {
   isPosition,
   Viewshed,
   isViewshed,
-  isBody,
   isMeleeCombat,
   isHealth,
-  isAI,
-  isName,
+  Glyph,
+  Name,
+  Item,
+  AI,
+  Inventory,
+  Body,
+  Health,
+  MeleeCombat
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -50,12 +54,12 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
   const nextPosX = position.x + movementIntent.payload.dx;
   const nextPosY = position.y + movementIntent.payload.dy;
   const nextPosSolid = state.map.isSolid(nextPosX, nextPosY);
-  const nextPosOccupant = state.map.entities.get(state.map.getIdx(nextPosX, nextPosY));
-  const blocker = nextPosOccupant
-    ? state.world
-      .getComponents(nextPosOccupant)
-      .filter(isBody)
-      .filter(c => c.solid).length > 0 && nextPosOccupant
+  const nextPosOccupants = (state.map.entities.get(state.map.getIdx(nextPosX, nextPosY)) || []).filter(e => {
+    const body = state.world.getComponentMap(e).get(Body) as Body;
+    return body && body.solid;
+  });
+  const blocker = nextPosOccupants && nextPosOccupants.length > 0
+    ? nextPosOccupants[0]
     : undefined; 
   const nextPosOutOfBounds = (
     nextPosX < 0 ||
@@ -68,11 +72,28 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
   if (nextPosFree) {
     position.x = nextPosX;
     position.y = nextPosY;
-
-    state.map.setEntityLocation(entity, state.map.getIdx(position.x, position.y));
+    const idx = state.map.getIdx(position.x, position.y);
+    state.map.setEntityLocation(entity, idx);
 
     if (viewshed) {
       viewshed.dirty = true;
+    }
+
+    const others = (state.map.entities.get(idx) || []).filter(e => e !== entity);
+    if (others.length > 0) {
+      const str = others.reduce((str, other, idx) => {
+        const nameCmp = state.world.getComponentMap(other).get(Name) as Name;
+        if (!nameCmp) { return str; }
+
+        if (idx === 0) { return `a ${nameCmp.name}`; }
+        if (idx === others.length - 1) {
+          return `${str} and a ${nameCmp.name}`;
+        }
+
+        return `${str}, a ${nameCmp.name}`;
+      }, '');
+
+      state.log(`There is ${str} here.`)
     }
   } else if (blocker && meleeCombat) {
     movementIntent.intent = 'ATTACK';
@@ -132,7 +153,7 @@ export const handleAttack = (entity: string, components: BaseComponent[]): void 
   const { payload } = attackIntent as Intent;
   const { target } = payload;
 
-  const targetPosition = state.world.getComponents(target).find(isPosition);
+  const targetPosition = state.world.getComponentMap(target).get(Position) as Position;
   const dx = targetPosition.x - position.x;
   const dy = targetPosition.y - position.y;
   if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { return; }
@@ -144,11 +165,13 @@ export const handleAttack = (entity: string, components: BaseComponent[]): void 
 
 export const handleReceiveDamage = (victim: string, attacker: string): void => {
   const player = state.getState().player;
-  const health = state.world.getComponents(victim).find(isHealth);
-  const source = state.world.getComponents(attacker).find(isMeleeCombat);
-  const name = state.world.getComponents(attacker).find(isName);
+  const victimCmp = state.world.getComponentMap(victim);
+  const attackerCmp = state.world.getComponentMap(attacker);
+  const health = victimCmp.get(Health) as Health;
+  const source = attackerCmp.get(MeleeCombat) as MeleeCombat;
+  const name = attackerCmp.get(Name) as Name;
   if (!health || !source || health.dead) { return; }
-  const victimNameCmp = state.world.getComponents(victim).find(isName);
+  const victimNameCmp = victimCmp.get(Name) as Name;
   const victimName = victim === player ? 'you' : victimNameCmp ? `the ${victimNameCmp.name}` :'someone' ;
   const verb = source.verb.split('|')[attacker === player ? 0 : 1];
   const aggressor = attacker === player ? 'You' : name ? `The ${name.name}` : 'Someone';
@@ -161,19 +184,26 @@ export const handleReceiveDamage = (victim: string, attacker: string): void => {
   }
 }
 
-export const handleDeath = (victim) => {
+export const handleDeath = (victim: string) => {
   const player = state.getState().player;
-  const health = state.world.getComponents(victim).find(isHealth);
-  health.dead = true;
-  const ai = state.world.getComponents(victim).find(isAI);
-  if (ai) { state.world.removeComponent(victim, ai) }
-  const body = state.world.getComponents(victim).find(isBody);
-  if (body) { state.world.removeComponent(victim, body); }
+  const victimCmp = state.world.getComponentMap(victim);
   if (victim === player) {
     state.log(`You are dead!`);
   } else {
-    const name = state.world.getComponents(victim).find(isName);
+    const name = victimCmp.get(Name) as Name;
     const nameStr = name ? `The ${name.name}` : 'It';
     state.log(`${nameStr} is dead!`);
   }
+  [AI, Body, Health, MeleeCombat, Inventory, Viewshed].forEach(type => {
+    state.world.removeComponentByType(victim, type);
+  });
+  const glyph = victimCmp.get(Glyph) as Glyph;
+  glyph.glyph = '%';
+  const name = victimCmp.get(Name) as Name;
+  if (name) { name.name = `dead ${name.name}`; }
+
+  state.world.registerComponent(victim, {
+    _type: Item,
+    weight: 2,
+  } as Item);
 }

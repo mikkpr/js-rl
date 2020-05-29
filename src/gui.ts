@@ -1,6 +1,9 @@
 import state from './state';
 import { WIDTH, HEIGHT, LOG_HEIGHT, STATS_HEIGHT } from './constants';
-import { isHealth, isMeleeCombat } from './state/components';
+import {
+  Health,
+  MeleeCombat
+} from './state/components';
 
 export const drawGUI = () => {
   drawBorders(); 
@@ -47,9 +50,9 @@ const drawLog = () => {
 
 const drawStats = () => {
   if (!state.display) { return; }
-  const cmp = state.world.getComponents(state.getState().player);
-  const { health, maxHealth } = cmp.find(isHealth);
-  const { damage } = cmp.find(isMeleeCombat);
+  const cmp = state.world.getComponentMap(state.getState().player);
+  const { health, maxHealth } = cmp.get(Health) as Health;
+  const { damage } = cmp.get(MeleeCombat) as MeleeCombat;
   const text = `%c{#333}HP: %c{#666}${health}%c{#333}/%c{#666}${maxHealth}  %c{#333}DMG: %c{#666}${damage}`;
   state.display.drawText(2, HEIGHT, text);
 }

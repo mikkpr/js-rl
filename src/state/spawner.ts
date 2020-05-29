@@ -10,6 +10,8 @@ import {
   MeleeCombat,
   Health,
   Name,
+  Inventory,
+  Item,
 } from './components';
 
 export const createPlayer = ({x, y}) => {
@@ -59,6 +61,12 @@ export const createPlayer = ({x, y}) => {
     _type: Name,
     name: 'you'
   } as Name);
+  state.world.registerComponent(player, {
+    _type: Inventory,
+    capacity: 2,
+  } as Inventory);
+
+  state.map.setEntityLocation(player, state.map.getIdx(x, y));
 
   return player;
 }
@@ -107,7 +115,39 @@ export const createKobold = ({x, y}) => {
     _type: Name,
     name: 'kobold'
   } as Name);
+  state.world.registerComponent(kobold, {
+    _type: Inventory,
+    capacity: 1,
+  } as Inventory);
 
+  state.map.setEntityLocation(kobold, state.map.getIdx(x, y));
 
   return kobold;
+}
+
+export const createKey = ({ x, y }) => {
+  const item = state.world.createEntity();
+  state.world.registerComponent(item, {
+    _type: Item,
+    weight: 1
+  } as Item);
+  state.world.registerComponent(item, {
+    _type: Glyph,
+    glyph: '-',
+    fg: '#aa0',
+    bg: '#000',
+    z: 0
+  } as Glyph);
+  state.world.registerComponent(item, {
+    _type: Name,
+    name: 'key'
+  } as Name);
+  state.world.registerComponent(item, {
+    _type: Position,
+    x,
+    y,
+  } as Position);
+
+  state.map.setEntityLocation(item, state.map.getIdx(x, y));
+  return item;
 }

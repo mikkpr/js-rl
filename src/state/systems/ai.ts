@@ -2,7 +2,7 @@ import Alea from 'alea';
 import { match } from 'egna';
 import { BaseComponent, System } from 'ecs-machina';
 import { handleAttack } from './intent';
-import { WorldWithRNG } from '..';
+import { MyWorld } from '..';
 import state from '..';
 
 import {
@@ -69,7 +69,7 @@ const handleAvoidPlayer = (entity, components) => {
 };
 
 const handleRandomWalk = (entity, components) => {
-  const rng = (state.world as WorldWithRNG).rng;
+  const rng = (state.world as MyWorld).rng;
   if (Math.abs(rng()) > 0.75) {
 
     const dx = [-1, 0, 1][Math.round(rng() * 2)];

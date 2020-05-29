@@ -8,10 +8,7 @@ export const rollDice = dStr => {
     const result = Math.floor(1 + rng() * d) + mod;
     sum += result;
   }
-
-  console.log('roll', dStr, ':', n, d, mod, '->', sum);
   return sum;
-
 }
 
 const parseDice = string => {

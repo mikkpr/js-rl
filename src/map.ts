@@ -30,7 +30,7 @@ export class WorldMap {
   height: number;
   fov: Mrpas;
   locations: Map<string, number>;
-  entities: Map<number, string>;
+  entities: Map<number, string[]>;
 
   constructor(w: number, h: number) {
     this.width = w;
@@ -39,7 +39,7 @@ export class WorldMap {
     this.setMapFromString(DEBUGMAP);
 
     this.locations = new Map<string, number>();
-    this.entities = new Map<number, string>();
+    this.entities = new Map<number, string[]>();
 
     this.fov = new Mrpas(this.width, this.height, this.isTransparent);
   }
@@ -169,9 +169,9 @@ export class WorldMap {
     const prevIdx = this.getEntityLocation(entity);
     this.locations.set(entity, idx);
     if (typeof prevIdx !== 'undefined') {
-      this.entities.delete(prevIdx);
+      this.entities.set(prevIdx, this.entities.get(prevIdx).filter(e => e !== entity));
     }
-    this.entities.set(idx, entity);
+    this.entities.set(idx, (this.entities.get(idx) || []).concat([entity]));
   }
 
   getEntityLocation = (entity: string) => {
@@ -182,7 +182,7 @@ export class WorldMap {
     const prevIdx = this.getEntityLocation(entity);
     this.locations.delete(entity);
     if (typeof prevIdx !== 'undefined') {
-      this.entities.delete(prevIdx);
+      this.entities.set(prevIdx, this.entities.get(prevIdx).filter(e => e !== entity));   
     }
   }
 
@@ -217,9 +217,9 @@ const DEBUGMAP = `
 10000000001
 10010001001
 10000000001
-11111211311
-10000000001
-10000000001
+11311111311
+10000100001
+10000100001
 11111111111
 `
 

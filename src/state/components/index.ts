@@ -9,4 +9,6 @@ export { Camera, isCamera } from './camera';
 export { MeleeCombat, isMeleeCombat } from './combat';
 export { Health, isHealth } from './health';
 export { Name, isName } from './name';
+export { Inventory, isInventory } from './inventory';
+export { Item, isItem } from './item';
 
