@@ -6,7 +6,7 @@ import { match } from 'egna';
 import { setupDisplay } from './setup';
 import { STATS_HEIGHT, LOG_HEIGHT, WIDTH, HEIGHT, DIRS } from './constants';
 import state, { setupEntities } from './state';
-import { Intent, Position } from './state/components';
+import { Health, Intent, Position } from './state/components';
 import { RenderingSystem } from './state/systems';
 import { CellType } from './map';
 import { RunState } from './state/fsm';
@@ -19,6 +19,8 @@ const update = (delta: number) => {
 };
 
 const input = (player: string) => () => {
+  const cmp = state.world.getComponentMap(player);
+  if (!cmp.get(Health) as Health) { return; }
   if (state.getState().runState !== RunState.WAITING_INPUT) { return; }
   const move = inputs.getValue('MOVE');
   const dwim = inputs.getValue('DWIM');
