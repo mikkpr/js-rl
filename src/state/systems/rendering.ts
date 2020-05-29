@@ -15,9 +15,24 @@ export class RenderingSystem extends System {
   public requiredComponents = [Glyph, Position];
 
   public beforeDraw() {
+  }
+
+  public draw({ layer }) {
+    if (layer === 'map') {
+      state.display.clear();
+      this.drawMap();
+    } else if (layer === 'entities') {
+      Array.from(state.world.entities).sort((a, b) => a[1].find(isGlyph).z - b[1].find(isGlyph).z).forEach(([entity, components]) => {
+        this.drawEntity(entity, components);
+      })
+    } else if (layer === 'gui') {
+      drawGUI();
+    }
+  }
+
+  public drawMap() {
     const { map, camera } = state;
     const { width, height } = map;
-    state.display.clear();
     const [cameraX, cameraY] = camera;
     const cameraBounds = [
       ~~(cameraX - WIDTH/2),
@@ -36,10 +51,9 @@ export class RenderingSystem extends System {
         }
       }
     }
-    drawGUI();
   }
 
-  public drawEntity(entity: string, components: BaseComponent[], { display }): void {
+  public drawEntity(entity: string, components: BaseComponent[]): void {
     const position = components.find(isPosition);
     const { x, y } = position;
     if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) { return; }
@@ -56,7 +70,7 @@ export class RenderingSystem extends System {
     const glyph = components.find(isGlyph);
     const idx = state.map.getIdx(position.x, position.y);
     if (idx != null && visibleCells.has(idx)) {
-      display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
+      state.display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
     }
   }
 }

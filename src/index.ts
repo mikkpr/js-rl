@@ -4,7 +4,7 @@ import { inputs } from './keys';
 import { match } from 'egna';
 
 import { setupDisplay } from './setup';
-import { LOG_HEIGHT, WIDTH, HEIGHT, DIRS } from './constants';
+import { STATS_HEIGHT, LOG_HEIGHT, WIDTH, HEIGHT, DIRS } from './constants';
 import state, { setupEntities } from './state';
 import { Intent, isPosition } from './state/components';
 import { RenderingSystem } from './state/systems';
@@ -75,13 +75,15 @@ const input = (player: string) => () => {
 const render = (display) => (interpolation: number) => { 
   const renderingSystem = state.world.getSystem(RenderingSystem);
   display.clear();
-  renderingSystem.draw({ display });
+  renderingSystem.draw({ layer: 'map' });
+  renderingSystem.draw({ layer: 'entities' });
+  renderingSystem.draw({ layer: 'gui' });
 };
 
 const main = () => {
   const display = setupDisplay({
     width: WIDTH,
-    height: HEIGHT + LOG_HEIGHT
+    height: HEIGHT + STATS_HEIGHT + LOG_HEIGHT
   });
 
   state.display = display;

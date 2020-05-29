@@ -4,6 +4,7 @@ export interface Glyph extends BaseComponent {
   glyph: string;
   fg: string;
   bg: string;
+  z: number;
 }
 
 export const Glyph = 'Glyph';

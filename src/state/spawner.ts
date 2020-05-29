@@ -27,6 +27,7 @@ export const createPlayer = ({x, y}) => {
     glyph: '@',
     fg: '#fa0',
     bg: '#000',
+    z: 2
   } as Glyph);
   state.world.registerComponent(player, {
     _type: Viewshed,
@@ -65,30 +66,31 @@ export const createPlayer = ({x, y}) => {
 export const createKobold = ({x, y}) => {
   const kobold = state.world.createEntity();
   state.world.registerComponent(kobold, {
+    _type: Position,
     x,
     y,
-    _type: Position
   } as Position);
   state.world.registerComponent(kobold, {
+    _type: Glyph,
     glyph: 'k',
     fg: '#666',
     bg: '#000',
-    _type: Glyph
+    z: 1
   } as Glyph);
   state.world.registerComponent(kobold, {
     _type: AI,
-    ai: ['AVOID_PLAYER', 'RANDOM_WALK']
+    ai: ['AGGRESS', 'RETALIATE', 'AVOID_PLAYER', 'RANDOM_WALK']
   } as AI);
   state.world.registerComponent(kobold, {
+    _type: Viewshed,
     range: 5,
     exploredCells: new Set<number>(),
     visibleCells: new Set<number>(),
     dirty: true,
-    _type: Viewshed
   } as Viewshed);
   state.world.registerComponent(kobold, {
+    _type: Body,
     solid: true,
-    _type: Body
   } as Body);
   state.world.registerComponent(kobold, {
     _type: MeleeCombat,
@@ -97,8 +99,8 @@ export const createKobold = ({x, y}) => {
   } as MeleeCombat);
   state.world.registerComponent(kobold, {
     _type: Health,
-    health: 2,
-    maxHealth: 2,
+    health: 5,
+    maxHealth: 5,
     dead: false
   } as Health);
   state.world.registerComponent(kobold, {

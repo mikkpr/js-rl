@@ -1,6 +1,7 @@
 import Alea from 'alea';
 import { match } from 'egna';
 import { BaseComponent, System } from 'ecs-machina';
+import { handleAttack } from './intent';
 import { WorldWithRNG } from '..';
 import state from '..';
 
@@ -10,7 +11,8 @@ import {
   isAI,
   isPosition,
   Viewshed,
-  isViewshed
+  isViewshed,
+  isHealth
 } from '../components';
 
 export class AISystem extends System {  
@@ -20,11 +22,15 @@ export class AISystem extends System {
     const ai = components.find(isAI);
     const intents = ai.ai.map(type => {
       switch(type) {
+        case 'AGGRESS':
+          return handleAggress(entity, components);
+        case 'RETALIATE':
+          return handleRetaliate(entity, components);
         case 'AVOID_PLAYER':
           return handleAvoidPlayer(entity, components);
         case 'RANDOM_WALK':
           return handleRandomWalk(entity, components);
-        default:
+                default:
           return null;
       }
     });
@@ -80,3 +86,42 @@ const handleRandomWalk = (entity, components) => {
     } as Intent;
   }
 };
+
+const handleRetaliate = (entity, components) => {
+  const health = components.find(isHealth);
+  if (!health || !health.lastAttacker) { return; }
+
+  const attacker = health.lastAttacker;
+  const position = components.find(isPosition);
+  const viewshed = components.find(isViewshed);
+  const attackerPosition = state.world.getComponents(attacker).find(isPosition);
+  const inRange = Math.abs(attackerPosition.x - position.x) <= 1 && Math.abs(attackerPosition.y - position.y) <= 1;
+  if (!inRange || !viewshed || !viewshed.visibleCells.has(state.map.getIdx(position.x, position.y))) { return; }
+ 
+  return {
+    _type: Intent,
+    intent: 'ATTACK',
+    payload: {
+      target: attacker 
+    }
+  } as Intent;
+}
+
+const handleAggress = (entity, components) => {
+  const target = state.getState().player;
+  const position = components.find(isPosition);
+  const viewshed = components.find(isViewshed);
+  const targetPos = state.world.getComponents(target).find(isPosition);
+  const inRange = Math.abs(targetPos.x - position.x) <= 1 && Math.abs(targetPos.y - position.y) <= 1;
+  if (!inRange || !viewshed || !viewshed.visibleCells.has(state.map.getEntityLocation(target))) { return; }
+ 
+  return {
+    _type: Intent,
+    intent: 'ATTACK',
+    payload: {
+      target: target 
+    }
+  } as Intent;
+
+
+}

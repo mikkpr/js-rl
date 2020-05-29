@@ -17,3 +17,5 @@ export const DIRS = {
 };
 
 export const LOG_HEIGHT = 7;
+
+export const STATS_HEIGHT = 2;

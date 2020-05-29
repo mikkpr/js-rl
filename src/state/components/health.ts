@@ -4,6 +4,7 @@ export interface Health extends BaseComponent {
   maxHealth: number;
   health: number;
   dead: boolean;
+  lastAttacker?: string;
 }
 
 export const Health = 'Health';
