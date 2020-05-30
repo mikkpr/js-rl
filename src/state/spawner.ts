@@ -12,6 +12,7 @@ import {
   Name,
   Inventory,
   Item,
+  Key,
 } from './components';
 
 export const createPlayer = ({x, y}) => {
@@ -88,7 +89,12 @@ export const createKobold = ({x, y}) => {
   } as Glyph);
   state.world.registerComponent(kobold, {
     _type: AI,
-    ai: ['AGGRESS', 'RETALIATE', 'AVOID_PLAYER', 'RANDOM_WALK']
+    ai: [
+      // 'AGGRESS',
+      'RETALIATE',
+      'AVOID_PLAYER',
+      'RANDOM_WALK'
+    ]
   } as AI);
   state.world.registerComponent(kobold, {
     _type: Viewshed,
@@ -127,12 +133,22 @@ export const createKobold = ({x, y}) => {
   return kobold;
 }
 
-export const createKey = ({ x, y, owner }) => {
+export const createKey = (params: {
+  x?: number;
+  y?: number;
+  owner?: string | null;
+}) => {
+  const { x, y, owner } = params;
   const item = state.world.createEntity();
+  let X = x,
+      Y = y;
   if (owner) {
     const ownerCmp = state.world.getComponentMap(owner);
     const inventory = ownerCmp.get(Inventory) as Inventory;
     inventory.contents.push(item);
+    const pos = ownerCmp.get(Position) as Position;
+    X = pos.x;
+    Y = pos.y;
   }
   state.world.registerComponent(item, {
     _type: Item,
@@ -152,10 +168,56 @@ export const createKey = ({ x, y, owner }) => {
   } as Name);
   state.world.registerComponent(item, {
     _type: Position,
-    x,
-    y,
+    x: X,
+    y: Y,
   } as Position);
+  state.world.registerComponent(item, {
+    _type: Key,
+    doorIdx: 52
+  } as Key);
 
+  state.map.setEntityLocation(item, state.map.getIdx(x, y));
+  return item;
+}
+
+export const createStash = (params: {
+  x?: number;
+  y?: number;
+  owner?: string | null;
+}) => {
+  const { x, y, owner } = params;
+  const item = state.world.createEntity();
+  let X = x,
+      Y = y;
+  if (owner) {
+    const ownerCmp = state.world.getComponentMap(owner);
+    const inventory = ownerCmp.get(Inventory) as Inventory;
+    inventory.contents.push(item);
+    const pos = ownerCmp.get(Position) as Position;
+    X = pos.x;
+    Y = pos.y;
+  }
+  state.world.registerComponent(item, {
+    _type: Item,
+    weight: 2,
+    owner: owner || null,
+  } as Item);
+  state.world.registerComponent(item, {
+    _type: Glyph,
+    glyph: '$',
+    fg: '#ff0',
+    bg: '#000',
+    z: 0
+  } as Glyph);
+  state.world.registerComponent(item, {
+    _type: Name,
+    name: 'stash of coins'
+  } as Name);
+  state.world.registerComponent(item, {
+    _type: Position,
+    x: X,
+    y: Y,
+  } as Position); 
   state.map.setEntityLocation(item, state.map.getIdx(x, y));
   return item;
 }

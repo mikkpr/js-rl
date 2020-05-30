@@ -7,7 +7,8 @@ export enum CellType {
   FLOOR = 'FLOOR',
   WALL = 'WALL',
   DOOR_OPEN = 'DOOR_OPEN',
-  DOOR_CLOSED = 'DOOR_CLOSED'
+  DOOR_CLOSED = 'DOOR_CLOSED',
+  DOOR_LOCKED = 'DOOR_LOCKED'
 };
 
 const CellGlyphs = {
@@ -15,6 +16,7 @@ const CellGlyphs = {
   [CellType.WALL]: '#',
   [CellType.DOOR_OPEN]: '\'',
   [CellType.DOOR_CLOSED]: '+',
+  [CellType.DOOR_LOCKED]: '+',
 }
 
 const CellColors = {
@@ -22,6 +24,7 @@ const CellColors = {
   [CellType.WALL]: '#999',
   [CellType.DOOR_OPEN]: '#aa0',
   [CellType.DOOR_CLOSED]: '#aa0',
+  [CellType.DOOR_LOCKED]: '#880',
 }
 
 export class WorldMap {
@@ -64,7 +67,8 @@ export class WorldMap {
           '0', CellType.FLOOR,
           '1', CellType.WALL,
           '2', CellType.DOOR_OPEN,
-          '3', CellType.DOOR_CLOSED
+          '3', CellType.DOOR_CLOSED,
+          '4', CellType.DOOR_LOCKED
         )(cells[j]);
         this.setCell(j, i, cell);
       }
@@ -149,6 +153,7 @@ export class WorldMap {
     const solidCellTypes = [
       CellType.WALL,
       CellType.DOOR_CLOSED,
+      CellType.DOOR_LOCKED,
     ];
 
     return solidCellTypes.includes(cell);
@@ -217,7 +222,7 @@ const DEBUGMAP = `
 10000000001
 10010001001
 10000000001
-11311111311
+11311111411
 10000100001
 10000100001
 11111111111

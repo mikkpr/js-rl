@@ -67,7 +67,8 @@ const drawStats = () => {
   const inventory = cmp.get(Inventory) as Inventory;
   if (inventory && inventory.contents.length > 0) {
     const weight = getWeight(inventory);
-    text += `  %c{#333}Weight: %c{#666}${weight}`
+    const capacity = inventory.capacity;
+    text += `  %c{#333}Weight: %c{#666}${weight}%c{#333}/%c{#666}${capacity}`;
   }
   state.display.drawText(2, HEIGHT, text);
 }

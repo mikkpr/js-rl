@@ -3,7 +3,7 @@ import produce from 'immer';
 import { match } from 'egna';
 import { Display } from 'rot-js';
 import { WorldMap } from '../map';
-import { createPlayer, createKobold, createKey } from './spawner';
+import { createStash, createPlayer, createKobold, createKey } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
 import { CameraSystem, VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
 import { RunState } from './fsm';
@@ -109,16 +109,20 @@ export const setupEntities = (): {
   player: string;
   kobold: string;
   key: string;
+  stash: string;
 } => {
   const player = createPlayer({x: 4, y: 6});
 
-  const kobold = createKobold({x: 2, y: 2});
+  const kobold = createKobold({x: 8, y: 2});
 
-  const key = createKey({ x: 2, y: 2, owner: kobold });
+  const key = createKey({ owner: kobold });
+
+  const stash = createStash({ x: 9, y: 6, owner: null });
 
   return {
     player,
     kobold,
-    key
+    key,
+    stash,
   };
 }

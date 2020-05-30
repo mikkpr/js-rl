@@ -102,11 +102,7 @@ export const input = (player: string) => () => {
       inputs.clear();
       return;
     }
-    if (esc) {
-      state.setState(state => {
-        state.runState = RunState.WAITING_INPUT;
-      });
-    } else if (gui) {
+    if (gui) {
       const newState = match(
         'INVENTORY', RunState.GUI_INVENTORY
       )(gui);
@@ -143,7 +139,10 @@ export const input = (player: string) => () => {
       let dir; 
       for (const key of Object.keys(neighbors)) {
         const cell = neighbors[key];
-        if (cell === CellType.DOOR_CLOSED) {
+        if ([
+          CellType.DOOR_LOCKED,
+          CellType.DOOR_CLOSED
+        ].includes(cell)) {
           intent = 'OPEN_DOOR';
           dir = key;
           break;  

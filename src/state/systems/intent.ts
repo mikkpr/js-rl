@@ -22,6 +22,7 @@ import {
   Health,
   MeleeCombat,
   isInventory,
+  isKey,
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -74,6 +75,11 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
     nextPosY >= state.map.height
   );
   const nextPosFree = (!nextPosSolid && !blocker && !nextPosOutOfBounds);
+  const nextCell = (state.map.getCell(nextPosX, nextPosY));
+  const nextPosIsDoor = [
+    CellType.DOOR_CLOSED,
+    CellType.DOOR_LOCKED
+  ].includes(nextCell);
 
   if (nextPosFree) {
     position.x = nextPosX;
@@ -117,28 +123,83 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
     movementIntent.intent = 'ATTACK';
     movementIntent.payload = { target: blocker }
     handleAttack(entity, components);
+  } else if (nextPosIsDoor) {
+    movementIntent.intent = 'OPEN_DOOR';
+    handleOpenDoor(entity, components);
   }
 }
 
 export const handleOpenDoor = (entity: string, components: BaseComponent[]): void => {
+  const player = state.getState().player;
+  const playerViewshed = state.world.getComponentMap(player).get(Viewshed) as Viewshed;
   const doorIntent = components.find(isIntentOfType('OPEN_DOOR'));
-  const position = components.find(isPosition);
+  const entityCmp = state.world.getComponentMap(entity);
+  const position = entityCmp.get(Position) as Position;
 
   const { payload } = doorIntent as Intent;
 
   const targetX = position.x + payload.dx;
   const targetY = position.y + payload.dy;
   const target = state.map.getCell(targetX, targetY);
-
+  
+  const targetIdx = state.map.getIdx(targetX, targetY);
+  const openerIdx = state.map.getIdx(position.x, position.y);
   if (target === CellType.DOOR_CLOSED) {
+    openDoor(targetX, targetY);
+    let name, verb;
+    if (entity === player) {
+      name = 'You';
+      verb = 'open';
+    } else if (
+      playerViewshed.exploredCells.has(targetIdx) &&
+      playerViewshed.exploredCells.has(openerIdx)
+    ) {
+      const nameCmp = entityCmp.get(Name) as Name;
+      name = nameCmp ? `The ${nameCmp.name}` : 'Someone';
+      verb = 'opens';
+    }
+    let str = `${name} ${verb} the door`;
+    state.log(str);
+  }  else if (target === CellType.DOOR_LOCKED) {
+    const inventory = entityCmp.get(Inventory) as Inventory;
+    if (inventory && inventory.contents
+        .map(e => state.world.getComponents(e))
+        .find(cmps => cmps.some(c => isKey(c) && ('doorIdx' in c) && c.doorIdx === targetIdx))
+    ) {
+      openDoor(targetX, targetY) 
+      let name, verb;
+      if (entity === player) {
+        name = 'You';
+        verb = 'unlock and open';
+      } else if (
+        playerViewshed.exploredCells.has(targetIdx) &&
+        playerViewshed.exploredCells.has(openerIdx)
+      ) {
+        const nameCmp = entityCmp.get(Name) as Name;
+        name = nameCmp ? `The ${nameCmp.name}` : 'Someone';
+        verb = 'unlocks and opens';
+      }
+      let str = `${name} ${verb} the door`;
+      state.log(str);
+    } else {
+      if (entity === player) {
+        state.log('The door is locked.')
+      }
+    }
+  }
+}
+
+const openDoor = (targetX, targetY) => {
+  const cell = state.map.getCell(targetX, targetY);
+  if ([CellType.DOOR_CLOSED, CellType.DOOR_LOCKED].includes(cell)) {
     state.map.setCell(targetX, targetY, CellType.DOOR_OPEN);
     const entities = state.world.findEntitiesByComponents([Viewshed]);
     for (const [entity, cmp] of entities) {
       const viewshed = cmp.find(isViewshed);
       if (viewshed) viewshed.dirty = true;
     }
-    state.log('You open the door.');
-  } 
+  }
+  
 }
 
 export const handleCloseDoor = (entity: string, components: BaseComponent[]): void => {
