@@ -20,7 +20,8 @@ import {
   Inventory,
   Body,
   Health,
-  MeleeCombat
+  MeleeCombat,
+  isInventory,
 } from '../components';
 
 export class IntentSystem extends System { 
@@ -39,6 +40,10 @@ export class IntentSystem extends System {
         handleCloseDoor(entity, components);
       } else if (isIntentOfType('ATTACK')(intent)) {
         handleAttack(entity, components);
+      } else if (isIntentOfType('PICK_UP')(intent)) {
+        handlePickup(entity, components);
+      } else if (isIntentOfType('DROP_ITEM')(intent)) {
+        handleDrop(entity, components);
       }
     } 
 
@@ -51,6 +56,7 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
   const position = components.find(isPosition);
   const viewshed = components.find(isViewshed);
   const meleeCombat = components.find(isMeleeCombat);
+  const inventory = components.find(isInventory);
   const nextPosX = position.x + movementIntent.payload.dx;
   const nextPosY = position.y + movementIntent.payload.dy;
   const nextPosSolid = state.map.isSolid(nextPosX, nextPosY);
@@ -74,6 +80,14 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
     position.y = nextPosY;
     const idx = state.map.getIdx(position.x, position.y);
     state.map.setEntityLocation(entity, idx);
+    if (inventory) {
+      inventory.contents.forEach(e => {
+        const pos = state.world.getComponentMap(e).get(Position) as Position;
+        pos.x = nextPosX;
+        pos.y = nextPosY;
+        state.map.setEntityLocation(e, idx);
+      });
+    }
 
     if (viewshed) {
       viewshed.dirty = true;
@@ -82,7 +96,10 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
     const others = (state.map.entities.get(idx) || []).filter(e => e !== entity);
     if (others.length > 0) {
       const str = others.reduce((str, other, idx) => {
-        const nameCmp = state.world.getComponentMap(other).get(Name) as Name;
+        const cmp = state.world.getComponentMap(other);
+        const item = cmp.get(Item) as Item;
+        if (item && item.owner) { return str; }
+        const nameCmp = cmp.get(Name) as Name;
         if (!nameCmp) { return str; }
 
         if (idx === 0) { return `a ${nameCmp.name}`; }
@@ -92,8 +109,9 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
 
         return `${str}, a ${nameCmp.name}`;
       }, '');
-
-      state.log(`There is ${str} here.`)
+      if (str.length > 0) {
+        state.log(`There is ${str} here.`)
+      }
     }
   } else if (blocker && meleeCombat) {
     movementIntent.intent = 'ATTACK';
@@ -187,13 +205,19 @@ export const handleReceiveDamage = (victim: string, attacker: string): void => {
 export const handleDeath = (victim: string) => {
   const player = state.getState().player;
   const victimCmp = state.world.getComponentMap(victim);
+  const inventory = victimCmp.get(Inventory) as Inventory;
+  if (inventory && inventory.contents.length > 0) {
+    inventory.contents.forEach(e => {
+      dropItem(victim, e);
+    });
+  }
   if (victim === player) {
     state.log(`You are dead!`);
   } else {
     const name = victimCmp.get(Name) as Name;
     const nameStr = name ? `The ${name.name}` : 'It';
     state.log(`${nameStr} is dead!`);
-  }
+  } 
   [AI, Body, Health, MeleeCombat, Inventory, Viewshed].forEach(type => {
     state.world.removeComponentByType(victim, type);
   });
@@ -206,4 +230,50 @@ export const handleDeath = (victim: string) => {
     _type: Item,
     weight: 2,
   } as Item);
+}
+
+export const handlePickup = (entity: string, components: BaseComponent[]): void => {
+  const pickupIntent = components.find(isIntentOfType('PICK_UP'));
+  if (pickupIntent) {
+    const itemCmp = state.world.getComponentMap(pickupIntent.payload.target);
+    const item = itemCmp.get(Item) as Item;
+    const name = itemCmp.get(Name) as Name;
+    const inventory  = state.world.getComponentMap(entity).get(Inventory) as Inventory;
+    const remainingCapacity = inventory.capacity - inventory.contents.reduce((sum, e) => {
+      const item = state.world.getComponentMap(e).get(Item) as Item;
+      return sum + item.weight;
+    }, 0);
+    if (inventory && item.weight > remainingCapacity && entity === state.getState().player) {
+      state.log(`The ${name.name} is too heavy to pick up.`);
+    } else { 
+      item.owner = entity;
+      inventory.contents.push(pickupIntent.payload.target);
+      if (entity === state.getState().player) {
+        state.log(`You pick up the ${name.name}.`);
+      } 
+    } 
+  }
+}
+
+export const handleDrop = (entity: string, components: BaseComponent[]): void => {
+  const dropIntent = components.find(isIntentOfType('DROP_ITEM'));
+  const droppedItem = dropIntent.payload.item;
+  if (dropIntent && droppedItem) {
+    dropItem(entity, droppedItem); 
+  }
+}
+
+const dropItem = (entity: string, droppedItem: string) => {
+  const itemCmp = state.world.getComponentMap(droppedItem);
+  const item = itemCmp.get(Item) as Item;
+  const name = itemCmp.get(Name) as Name;
+  const inventory  = state.world.getComponentMap(entity).get(Inventory) as Inventory; 
+  item.owner = null;
+  inventory.contents = inventory.contents.filter(e => e !== droppedItem);
+  if (entity === state.getState().player) {
+    state.log(`You drop the ${name.name}.`);
+  } else {
+    const entityName = state.world.getComponentMap(entity).get(Name) as Name;
+    state.log(`${entityName ? 'The ' + entityName.name : 'Someone'} drops a ${name.name}.`);
+  }
 }

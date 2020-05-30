@@ -17,6 +17,14 @@ export type MyWorld = World & {
   getComponentMap?: (entity: string) => Map<string, BaseComponent>
 };
 
+const initialState = {
+  runState: RunState.PRERUN,
+  inventoryVisible: false,
+  log: [
+    "You wake up in a dank cell.",
+  ]
+}
+
 class GameState {
   world: MyWorld;
   state: State;
@@ -24,7 +32,7 @@ class GameState {
   display: Display;
   camera: [number, number];
 
-  constructor(initialState = { runState: RunState.PRERUN }) {
+  constructor(state = initialState) {
     this.world = new World();
     this.world.getComponentMap = (entity: string) => {
       const cmp = this.world.getComponents(entity);
@@ -34,7 +42,7 @@ class GameState {
       return map;
     }
     this.world.rng = Math.random;
-    this.state = initialState;
+    this.state = state;
     this.map = new WorldMap(MAPWIDTH, MAPHEIGHT);
     this.camera = [0, 0];
 
@@ -106,7 +114,7 @@ export const setupEntities = (): {
 
   const kobold = createKobold({x: 2, y: 2});
 
-  const key = createKey({ x: 6, y: 6 });
+  const key = createKey({ x: 2, y: 2, owner: kobold });
 
   return {
     player,

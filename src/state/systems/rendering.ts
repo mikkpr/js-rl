@@ -9,6 +9,7 @@ import {
   Position,
   isPosition,
   Viewshed,
+  isItem,
 } from '../components';
 
 export class RenderingSystem extends System { 
@@ -56,6 +57,8 @@ export class RenderingSystem extends System {
 
   public drawEntity(entity: string, components: BaseComponent[]): void {
     const position = components.find(isPosition);
+    const item = components.find(isItem);
+    if (item && item.owner) { return; }
     const { x, y } = position;
     if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) { return; }
     const { camera } = state;

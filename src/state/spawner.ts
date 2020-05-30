@@ -64,6 +64,7 @@ export const createPlayer = ({x, y}) => {
   state.world.registerComponent(player, {
     _type: Inventory,
     capacity: 2,
+    contents: [],
   } as Inventory);
 
   state.map.setEntityLocation(player, state.map.getIdx(x, y));
@@ -118,6 +119,7 @@ export const createKobold = ({x, y}) => {
   state.world.registerComponent(kobold, {
     _type: Inventory,
     capacity: 1,
+    contents: [],
   } as Inventory);
 
   state.map.setEntityLocation(kobold, state.map.getIdx(x, y));
@@ -125,11 +127,17 @@ export const createKobold = ({x, y}) => {
   return kobold;
 }
 
-export const createKey = ({ x, y }) => {
+export const createKey = ({ x, y, owner }) => {
   const item = state.world.createEntity();
+  if (owner) {
+    const ownerCmp = state.world.getComponentMap(owner);
+    const inventory = ownerCmp.get(Inventory) as Inventory;
+    inventory.contents.push(item);
+  }
   state.world.registerComponent(item, {
     _type: Item,
-    weight: 1
+    weight: 1,
+    owner: owner || null,
   } as Item);
   state.world.registerComponent(item, {
     _type: Glyph,
