@@ -107,13 +107,14 @@ export const handleMove = (entity: string, components: BaseComponent[]): void =>
         if (item && item.owner) { return str; }
         const nameCmp = cmp.get(Name) as Name;
         if (!nameCmp) { return str; }
+        const article = nameCmp.article ? nameCmp.article : 'a';
 
-        if (idx === 0) { return `a ${nameCmp.name}`; }
+        if (idx === 0) { return `${article} ${nameCmp.name}`; }
         if (idx === others.length - 1) {
-          return `${str} and a ${nameCmp.name}`;
+          return `${str} and ${article} ${nameCmp.name}`;
         }
-
-        return `${str}, a ${nameCmp.name}`;
+    
+        return `${str}, ${article} ${nameCmp.name}`;
       }, '');
       if (str.length > 0) {
         state.log(`There is ${str} here.`)
@@ -172,15 +173,17 @@ export const handleOpenDoor = (entity: string, components: BaseComponent[]): voi
         name = 'You';
         verb = 'unlock and open';
       } else if (
-        playerViewshed.exploredCells.has(targetIdx) &&
-        playerViewshed.exploredCells.has(openerIdx)
+        playerViewshed.visibleCells.has(targetIdx) &&
+        playerViewshed.visibleCells.has(openerIdx)
       ) {
         const nameCmp = entityCmp.get(Name) as Name;
         name = nameCmp ? `The ${nameCmp.name}` : 'Someone';
         verb = 'unlocks and opens';
       }
-      let str = `${name} ${verb} the door`;
-      state.log(str);
+      if (name && verb) {
+        let str = `${name} ${verb} the door.`;
+        state.log(str);
+      }
     } else {
       if (entity === player) {
         state.log('The door is locked.')

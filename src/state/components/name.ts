@@ -2,6 +2,7 @@ import { BaseComponent } from 'ecs-machina';
 
 export interface Name extends BaseComponent {
   name: string;
+  article?: string;
 }
 
 export const Name = 'Name';

@@ -13,6 +13,7 @@ import {
   Inventory,
   Item,
   Key,
+  Trigger,
 } from './components';
 
 export const createPlayer = ({x, y}) => {
@@ -41,6 +42,7 @@ export const createPlayer = ({x, y}) => {
   } as Viewshed);
   state.world.registerComponent(player, {
     _type: Body,
+    weight: 3,
     solid: true,
   } as Body);
   state.world.registerComponent(player, {
@@ -68,7 +70,7 @@ export const createPlayer = ({x, y}) => {
     contents: [],
   } as Inventory);
 
-  state.map.setEntityLocation(player, state.map.getIdx(x, y));
+  state.map.setEntityLocation(player, state.map.getIdx(x, y)!);
 
   return player;
 }
@@ -106,6 +108,7 @@ export const createKobold = ({x, y}) => {
   state.world.registerComponent(kobold, {
     _type: Body,
     solid: true,
+    weight: 4,
   } as Body);
   state.world.registerComponent(kobold, {
     _type: MeleeCombat,
@@ -128,7 +131,7 @@ export const createKobold = ({x, y}) => {
     contents: [],
   } as Inventory);
 
-  state.map.setEntityLocation(kobold, state.map.getIdx(x, y));
+  state.map.setEntityLocation(kobold, state.map.getIdx(x, y)!);
 
   return kobold;
 }
@@ -143,7 +146,7 @@ export const createKey = (params: {
   let X = x,
       Y = y;
   if (owner) {
-    const ownerCmp = state.world.getComponentMap(owner);
+    const ownerCmp = state.world.getComponentMap!(owner);
     const inventory = ownerCmp.get(Inventory) as Inventory;
     inventory.contents.push(item);
     const pos = ownerCmp.get(Position) as Position;
@@ -176,7 +179,7 @@ export const createKey = (params: {
     doorIdx: 52
   } as Key);
 
-  state.map.setEntityLocation(item, state.map.getIdx(x, y));
+  state.map.setEntityLocation(item, state.map.getIdx(X!, Y!)!);
   return item;
 }
 
@@ -190,7 +193,7 @@ export const createStash = (params: {
   let X = x,
       Y = y;
   if (owner) {
-    const ownerCmp = state.world.getComponentMap(owner);
+    const ownerCmp = state.world.getComponentMap!(owner);
     const inventory = ownerCmp.get(Inventory) as Inventory;
     inventory.contents.push(item);
     const pos = ownerCmp.get(Position) as Position;
@@ -218,6 +221,48 @@ export const createStash = (params: {
     x: X,
     y: Y,
   } as Position); 
-  state.map.setEntityLocation(item, state.map.getIdx(x, y));
+  state.map.setEntityLocation(item, state.map.getIdx(X!, Y!)!);
   return item;
+}
+
+export const createWeightTrigger = ({ x, y, weight, idx, newType, oldType, triggered, messages }) => {
+  const trigger = state.world.createEntity();
+  state.world.registerComponent(trigger, {
+    _type: Position,
+    x,
+    y,
+  } as Position);
+  state.world.registerComponent(trigger, {
+    _type: Glyph,
+    glyph: '≡',
+    fg: '#333',
+    bg: 'black',
+    z: 0,
+  } as Glyph);
+  state.world.registerComponent(trigger, {
+    _type: Name,
+    name: 'altar',
+    article: 'an'
+  } as Name);
+  state.world.registerComponent(trigger, {
+    _type: Item,
+    weight: 10,
+  } as Item);
+  state.world.registerComponent(trigger, {
+    _type: Trigger,
+    triggered,
+    messages,
+    condition: {
+      type: 'WEIGHT',
+      amount: weight, 
+    },
+    event: {
+      type: 'CHANGE_CELL',
+      idx,
+      newType,
+      oldType,
+    },
+    repeat: 'TOGGLE'
+  } as Trigger); 
+  state.map.setEntityLocation(trigger, state.map.getIdx(x, y)!);
 }

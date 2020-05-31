@@ -2,10 +2,17 @@ import { World, BaseComponent } from 'ecs-machina';
 import produce from 'immer';
 import { match } from 'egna';
 import { Display } from 'rot-js';
-import { WorldMap } from '../map';
-import { createStash, createPlayer, createKobold, createKey } from './spawner';
+import { CellType, WorldMap } from '../map';
+import { createWeightTrigger, createStash, createPlayer, createKobold, createKey } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
-import { CameraSystem, VisibilitySystem, IntentSystem, RenderingSystem, AISystem } from './systems';
+import {
+  CameraSystem,
+  VisibilitySystem,
+  IntentSystem,
+  RenderingSystem,
+  AISystem,
+  TriggerSystem,
+} from './systems';
 import { RunState } from './fsm';
 
 type State = {
@@ -48,6 +55,7 @@ class GameState {
 
     this.world.registerSystem(new AISystem());
     this.world.registerSystem(new IntentSystem());
+    this.world.registerSystem(new TriggerSystem());
     this.world.registerSystem(new CameraSystem());
     this.world.registerSystem(new VisibilitySystem());
     this.world.registerSystem(new RenderingSystem());
@@ -118,6 +126,20 @@ export const setupEntities = (): {
   const key = createKey({ owner: kobold });
 
   const stash = createStash({ x: 9, y: 6, owner: null });
+
+  const trigger = createWeightTrigger({
+    x: 5,
+    y: 2,
+    weight: 5,
+    idx: 5,
+    newType: CellType.FLOOR,
+    oldType: CellType.WALL,
+    triggered: false,
+    messages: {
+      trigger: 'You hear something heavy sliding aside.',
+      revert: 'You hear something sliding back into place.'
+    }
+  });
 
   return {
     player,

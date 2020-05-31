@@ -23,7 +23,9 @@ export class RenderingSystem extends System {
       state.display.clear();
       this.drawMap();
     } else if (layer === 'entities') {
-      Array.from(state.world.entities).sort((a, b) => a[1].find(isGlyph).z - b[1].find(isGlyph).z).forEach(([entity, components]) => {
+      Array.from(state.world.entities)
+      .filter(([e]) => state.world.getComponentMap!(e).get(Glyph) as Glyph)
+      .sort((a, b) => a[1].find(isGlyph)!.z - b[1].find(isGlyph)!.z).forEach(([entity, components]) => {
         this.drawEntity(entity, components);
       })
     } else if (layer === 'gui') {

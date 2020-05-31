@@ -12,3 +12,4 @@ export { Name, isName } from './name';
 export { Inventory, isInventory } from './inventory';
 export { Item, isItem } from './item';
 export { Key, isKey } from './key';
+export { Trigger, isTrigger } from './trigger';

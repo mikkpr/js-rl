@@ -3,3 +3,4 @@ export { AISystem } from './ai';
 export { IntentSystem } from './intent';
 export { VisibilitySystem } from './visibility';
 export { CameraSystem } from './camera';
+export { TriggerSystem } from './trigger';

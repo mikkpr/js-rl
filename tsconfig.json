@@ -8,7 +8,8 @@
     "preserveConstEnums": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop" : true,
-    "strict": false 
+    "strict": false,
+    "strictNullChecks": true
   },
   "exclude": ["node_modules", "**/*.test.ts"]
 }

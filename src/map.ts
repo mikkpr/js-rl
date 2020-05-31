@@ -174,7 +174,12 @@ export class WorldMap {
     const prevIdx = this.getEntityLocation(entity);
     this.locations.set(entity, idx);
     if (typeof prevIdx !== 'undefined') {
-      this.entities.set(prevIdx, this.entities.get(prevIdx).filter(e => e !== entity));
+      const entities = (this.entities.get(prevIdx) || []).filter(e => e !== entity);
+      if (entities.length) {
+        this.entities.set(prevIdx, entities);
+      } else {
+        this.entities.delete(prevIdx);
+      }
     }
     this.entities.set(idx, (this.entities.get(idx) || []).concat([entity]));
   }
@@ -187,7 +192,12 @@ export class WorldMap {
     const prevIdx = this.getEntityLocation(entity);
     this.locations.delete(entity);
     if (typeof prevIdx !== 'undefined') {
-      this.entities.set(prevIdx, this.entities.get(prevIdx).filter(e => e !== entity));   
+      const entities = (this.entities.get(prevIdx) || []).filter(e => e !== entity);
+      if (entities.length) {
+        this.entities.set(prevIdx, entities);
+      } else {
+        this.entities.delete(prevIdx);
+      }
     }
   }
 
