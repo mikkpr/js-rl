@@ -3,7 +3,7 @@ import produce from 'immer';
 import { match } from 'egna';
 import { Display } from 'rot-js';
 import { CellType, WorldMap } from '../map';
-import { createWeightTrigger, createStash, createPlayer, createKobold, createKey } from './spawner';
+import { createExitTrigger, createWeightTrigger, createStash, createPlayer, createKobold, createKey } from './spawner';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
 import {
   CameraSystem,
@@ -141,9 +141,11 @@ export const setupEntities = (): {
     }
   });
 
-  // const exitTrigger = createExit({
-  //   x:
-  // })
+  const exitTrigger = createExitTrigger({
+    x: 5,
+    y: 2,
+    message: 'You have found a secret area!'
+  });
 
   return {
     player,

@@ -268,3 +268,31 @@ export const createWeightTrigger = ({ x, y, weight, idx, newType, oldType, trigg
   } as Trigger); 
   state.map.setEntityLocation(trigger, state.map.getIdx(x, y)!);
 }
+
+export const createExitTrigger = ({
+  x,
+  y,
+  message,
+}) => {
+  const trigger = state.world.createEntity();
+  state.world.registerComponent(trigger, {
+    _type: Position,
+    x,
+    y,
+  } as Position);
+  state.world.registerComponent(trigger, {
+    _type: Trigger,
+    triggered: false,
+    messages: {
+      trigger: message 
+    },
+    condition: {
+      type: 'ENTER'
+    },
+    event: null,
+    repeat: 'ONCE'
+  } as Trigger); 
+  state.map.setEntityLocation(trigger, state.map.getIdx(x, y)!);
+
+  return trigger;
+}

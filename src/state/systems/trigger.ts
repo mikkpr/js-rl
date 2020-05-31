@@ -30,7 +30,9 @@ export class TriggerSystem extends System {
         }
       }
       triggerComponent.triggered = true;
-      applyTriggerEvent(event);
+      if (event) {
+        applyTriggerEvent(event);
+      }
     } else if (triggerComponent.triggered && !isTriggered && triggerComponent.repeat === 'TOGGLE') {
       if (triggerComponent.messages && triggerComponent.messages.revert) {
         const playerPos = state.world.getComponentMap!(player).get(Position) as Position;
@@ -39,7 +41,9 @@ export class TriggerSystem extends System {
         }
       }
       triggerComponent.triggered = false;
-      revertTriggerEvent(event);
+      if (event) {
+        revertTriggerEvent(event);
+      }
     }
   }
 }
@@ -47,7 +51,7 @@ export class TriggerSystem extends System {
 const checkForCondition = (entity: string, components: BaseComponent[]): boolean => {
   const triggerComponent = components.find(isTrigger)!;
   const checker = match(
-    { type: 'ENTER' }, (condition) => () => {},
+    { type: 'ENTER' }, checkEnterCondition,
     { type: 'EXIT' }, (condition) => () => {},
     { type: 'WEIGHT' }, checkWeightCondition 
   )(triggerComponent.condition);
@@ -81,6 +85,20 @@ const checkWeightCondition = (condition) => (entity: string, components: BaseCom
     }, 0);
   return condition.amount <= totalWeight;
 }
+
+const checkEnterCondition = (condition) => (entity: string, components: BaseComponent[]) => {
+  const pos = components.find(isPosition);
+  if (!pos) { return false; }
+  const idx = state.map.getIdx(pos.x, pos.y);
+  const entities = state.map.entities.get(idx!);
+  if (!entities || entities.length === 0) {
+    return false;
+  }
+  return entities.filter(e => {
+    const body = state.world.getComponentMap(e).get(Body) as Body;
+    return !!body; 
+  }).length > 0;
+};
 
 const applyTriggerEvent = event => {
   if (event.type === 'CHANGE_CELL')  {
