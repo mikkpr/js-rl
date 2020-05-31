@@ -7,6 +7,7 @@ import {
   Inventory,
   Item,
   Name,
+  Position,
 } from './state/components';
 
 export const drawGUI = () => {
@@ -85,7 +86,8 @@ const getWeight = (inventory: Inventory) => {
 const drawInventory = (runState) => {
   const states = [
     RunState.GUI_INVENTORY,
-    RunState.GUI_INVENTORY_DROP
+    RunState.GUI_INVENTORY_DROP,
+    RunState.GUI_INVENTORY_GET,
   ];
   if (!states.includes(runState)) { return; }
   const player = state.getState().player;
@@ -129,18 +131,51 @@ const drawInventory = (runState) => {
     state.display.drawText(hPad + 2, vPad + 1, `%c{#333}Inventory: %c{#666}${weight}/${inventory.capacity}`);
   } else if (runState === RunState.GUI_INVENTORY_DROP) {
     state.display.drawText(hPad + 2, vPad + 1, `%c{#333}Drop which item?`);
+  } else if (runState === RunState.GUI_INVENTORY_GET) {
+    state.display.drawText(hPad + 2, vPad + 1, `%c{#333}Pick up which item?`);
+
   }
 
   const offset = vPad + 4;
   const keys = 'ASDFGHJKL'.split('');
-  for (let idx = 0; idx < inventory.contents.length; idx++) {
-    const item = inventory.contents[idx];
-    const name = state.world.getComponentMap(item).get(Name) as Name;
+  let names: string[] = [];
+  if (runState === RunState.GUI_INVENTORY_GET) {
+    const pos = playerCmp.get(Position) as Position;
+    names = (state.map.entities.get(state.map.getIdx(pos.x, pos.y)) || [])
+      .filter(e => {
+        const item = state.world.getComponentMap!(e).get(Item) as Item;
+        return !!item && !item.owner;
+      })
+      .map(item => {
+        const name = state.world.getComponentMap!(item).get(Name) as Name;
+        return name ? name.name : 'something';
+      }); 
+  } else if (runState === RunState.GUI_INVENTORY_DROP) {
+    const inventory = playerCmp.get(Inventory) as Inventory;
+    names = inventory.contents.map(e => {
+      const cmps = state.world.getComponentMap(e);
+      const name = cmps.get(Name) as Name;
+      return name ? name.name : 'something';
+    })
+  } else if (runState === RunState.GUI_INVENTORY) {
+    const inventory = playerCmp.get(Inventory) as Inventory;
+    names = inventory.contents.map(e => {
+      const cmps = state.world.getComponentMap(e);
+      const name = cmps.get(Name) as Name;
+      return name ? name.name : 'something';
+    })
+
+  }
+  for (let idx = 0; idx < names.length; idx++) {
+    const name = names[idx];
     let prefix = '';
-    if (runState === RunState.GUI_INVENTORY_DROP) {
+    if ([
+      RunState.GUI_INVENTORY_DROP,
+      RunState.GUI_INVENTORY_GET
+    ].includes(runState)) {
       prefix = `${keys[idx]}) `;
     }
-    state.display.drawText(hPad + 2, offset + idx, prefix + (name ? name.name : 'something'));
+    state.display.drawText(hPad + 2, offset + idx, prefix + name);
   }
   
 }

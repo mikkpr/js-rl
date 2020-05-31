@@ -66,7 +66,7 @@ export const createPlayer = ({x, y}) => {
   } as Name);
   state.world.registerComponent(player, {
     _type: Inventory,
-    capacity: 2,
+    capacity: 3,
     contents: [],
   } as Inventory);
 
@@ -140,8 +140,9 @@ export const createKey = (params: {
   x?: number;
   y?: number;
   owner?: string | null;
+  doorIdx: number;
 }) => {
-  const { x, y, owner } = params;
+  const { x, y, owner, doorIdx } = params;
   const item = state.world.createEntity();
   let X = x,
       Y = y;
@@ -176,7 +177,7 @@ export const createKey = (params: {
   } as Position);
   state.world.registerComponent(item, {
     _type: Key,
-    doorIdx: 52
+    doorIdx,
   } as Key);
 
   state.map.setEntityLocation(item, state.map.getIdx(X!, Y!)!);

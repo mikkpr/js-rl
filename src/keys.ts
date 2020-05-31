@@ -38,20 +38,20 @@ inputs.bindInputMap(Eylem.KEY_DOWN, {
   68: { action: 'DROP', value: 'DROP' },
 });
 
-const dropKeys = new Eylem(document, [
+const itemKeys = new Eylem(document, [
   'ASDFGHJKL'.split('')
 ]);
 
-dropKeys.bindInputMap(Eylem.KEY_DOWN, {
-  65: { action: 'DROP', value: 'A' },
-  83: { action: 'DROP', value: 'S' },
-  68: { action: 'DROP', value: 'D' },
-  70: { action: 'DROP', value: 'F' },
-  71: { action: 'DROP', value: 'G' },
-  72: { action: 'DROP', value: 'H' },
-  74: { action: 'DROP', value: 'J' },
-  75: { action: 'DROP', value: 'K' },
-  76: { action: 'DROP', value: 'L' },
+itemKeys .bindInputMap(Eylem.KEY_DOWN, {
+  65: { action: 'ITEM', value: 'A' },
+  83: { action: 'ITEM', value: 'S' },
+  68: { action: 'ITEM', value: 'D' },
+  70: { action: 'ITEM', value: 'F' },
+  71: { action: 'ITEM', value: 'G' },
+  72: { action: 'ITEM', value: 'H' },
+  74: { action: 'ITEM', value: 'J' },
+  75: { action: 'ITEM', value: 'K' },
+  76: { action: 'ITEM', value: 'L' },
 });
 
 export const input = (player: string) => () => {
@@ -71,7 +71,7 @@ export const input = (player: string) => () => {
       state.setState(state => { state.runState = RunState.GUI_INVENTORY_DROP; })
     }
   } else if (runState === RunState.GUI_INVENTORY_DROP) {
-    const key = dropKeys.getValue('DROP');
+    const key = itemKeys.getValue('ITEM');
     if (key) {
       const player = state.getState().player;
       const playerCmp = state.world.getComponentMap(player);
@@ -97,7 +97,44 @@ export const input = (player: string) => () => {
         }
       }
     }
-  } if (runState === RunState.WAITING_INPUT) {
+  } else if (runState === RunState.GUI_INVENTORY_GET) {
+    const player = state.getState().player;
+    const playerCmp = state.world.getComponentMap(player);
+    const pos = state.world.getComponentMap(player).get(Position) as Position;
+    const entities = state.map.entities.get(state.map.getIdx(pos.x, pos.y)).filter(e => {
+      const item = state.world.getComponentMap(e).get(Item) as Item;
+      return !!item && !item.owner;
+    });
+    if (!entities || entities.length === 0) {
+      state.setState(state => {
+        state.runState = RunState.WAITING_INPUT;
+      });
+    }
+
+    const key = itemKeys.getValue('ITEM');
+    if (key) {
+      if (entities.length > 0) {
+        const keys = 'ASDFGHJKL'.split('');
+        const items = entities.reduce((acc, e, idx) => {
+          return {
+            ...acc,
+            [keys[idx]]: e
+          };
+        }, {});
+        const item = items[key];
+        if (item) {
+          state.world.registerComponent(player, {
+            _type: Intent,
+            intent: 'PICK_UP',
+            payload: {
+              target: item
+            }
+          } as Intent);
+          state.setState(state => { state.runState = RunState.PLAYER_TURN; });
+        }
+      }
+    }
+  } else if (runState === RunState.WAITING_INPUT) {
     if (cmp.get(Health) as Health == null) {
       inputs.clear();
       return;
@@ -161,24 +198,19 @@ export const input = (player: string) => () => {
         state.setState(state => { state.runState = RunState.PLAYER_TURN; });
       }
     } else if (get) {
+      const player = state.getState().player;
+      const playerCmp = state.world.getComponentMap(player);
       const pos = state.world.getComponentMap(player).get(Position) as Position;
       const entities = state.map.entities.get(state.map.getIdx(pos.x, pos.y)).filter(e => {
         const item = state.world.getComponentMap(e).get(Item) as Item;
         return !!item && !item.owner;
       });
-      if (entities.length > 0) {
-        const topEntity = entities[0];
-        state.world.registerComponent(player, {
-          _type: Intent,
-          intent: 'PICK_UP',
-          payload: {
-            target: topEntity
-          }
-        } as Intent);
-        state.setState(state => { state.runState = RunState.PLAYER_TURN; });
+      if (entities && entities.length > 0) {
+        state.setState(state => { state.runState = RunState.GUI_INVENTORY_GET; })
       }
     }
   }
   inputs.clear();
+  itemKeys.clear();
 };
 

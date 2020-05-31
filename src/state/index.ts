@@ -119,19 +119,19 @@ export const setupEntities = (): {
   key: string;
   stash: string;
 } => {
-  const player = createPlayer({x: 4, y: 6});
+  const player = createPlayer({x: 4, y: 8});
 
-  const kobold = createKobold({x: 8, y: 2});
+  const kobold = createKobold({x: 8, y: 4});
 
-  const key = createKey({ owner: kobold });
+  const key = createKey({ owner: kobold, doorIdx: 74 });
 
-  const stash = createStash({ x: 9, y: 6, owner: null });
+  const stash = createStash({ x: 9, y: 8, owner: null });
 
   const trigger = createWeightTrigger({
     x: 5,
-    y: 2,
+    y: 4,
     weight: 5,
-    idx: 5,
+    idx: 27,
     newType: CellType.FLOOR,
     oldType: CellType.WALL,
     triggered: false,
@@ -140,6 +140,10 @@ export const setupEntities = (): {
       revert: 'You hear something sliding back into place.'
     }
   });
+
+  // const exitTrigger = createExit({
+  //   x:
+  // })
 
   return {
     player,
