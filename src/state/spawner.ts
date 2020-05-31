@@ -248,6 +248,7 @@ export const createWeightTrigger = ({ x, y, weight, idx, newType, oldType, trigg
   state.world.registerComponent(trigger, {
     _type: Item,
     weight: 10,
+    owner: null
   } as Item);
   state.world.registerComponent(trigger, {
     _type: Trigger,

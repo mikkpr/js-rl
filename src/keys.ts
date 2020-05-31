@@ -18,15 +18,23 @@ export const inputs = new Eylem(document, [
   'DWIM',
   'GET',
   'GUI',
-  'ESC',
-  'DROP'
+  'ESC'
+]);
+
+export const invInputs = new Eylem(document, [
+  'DROP',
+  'ESC'
 ]);
 
 inputs.bindInputMap(Eylem.KEY_DOWN, {
   72: { action: 'MOVE', value: 'W' },
+  65: { action: 'MOVE', value: 'W' },
   74: { action: 'MOVE', value: 'S' },
+  83: { action: 'MOVE', value: 'S' },
   75: { action: 'MOVE', value: 'N' },
+  87: { action: 'MOVE', value: 'N' },
   76: { action: 'MOVE', value: 'E' },
+  68: { action: 'MOVE', value: 'E' },
   89: { action: 'MOVE', value: 'NW' },
   85: { action: 'MOVE', value: 'NE' },
   66: { action: 'MOVE', value: 'SW' },
@@ -35,14 +43,18 @@ inputs.bindInputMap(Eylem.KEY_DOWN, {
   71: { action: 'GET', value: 'GET' },
   73: { action: 'GUI', value: 'INVENTORY' },
   27: { action: 'ESC', value: 'ESC' },
-  68: { action: 'DROP', value: 'DROP' },
 });
 
 const itemKeys = new Eylem(document, [
   'ASDFGHJKL'.split('')
 ]);
 
-itemKeys .bindInputMap(Eylem.KEY_DOWN, {
+invInputs.bindInputMap(Eylem.KEY_DOWN, {
+  68: { action: 'DROP', value: 'DROP' }, 
+  27: { action: 'ESC', value: 'ESC' },
+})
+
+itemKeys.bindInputMap(Eylem.KEY_DOWN, {
   65: { action: 'ITEM', value: 'A' },
   83: { action: 'ITEM', value: 'S' },
   68: { action: 'ITEM', value: 'D' },
@@ -55,7 +67,7 @@ itemKeys .bindInputMap(Eylem.KEY_DOWN, {
 });
 
 export const input = (player: string) => () => {
-  const esc = inputs.getValue('ESC');
+  const esc = inputs.getValue('ESC') || invInputs.getValue('ESC');
   if (esc) { 
     state.setState(state => { state.runState = RunState.WAITING_INPUT; });
   }
@@ -66,7 +78,7 @@ export const input = (player: string) => () => {
     const get = inputs.getValue('GET');
     const gui = inputs.getValue('GUI');
   if (runState === RunState.GUI_INVENTORY) {
-    const drop = inputs.getValue('DROP');
+    const drop = invInputs.getValue('DROP');
     if (drop) {
       state.setState(state => { state.runState = RunState.GUI_INVENTORY_DROP; })
     }
@@ -212,5 +224,6 @@ export const input = (player: string) => () => {
   }
   inputs.clear();
   itemKeys.clear();
+  invInputs.clear();
 };
 

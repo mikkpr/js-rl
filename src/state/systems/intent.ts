@@ -293,6 +293,7 @@ export const handleDeath = (victim: string) => {
   state.world.registerComponent(victim, {
     _type: Item,
     weight: 2,
+    owner: null,
   } as Item);
 }
 
