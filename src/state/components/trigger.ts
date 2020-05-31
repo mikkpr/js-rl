@@ -24,16 +24,12 @@ export interface Enter {
   type: 'ENTER'
 }
 
-export interface Exit {
-  type: 'EXIT'
-}
-
 export interface Weight {
   type: 'WEIGHT',
   amount: number;
 }
 
-export type TriggerCondition = Enter | Exit | Weight;
+export type TriggerCondition = Enter | Weight;
 
 export interface ChangeCell {
   type: 'CHANGE_CELL',

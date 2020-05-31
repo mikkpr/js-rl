@@ -248,7 +248,8 @@ export const createWeightTrigger = ({ x, y, weight, idx, newType, oldType, trigg
   state.world.registerComponent(trigger, {
     _type: Item,
     weight: 10,
-    owner: null
+    owner: null,
+    static: true,
   } as Item);
   state.world.registerComponent(trigger, {
     _type: Trigger,
@@ -291,6 +292,56 @@ export const createExitTrigger = ({
     },
     event: null,
     repeat: 'ONCE'
+  } as Trigger); 
+  state.map.setEntityLocation(trigger, state.map.getIdx(x, y)!);
+
+  return trigger;
+}
+
+export const createDamageTrigger = ({
+  x,
+  y,
+  message,
+  damage,
+}) => {
+  const trigger = state.world.createEntity();
+  state.world.registerComponent(trigger, {
+    _type: Position,
+    x,
+    y,
+  } as Position);
+  state.world.registerComponent(trigger, {
+    _type: Item,
+    weight: 5,
+    owner: null,
+    static: true,
+  } as Item);
+  state.world.registerComponent(trigger, {
+    _type: Name,
+    name: 'campfire',
+  } as Name);
+
+  state.world.registerComponent(trigger, {
+    _type: Glyph,
+    glyph: '^',
+    fg: '#f70',
+    bg: 'black',
+    z: 0,
+  } as Glyph);
+  state.world.registerComponent(trigger, {
+    _type: Trigger,
+    triggered: false,
+    messages: {
+      trigger: message 
+    },
+    condition: {
+      type: 'ENTER'
+    },
+    event: {
+      type: 'DEAL_DAMAGE',
+      amount: damage,
+    },
+    repeat: 'REPEAT'
   } as Trigger); 
   state.map.setEntityLocation(trigger, state.map.getIdx(x, y)!);
 

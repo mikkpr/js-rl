@@ -1,5 +1,4 @@
-import { BaseComponent, System } from 'ecs-machina';
-import state from '..';
+import { BaseComponent, System } from 'ecs-machina';import state from '..';
 import { CellType } from '../../map';
 import { rollDice } from '../../utils/rng';
 

@@ -144,7 +144,7 @@ const drawInventory = (runState) => {
     names = (state.map.entities.get(state.map.getIdx(pos.x, pos.y)) || [])
       .filter(e => {
         const item = state.world.getComponentMap!(e).get(Item) as Item;
-        return !!item && !item.owner;
+        return !!item && !item.owner && !item.static;
       })
       .map(item => {
         const name = state.world.getComponentMap!(item).get(Name) as Name;

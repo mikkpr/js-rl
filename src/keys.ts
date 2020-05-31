@@ -119,7 +119,7 @@ export const input = (player: string) => () => {
     const pos = state.world.getComponentMap(player).get(Position) as Position;
     const entities = state.map.entities.get(state.map.getIdx(pos.x, pos.y)).filter(e => {
       const item = state.world.getComponentMap(e).get(Item) as Item;
-      return !!item && !item.owner;
+      return !!item && !item.owner && !item.static;
     });
     if (!entities || entities.length === 0) {
       state.setState(state => {
@@ -219,7 +219,7 @@ export const input = (player: string) => () => {
       const pos = state.world.getComponentMap(player).get(Position) as Position;
       const entities = state.map.entities.get(state.map.getIdx(pos.x, pos.y)).filter(e => {
         const item = state.world.getComponentMap(e).get(Item) as Item;
-        return !!item && !item.owner;
+        return !!item && !item.owner && !item.static;
       });
       if (entities && entities.length > 0) {
         state.setState(state => { state.runState = RunState.GUI_INVENTORY_GET; })
