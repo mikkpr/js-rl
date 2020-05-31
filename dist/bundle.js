@@ -1862,7 +1862,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.input = exports.inputs = void 0;
+exports.input = exports.invInputs = exports.inputs = void 0;
 const eylem_1 = __importDefault(__webpack_require__(34));
 const egna_1 = __webpack_require__(12);
 const state_1 = __importDefault(__webpack_require__(4));
@@ -1875,14 +1875,25 @@ exports.inputs = new eylem_1.default(document, [
     'DWIM',
     'GET',
     'GUI',
-    'ESC',
-    'DROP'
+    'ESC'
+]);
+exports.invInputs = new eylem_1.default(document, [
+    'DROP',
+    'ESC'
 ]);
 exports.inputs.bindInputMap(eylem_1.default.KEY_DOWN, {
     72: { action: 'MOVE', value: 'W' },
+    65: { action: 'MOVE', value: 'W' },
+    37: { action: 'MOVE', value: 'W' },
     74: { action: 'MOVE', value: 'S' },
+    83: { action: 'MOVE', value: 'S' },
+    40: { action: 'MOVE', value: 'S' },
     75: { action: 'MOVE', value: 'N' },
+    87: { action: 'MOVE', value: 'N' },
+    38: { action: 'MOVE', value: 'N' },
     76: { action: 'MOVE', value: 'E' },
+    68: { action: 'MOVE', value: 'E' },
+    39: { action: 'MOVE', value: 'E' },
     89: { action: 'MOVE', value: 'NW' },
     85: { action: 'MOVE', value: 'NE' },
     66: { action: 'MOVE', value: 'SW' },
@@ -1891,11 +1902,14 @@ exports.inputs.bindInputMap(eylem_1.default.KEY_DOWN, {
     71: { action: 'GET', value: 'GET' },
     73: { action: 'GUI', value: 'INVENTORY' },
     27: { action: 'ESC', value: 'ESC' },
-    68: { action: 'DROP', value: 'DROP' },
 });
 const itemKeys = new eylem_1.default(document, [
     'ASDFGHJKL'.split('')
 ]);
+exports.invInputs.bindInputMap(eylem_1.default.KEY_DOWN, {
+    68: { action: 'DROP', value: 'DROP' },
+    27: { action: 'ESC', value: 'ESC' },
+});
 itemKeys.bindInputMap(eylem_1.default.KEY_DOWN, {
     65: { action: 'ITEM', value: 'A' },
     83: { action: 'ITEM', value: 'S' },
@@ -1908,7 +1922,7 @@ itemKeys.bindInputMap(eylem_1.default.KEY_DOWN, {
     76: { action: 'ITEM', value: 'L' },
 });
 exports.input = (player) => () => {
-    const esc = exports.inputs.getValue('ESC');
+    const esc = exports.inputs.getValue('ESC') || exports.invInputs.getValue('ESC');
     if (esc) {
         state_1.default.setState(state => { state.runState = fsm_1.RunState.WAITING_INPUT; });
     }
@@ -1919,7 +1933,7 @@ exports.input = (player) => () => {
     const get = exports.inputs.getValue('GET');
     const gui = exports.inputs.getValue('GUI');
     if (runState === fsm_1.RunState.GUI_INVENTORY) {
-        const drop = exports.inputs.getValue('DROP');
+        const drop = exports.invInputs.getValue('DROP');
         if (drop) {
             state_1.default.setState(state => { state.runState = fsm_1.RunState.GUI_INVENTORY_DROP; });
         }
@@ -2058,6 +2072,7 @@ exports.input = (player) => () => {
     }
     exports.inputs.clear();
     itemKeys.clear();
+    exports.invInputs.clear();
 };
 
 
