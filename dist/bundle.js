@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 31);
+/******/ 	return __webpack_require__(__webpack_require__.s = 32);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -343,10 +343,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupEntities = void 0;
 const ecs_machina_1 = __webpack_require__(9);
-const immer_1 = __importDefault(__webpack_require__(41));
+const immer_1 = __importDefault(__webpack_require__(42));
 const egna_1 = __webpack_require__(12);
 const map_1 = __webpack_require__(16);
-const spawner_1 = __webpack_require__(44);
+const spawner_1 = __webpack_require__(45);
+const components_1 = __webpack_require__(5);
 const constants_1 = __webpack_require__(10);
 const systems_1 = __webpack_require__(21);
 const fsm_1 = __webpack_require__(17);
@@ -420,7 +421,18 @@ exports.setupEntities = () => {
     const player = spawner_1.createPlayer({ x: 4, y: 8 });
     const kobold = spawner_1.createKobold({ x: 8, y: 4 });
     const key = spawner_1.createKey({ owner: kobold, doorIdx: 74 });
-    const stash = spawner_1.createStash({ x: 9, y: 8, owner: null });
+    const stash = spawner_1.createItem({
+        x: 9, y: 8,
+        glyph: '$',
+        fg: '#ff0',
+        bg: 'black',
+        weight: 2,
+        name: 'stash of coins'
+    });
+    state.world.registerComponent(stash, {
+        _type: components_1.Key,
+        doorIdx: 14,
+    });
     const trigger = spawner_1.createWeightTrigger({
         x: 5,
         y: 4,
@@ -434,6 +446,30 @@ exports.setupEntities = () => {
             revert: 'You hear something sliding back into place.'
         }
     });
+    const boulder = spawner_1.createItem({
+        x: 6, y: 1,
+        glyph: '○',
+        fg: '#666',
+        bg: 'black',
+        weight: 3,
+        name: 'boulder'
+    });
+    const exitTrigger = spawner_1.createExitTrigger({
+        x: 5,
+        y: 2,
+        message: 'You have found a secret passage!'
+    });
+    const exitTrigger2 = spawner_1.createExitTrigger({
+        x: 3,
+        y: 1,
+        message: 'You take your treasures and leave.'
+    });
+    const fire = spawner_1.createDamageTrigger({
+        x: 1,
+        y: 3,
+        damage: 1,
+        message: 'The fire burns you!'
+    });
     return {
         player,
         kobold,
@@ -445,6 +481,62 @@ exports.setupEntities = () => {
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var position_1 = __webpack_require__(46);
+Object.defineProperty(exports, "Position", { enumerable: true, get: function () { return position_1.Position; } });
+Object.defineProperty(exports, "isPosition", { enumerable: true, get: function () { return position_1.isPosition; } });
+var glyph_1 = __webpack_require__(47);
+Object.defineProperty(exports, "Glyph", { enumerable: true, get: function () { return glyph_1.Glyph; } });
+Object.defineProperty(exports, "isGlyph", { enumerable: true, get: function () { return glyph_1.isGlyph; } });
+var intent_1 = __webpack_require__(48);
+Object.defineProperty(exports, "Intent", { enumerable: true, get: function () { return intent_1.Intent; } });
+Object.defineProperty(exports, "isIntent", { enumerable: true, get: function () { return intent_1.isIntent; } });
+Object.defineProperty(exports, "isIntentOfType", { enumerable: true, get: function () { return intent_1.isIntentOfType; } });
+var ai_1 = __webpack_require__(49);
+Object.defineProperty(exports, "AI", { enumerable: true, get: function () { return ai_1.AI; } });
+Object.defineProperty(exports, "isAI", { enumerable: true, get: function () { return ai_1.isAI; } });
+Object.defineProperty(exports, "isAIOfType", { enumerable: true, get: function () { return ai_1.isAIOfType; } });
+var player_1 = __webpack_require__(50);
+Object.defineProperty(exports, "Player", { enumerable: true, get: function () { return player_1.Player; } });
+Object.defineProperty(exports, "isPlayer", { enumerable: true, get: function () { return player_1.isPlayer; } });
+var viewshed_1 = __webpack_require__(51);
+Object.defineProperty(exports, "Viewshed", { enumerable: true, get: function () { return viewshed_1.Viewshed; } });
+Object.defineProperty(exports, "isViewshed", { enumerable: true, get: function () { return viewshed_1.isViewshed; } });
+var body_1 = __webpack_require__(52);
+Object.defineProperty(exports, "Body", { enumerable: true, get: function () { return body_1.Body; } });
+Object.defineProperty(exports, "isBody", { enumerable: true, get: function () { return body_1.isBody; } });
+var camera_1 = __webpack_require__(53);
+Object.defineProperty(exports, "Camera", { enumerable: true, get: function () { return camera_1.Camera; } });
+Object.defineProperty(exports, "isCamera", { enumerable: true, get: function () { return camera_1.isCamera; } });
+var combat_1 = __webpack_require__(54);
+Object.defineProperty(exports, "MeleeCombat", { enumerable: true, get: function () { return combat_1.MeleeCombat; } });
+Object.defineProperty(exports, "isMeleeCombat", { enumerable: true, get: function () { return combat_1.isMeleeCombat; } });
+var health_1 = __webpack_require__(55);
+Object.defineProperty(exports, "Health", { enumerable: true, get: function () { return health_1.Health; } });
+Object.defineProperty(exports, "isHealth", { enumerable: true, get: function () { return health_1.isHealth; } });
+var name_1 = __webpack_require__(56);
+Object.defineProperty(exports, "Name", { enumerable: true, get: function () { return name_1.Name; } });
+Object.defineProperty(exports, "isName", { enumerable: true, get: function () { return name_1.isName; } });
+var inventory_1 = __webpack_require__(57);
+Object.defineProperty(exports, "Inventory", { enumerable: true, get: function () { return inventory_1.Inventory; } });
+Object.defineProperty(exports, "isInventory", { enumerable: true, get: function () { return inventory_1.isInventory; } });
+var item_1 = __webpack_require__(58);
+Object.defineProperty(exports, "Item", { enumerable: true, get: function () { return item_1.Item; } });
+Object.defineProperty(exports, "isItem", { enumerable: true, get: function () { return item_1.isItem; } });
+var key_1 = __webpack_require__(59);
+Object.defineProperty(exports, "Key", { enumerable: true, get: function () { return key_1.Key; } });
+Object.defineProperty(exports, "isKey", { enumerable: true, get: function () { return key_1.isKey; } });
+var trigger_1 = __webpack_require__(60);
+Object.defineProperty(exports, "Trigger", { enumerable: true, get: function () { return trigger_1.Trigger; } });
+Object.defineProperty(exports, "isTrigger", { enumerable: true, get: function () { return trigger_1.isTrigger; } });
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -510,62 +602,6 @@ format.map = {
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var position_1 = __webpack_require__(45);
-Object.defineProperty(exports, "Position", { enumerable: true, get: function () { return position_1.Position; } });
-Object.defineProperty(exports, "isPosition", { enumerable: true, get: function () { return position_1.isPosition; } });
-var glyph_1 = __webpack_require__(46);
-Object.defineProperty(exports, "Glyph", { enumerable: true, get: function () { return glyph_1.Glyph; } });
-Object.defineProperty(exports, "isGlyph", { enumerable: true, get: function () { return glyph_1.isGlyph; } });
-var intent_1 = __webpack_require__(47);
-Object.defineProperty(exports, "Intent", { enumerable: true, get: function () { return intent_1.Intent; } });
-Object.defineProperty(exports, "isIntent", { enumerable: true, get: function () { return intent_1.isIntent; } });
-Object.defineProperty(exports, "isIntentOfType", { enumerable: true, get: function () { return intent_1.isIntentOfType; } });
-var ai_1 = __webpack_require__(48);
-Object.defineProperty(exports, "AI", { enumerable: true, get: function () { return ai_1.AI; } });
-Object.defineProperty(exports, "isAI", { enumerable: true, get: function () { return ai_1.isAI; } });
-Object.defineProperty(exports, "isAIOfType", { enumerable: true, get: function () { return ai_1.isAIOfType; } });
-var player_1 = __webpack_require__(49);
-Object.defineProperty(exports, "Player", { enumerable: true, get: function () { return player_1.Player; } });
-Object.defineProperty(exports, "isPlayer", { enumerable: true, get: function () { return player_1.isPlayer; } });
-var viewshed_1 = __webpack_require__(50);
-Object.defineProperty(exports, "Viewshed", { enumerable: true, get: function () { return viewshed_1.Viewshed; } });
-Object.defineProperty(exports, "isViewshed", { enumerable: true, get: function () { return viewshed_1.isViewshed; } });
-var body_1 = __webpack_require__(51);
-Object.defineProperty(exports, "Body", { enumerable: true, get: function () { return body_1.Body; } });
-Object.defineProperty(exports, "isBody", { enumerable: true, get: function () { return body_1.isBody; } });
-var camera_1 = __webpack_require__(52);
-Object.defineProperty(exports, "Camera", { enumerable: true, get: function () { return camera_1.Camera; } });
-Object.defineProperty(exports, "isCamera", { enumerable: true, get: function () { return camera_1.isCamera; } });
-var combat_1 = __webpack_require__(53);
-Object.defineProperty(exports, "MeleeCombat", { enumerable: true, get: function () { return combat_1.MeleeCombat; } });
-Object.defineProperty(exports, "isMeleeCombat", { enumerable: true, get: function () { return combat_1.isMeleeCombat; } });
-var health_1 = __webpack_require__(54);
-Object.defineProperty(exports, "Health", { enumerable: true, get: function () { return health_1.Health; } });
-Object.defineProperty(exports, "isHealth", { enumerable: true, get: function () { return health_1.isHealth; } });
-var name_1 = __webpack_require__(55);
-Object.defineProperty(exports, "Name", { enumerable: true, get: function () { return name_1.Name; } });
-Object.defineProperty(exports, "isName", { enumerable: true, get: function () { return name_1.isName; } });
-var inventory_1 = __webpack_require__(56);
-Object.defineProperty(exports, "Inventory", { enumerable: true, get: function () { return inventory_1.Inventory; } });
-Object.defineProperty(exports, "isInventory", { enumerable: true, get: function () { return inventory_1.isInventory; } });
-var item_1 = __webpack_require__(57);
-Object.defineProperty(exports, "Item", { enumerable: true, get: function () { return item_1.Item; } });
-Object.defineProperty(exports, "isItem", { enumerable: true, get: function () { return item_1.isItem; } });
-var key_1 = __webpack_require__(58);
-Object.defineProperty(exports, "Key", { enumerable: true, get: function () { return key_1.Key; } });
-Object.defineProperty(exports, "isKey", { enumerable: true, get: function () { return key_1.isKey; } });
-var trigger_1 = __webpack_require__(59);
-Object.defineProperty(exports, "Trigger", { enumerable: true, get: function () { return trigger_1.Trigger; } });
-Object.defineProperty(exports, "isTrigger", { enumerable: true, get: function () { return trigger_1.isTrigger; } });
-
-
-/***/ }),
 /* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -585,7 +621,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hsl2rgb", function() { return hsl2rgb; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRGB", function() { return toRGB; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHex", function() { return toHex; });
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
 /* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
 
 
@@ -960,8 +996,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(35));
 __export(__webpack_require__(36));
+__export(__webpack_require__(37));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -1089,7 +1125,7 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 
 /* harmony default export */ __webpack_exports__["a"] = (freeGlobal);
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(38)))
 
 /***/ }),
 /* 14 */
@@ -1174,9 +1210,9 @@ module.exports = function(originalModule) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorldMap = exports.CellType = void 0;
 const egna_1 = __webpack_require__(12);
-const mrpas_1 = __webpack_require__(42);
+const mrpas_1 = __webpack_require__(43);
 const constants_1 = __webpack_require__(10);
-const map_1 = __webpack_require__(43);
+const map_1 = __webpack_require__(44);
 var CellType;
 (function (CellType) {
     CellType["FLOOR"] = "FLOOR";
@@ -1381,7 +1417,7 @@ exports.WorldMap = WorldMap;
 ;
 const DEBUGMAP = `
 11111111111
-11110001111
+11140001111
 11111111111
 10000000001
 10010001001
@@ -1747,11 +1783,11 @@ process.umask = function() { return 0; };
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var rendering_1 = __webpack_require__(60);
+var rendering_1 = __webpack_require__(61);
 Object.defineProperty(exports, "RenderingSystem", { enumerable: true, get: function () { return rendering_1.RenderingSystem; } });
-var ai_1 = __webpack_require__(62);
+var ai_1 = __webpack_require__(63);
 Object.defineProperty(exports, "AISystem", { enumerable: true, get: function () { return ai_1.AISystem; } });
-var intent_1 = __webpack_require__(63);
+var intent_1 = __webpack_require__(22);
 Object.defineProperty(exports, "IntentSystem", { enumerable: true, get: function () { return intent_1.IntentSystem; } });
 var visibility_1 = __webpack_require__(66);
 Object.defineProperty(exports, "VisibilitySystem", { enumerable: true, get: function () { return visibility_1.VisibilitySystem; } });
@@ -1762,2740 +1798,7 @@ Object.defineProperty(exports, "TriggerSystem", { enumerable: true, get: functio
 
 
 /***/ }),
-/* 22 */,
-/* 23 */,
-/* 24 */,
-/* 25 */,
-/* 26 */,
-/* 27 */,
-/* 28 */,
-/* 29 */,
-/* 30 */,
-/* 31 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.loop = void 0;
-const browser_game_loop_1 = __importDefault(__webpack_require__(32));
-const keys_1 = __webpack_require__(33);
-const setup_1 = __webpack_require__(69);
-const constants_1 = __webpack_require__(10);
-const state_1 = __importStar(__webpack_require__(4));
-const systems_1 = __webpack_require__(21);
-__webpack_require__(71);
-const update = (delta) => {
-    state_1.default.update();
-};
-const render = (display) => (interpolation) => {
-    const renderingSystem = state_1.default.world.getSystem(systems_1.RenderingSystem);
-    display.clear();
-    renderingSystem.draw({ layer: 'map' });
-    renderingSystem.draw({ layer: 'entities' });
-    renderingSystem.draw({ layer: 'gui' });
-};
-const main = () => {
-    const display = setup_1.setupDisplay({
-        width: constants_1.WIDTH,
-        height: constants_1.HEIGHT + constants_1.STATS_HEIGHT + constants_1.LOG_HEIGHT
-    });
-    state_1.default.display = display;
-    document.querySelector('.main-container .loading').remove();
-    const { player } = state_1.setupEntities();
-    state_1.default.setState(state => {
-        state.player = player;
-    });
-    exports.loop = browser_game_loop_1.default({
-        updateTimeStep: 1000 / 60,
-        fpsFilterStrength: 1,
-        slow: 1,
-        input: keys_1.input(player),
-        update,
-        render: render(display),
-    });
-    exports.loop.start();
-};
-document.addEventListener('DOMContentLoaded', () => {
-    main();
-});
-
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(e){"use strict";if(true){!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (e),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))}else {}})(function(){return function(e){"use strict";var n=1e3,t=e.updateTimeStep||n/30,o=0,r=0,i=performance.now(),u=i,f=u,a=e.fpsFilterStrength||20,c=0,s=false,p=e.slow||1,m=p*t,l=e.update,d=e.render,w=e.input,F;function g(){F=requestAnimationFrame(g);w();i=performance.now();o=i-u;u=i;r+=Math.min(n,o);while(r>=m){r-=m;l(t)}c+=(o-c)/a;d(r/m)}function S(){u=performance.now();if(!s){s=true;f=u}F=requestAnimationFrame(g)}function h(){cancelAnimationFrame(F)}function A(){return n/c}function q(){return(u-f)/n}function x(e){p=e;m=p*t}function y(){return p}return{start:S,stop:h,getFps:A,getElapsedTime:q,setSlow:x,getSlow:y}}});
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.input = exports.invInputs = exports.inputs = void 0;
-const eylem_1 = __importDefault(__webpack_require__(34));
-const egna_1 = __webpack_require__(12);
-const state_1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
-const fsm_1 = __webpack_require__(17);
-const constants_1 = __webpack_require__(10);
-const map_1 = __webpack_require__(16);
-exports.inputs = new eylem_1.default(document, [
-    'MOVE',
-    'DWIM',
-    'GET',
-    'GUI',
-    'ESC'
-]);
-exports.invInputs = new eylem_1.default(document, [
-    'DROP',
-    'ESC'
-]);
-exports.inputs.bindInputMap(eylem_1.default.KEY_DOWN, {
-    72: { action: 'MOVE', value: 'W' },
-    65: { action: 'MOVE', value: 'W' },
-    37: { action: 'MOVE', value: 'W' },
-    74: { action: 'MOVE', value: 'S' },
-    83: { action: 'MOVE', value: 'S' },
-    40: { action: 'MOVE', value: 'S' },
-    75: { action: 'MOVE', value: 'N' },
-    87: { action: 'MOVE', value: 'N' },
-    38: { action: 'MOVE', value: 'N' },
-    76: { action: 'MOVE', value: 'E' },
-    68: { action: 'MOVE', value: 'E' },
-    39: { action: 'MOVE', value: 'E' },
-    89: { action: 'MOVE', value: 'NW' },
-    85: { action: 'MOVE', value: 'NE' },
-    66: { action: 'MOVE', value: 'SW' },
-    78: { action: 'MOVE', value: 'SE' },
-    32: { action: 'DWIM', value: 'DWIM' },
-    71: { action: 'GET', value: 'GET' },
-    73: { action: 'GUI', value: 'INVENTORY' },
-    27: { action: 'ESC', value: 'ESC' },
-});
-const itemKeys = new eylem_1.default(document, [
-    'ASDFGHJKL'.split('')
-]);
-exports.invInputs.bindInputMap(eylem_1.default.KEY_DOWN, {
-    68: { action: 'DROP', value: 'DROP' },
-    27: { action: 'ESC', value: 'ESC' },
-});
-itemKeys.bindInputMap(eylem_1.default.KEY_DOWN, {
-    65: { action: 'ITEM', value: 'A' },
-    83: { action: 'ITEM', value: 'S' },
-    68: { action: 'ITEM', value: 'D' },
-    70: { action: 'ITEM', value: 'F' },
-    71: { action: 'ITEM', value: 'G' },
-    72: { action: 'ITEM', value: 'H' },
-    74: { action: 'ITEM', value: 'J' },
-    75: { action: 'ITEM', value: 'K' },
-    76: { action: 'ITEM', value: 'L' },
-});
-exports.input = (player) => () => {
-    const esc = exports.inputs.getValue('ESC') || exports.invInputs.getValue('ESC');
-    if (esc) {
-        state_1.default.setState(state => { state.runState = fsm_1.RunState.WAITING_INPUT; });
-    }
-    const runState = state_1.default.getState().runState;
-    const cmp = state_1.default.world.getComponentMap(player);
-    const move = exports.inputs.getValue('MOVE');
-    const dwim = exports.inputs.getValue('DWIM');
-    const get = exports.inputs.getValue('GET');
-    const gui = exports.inputs.getValue('GUI');
-    if (runState === fsm_1.RunState.GUI_INVENTORY) {
-        const drop = exports.invInputs.getValue('DROP');
-        if (drop) {
-            state_1.default.setState(state => { state.runState = fsm_1.RunState.GUI_INVENTORY_DROP; });
-        }
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
-        const key = itemKeys.getValue('ITEM');
-        if (key) {
-            const player = state_1.default.getState().player;
-            const playerCmp = state_1.default.world.getComponentMap(player);
-            const inventory = playerCmp.get(components_1.Inventory);
-            if (inventory) {
-                const keys = 'ASDFGHJKL'.split('');
-                const items = inventory.contents.reduce((acc, e, idx) => {
-                    return {
-                        ...acc,
-                        [keys[idx]]: e
-                    };
-                }, {});
-                const item = items[key];
-                if (item) {
-                    state_1.default.world.registerComponent(player, {
-                        _type: components_1.Intent,
-                        intent: 'DROP_ITEM',
-                        payload: {
-                            item
-                        }
-                    });
-                    state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
-                }
-            }
-        }
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
-        const player = state_1.default.getState().player;
-        const playerCmp = state_1.default.world.getComponentMap(player);
-        const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
-        const entities = state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)).filter(e => {
-            const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
-            return !!item && !item.owner;
-        });
-        if (!entities || entities.length === 0) {
-            state_1.default.setState(state => {
-                state.runState = fsm_1.RunState.WAITING_INPUT;
-            });
-        }
-        const key = itemKeys.getValue('ITEM');
-        if (key) {
-            if (entities.length > 0) {
-                const keys = 'ASDFGHJKL'.split('');
-                const items = entities.reduce((acc, e, idx) => {
-                    return {
-                        ...acc,
-                        [keys[idx]]: e
-                    };
-                }, {});
-                const item = items[key];
-                if (item) {
-                    state_1.default.world.registerComponent(player, {
-                        _type: components_1.Intent,
-                        intent: 'PICK_UP',
-                        payload: {
-                            target: item
-                        }
-                    });
-                    state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
-                }
-            }
-        }
-    }
-    else if (runState === fsm_1.RunState.WAITING_INPUT) {
-        if (cmp.get(components_1.Health) == null) {
-            exports.inputs.clear();
-            return;
-        }
-        if (gui) {
-            const newState = egna_1.match('INVENTORY', fsm_1.RunState.GUI_INVENTORY)(gui);
-            if (newState) {
-                state_1.default.setState(state => {
-                    state.runState = newState;
-                });
-            }
-        }
-        else if (move) {
-            const { dx, dy } = egna_1.match('N', () => constants_1.DIRS.N, 'E', () => constants_1.DIRS.E, 'S', () => constants_1.DIRS.S, 'W', () => constants_1.DIRS.W, 'NW', () => constants_1.DIRS.NW, 'NE', () => constants_1.DIRS.NE, 'SW', () => constants_1.DIRS.SW, 'SE', () => constants_1.DIRS.SE, constants_1.DIRS.NONE)(move);
-            state_1.default.world.registerComponent(player, {
-                _type: components_1.Intent,
-                intent: 'MOVE',
-                payload: {
-                    dx, dy
-                }
-            });
-            state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
-        }
-        else if (dwim) {
-            const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
-            const neighbors = state_1.default.map.getNeighbors(pos.x, pos.y);
-            let intent;
-            let dir;
-            for (const key of Object.keys(neighbors)) {
-                const cell = neighbors[key];
-                if ([
-                    map_1.CellType.DOOR_LOCKED,
-                    map_1.CellType.DOOR_CLOSED
-                ].includes(cell)) {
-                    intent = 'OPEN_DOOR';
-                    dir = key;
-                    break;
-                }
-                else if (cell === map_1.CellType.DOOR_OPEN) {
-                    intent = 'CLOSE_DOOR';
-                    dir = key;
-                    break;
-                }
-            }
-            if (intent) {
-                state_1.default.world.registerComponent(player, {
-                    _type: components_1.Intent,
-                    intent: intent,
-                    payload: constants_1.DIRS[dir]
-                });
-                state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
-            }
-        }
-        else if (get) {
-            const player = state_1.default.getState().player;
-            const playerCmp = state_1.default.world.getComponentMap(player);
-            const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
-            const entities = state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)).filter(e => {
-                const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
-                return !!item && !item.owner;
-            });
-            if (entities && entities.length > 0) {
-                state_1.default.setState(state => { state.runState = fsm_1.RunState.GUI_INVENTORY_GET; });
-            }
-        }
-    }
-    exports.inputs.clear();
-    itemKeys.clear();
-    exports.invInputs.clear();
-};
-
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports) {
-
-class Eylem {
-  static get KEY_DOWN() {
-    return {
-      name: 'keydown',
-      code: 'keyCode',
-    };
-  }
-
-  static get KEY_PRESS() {
-    return {
-      name: 'keypress',
-      code: 'keyCode',
-    };
-  }
-
-  static get KEY_UP() {
-    return {
-      name: 'keyup',
-      code: 'keyCode',
-    };
-  }
-
-  static get MOUSE_DOWN() {
-    return {
-      name: 'mousedown',
-      code: 'button',
-    };
-  }
-
-  static get MOUSE_UP() {
-    return {
-      name: 'mouseup',
-      code: 'button',
-    };
-  }
-
-  constructor(doc, actions) {
-    this.doc = doc;
-    this.key = null;
-    this.actions = {};
-    this.mouse = new MouseEvent('mousemove');
-
-    this._mouseMoveListener = event => {
-      this.mouse = event;
-    };
-
-    actions.forEach(action => {
-      this.actions[action] = 0;
-    });
-  }
-
-  bindInputMap(event, inputMap) {
-    this.doc.addEventListener(
-      event.name,
-      e => this._handleInput(inputMap, e[event.code]),
-      true
-    );
-  }
-
-  watchMouse() {
-    this.doc.addEventListener('mousemove', this._mouseMoveListener, true);
-  }
-
-  stopWatchMouse() {
-    this.doc.removeEventListener('mousemove', this._mouseMoveListener, true);
-  }
-
-  clear() {
-    for (let prop in this.actions) {
-      this.actions[prop] = 0;
-    }
-    this.mouse = new MouseEvent('mousemove');
-  }
-
-  getValue(action) {
-    return this.actions[action];
-  }
-
-  _handleInput(map, code) {
-    const pair = map[code];
-    if (!pair) return;
-    this.actions[pair.action] = pair.value;
-  }
-}
-
-module.exports = Eylem;
-
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var utils_1 = __webpack_require__(19);
-/**
- * The base abstract class for all Systems
- */
-var System = /** @class */ (function () {
-    function System() {
-        /**
-         * Hash of { entity: component[] }
-         * TODO: use a Map type?
-         */
-        // protected entityComponents: { [entity: string]: BaseComponent[] } = {}
-        this.entityComponents = new Map();
-        //#endregion Callbacks
-    }
-    Object.defineProperty(System.prototype, "world", {
-        get: function () {
-            return this._world;
-        },
-        set: function (v) {
-            if (this._world) {
-                throw Error('Cannot reassign a System to a different World');
-            }
-            this._world = v;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Returns the components array of an entity
-     *
-     * @param entity The entity id
-     */
-    System.prototype.getComponents = function (entity) {
-        return this.entityComponents.get(entity);
-    };
-    /**
-     *  Returns the list of entities for this system
-     */
-    System.prototype.getEntities = function () {
-        return Array.from(this.entityComponents.keys());
-    };
-    /**
-     * Returns the hash of { entity: component[] }
-     */
-    System.prototype.getEntityComponents = function () {
-        return this.entityComponents;
-    };
-    /**
-     * Rebuilds the entities hash
-     */
-    System.prototype.rebuildEntities = function (entities) {
-        var _this = this;
-        // Convert Object to Map
-        if (!(entities instanceof Map)) {
-            entities = utils_1.hashToMap(entities);
-        }
-        this.entityComponents.clear();
-        entities.forEach(function (components, entity) {
-            if (utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), _this.requiredComponents)) {
-                _this.entityComponents.set(entity, components);
-            }
-        });
-    };
-    /**
-     * Adds an entity and its components to the current hash.<br>
-     * You should not call this method
-     *
-     * @param entity
-     */
-    System.prototype.addEntity = function (entity) {
-        var components = this.world.getComponents(entity);
-        if (!this.canAddEntity(entity)) {
-            throw new Error('Components list incompatible with this system');
-        }
-        this.entityComponents.set(entity, components);
-        this.addedEntity(entity, components);
-    };
-    /**
-     * Deletes the entity from the hash
-     *
-     * @param entity
-     */
-    System.prototype.deleteEntity = function (entity) {
-        this.entityComponents.delete(entity);
-    };
-    /**
-     * Does the entity exists with the system
-     */
-    System.prototype.hasEntity = function (entity) {
-        return this.entityComponents.has(entity);
-    };
-    /**
-     * Returns if this system is compatible with the components
-     * @param entity
-     * @param components
-     */
-    System.prototype.canAddEntity = function (entity) {
-        var components = this.world.getComponents(entity);
-        return utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), this.requiredComponents);
-    };
-    //#region Callbacks
-    /**
-     * Called each time an entity is added
-     *
-     * @param entity
-     */
-    System.prototype.addedEntity = function (entity, components) { };
-    /**
-     * Called before the entities update loop
-     */
-    System.prototype.beforeUpdate = function () { };
-    /**
-     * Called for each entity related to the System
-     *
-     * @param entity - The entity ID
-     * @param components - Its array of components
-     */
-    System.prototype.updateEntity = function (entity, components) { };
-    /**
-     * Called after the entities update loop
-     */
-    System.prototype.afterUpdate = function () { };
-    /**
-     * Calls [[System.beforeDraw]], then [[System.drawEntity]], then [[System.afterDraw]]
-     *
-     * @param options
-     */
-    System.prototype.draw = function (options) {
-        var _this = this;
-        if (options === void 0) { options = {}; }
-        this.beforeDraw();
-        this.entityComponents.forEach(function (components, entity) {
-            _this.drawEntity(entity, components, options);
-        });
-        this.afterDraw();
-    };
-    /**
-     * Called before the entities draw loop
-     */
-    System.prototype.beforeDraw = function () { };
-    /**
-     * Called for each entity related to the System, after the update loop
-     *
-     * @param entity - The entity ID
-     * @param components - Its array of components
-     * @param options - An object to pass your own data
-     */
-    System.prototype.drawEntity = function (entity, components, options) {
-        if (options === void 0) { options = {}; }
-    };
-    /**
-     * Called after the entities draw loop
-     */
-    System.prototype.afterDraw = function () { };
-    return System;
-}());
-exports.System = System;
-//# sourceMappingURL=system.js.map
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_es_1 = __webpack_require__(78);
-var utils_1 = __webpack_require__(19);
-var log = __webpack_require__(38)('ECS-Machina');
-var World = /** @class */ (function () {
-    function World() {
-        // TODO: make protected with getter
-        this.entities = new Map();
-        this.systems = [];
-        this.entityIncrements = 0;
-    }
-    World.prototype.update = function () {
-        var _loop_1 = function (system) {
-            system.beforeUpdate();
-            system.getEntityComponents().forEach(function (components, entity) {
-                system.updateEntity(entity, components);
-            });
-            system.afterUpdate();
-        };
-        for (var _i = 0, _a = this.getSystems(); _i < _a.length; _i++) {
-            var system = _a[_i];
-            _loop_1(system);
-        }
-    };
-    /**
-     * Creates AND registers a new Entity inside the World
-     *
-     * @returns The newly registered Entity
-     */
-    World.prototype.createEntity = function () {
-        var entity = (++this.entityIncrements).toString();
-        return this.registerEntity(entity);
-    };
-    /**
-     * Registers a new Entity inside the World
-     *
-     * @param entity
-     * @returns The newly registered Entity
-     */
-    World.prototype.registerEntity = function (entity) {
-        if (this.entities.get(entity)) {
-            throw new Error("The entity \"" + entity + "\" has already been registered");
-        }
-        else {
-            this.entities.set(entity, []);
-        }
-        return entity;
-    };
-    /**
-     * Returns the array of entities
-     */
-    World.prototype.getEntities = function () {
-        return Array.from(this.entities.keys());
-    };
-    /**
-     * Returns a Map<Entity, BaseComponent[]> matching the componentTypes
-     *
-     * @param componentTypes - The components used to filter
-     */
-    World.prototype.findEntitiesByComponents = function (componentTypes) {
-        var result = new Map();
-        this.entities.forEach(function (components, entity) {
-            var entityCmpTypes = components.map(function (o) { return o._type; });
-            if (utils_1.arrayContainsArray(entityCmpTypes, componentTypes)) {
-                result.set(entity, components);
-            }
-        });
-        return result;
-    };
-    /**
-     * Destroys an entity and its components from the ECS database
-     */
-    World.prototype.destroyEntity = function (entity) {
-        // Remove entity references from ECS
-        this.entities.delete(entity);
-        // Remove entity references from concerned systems
-        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
-            var system = _a[_i];
-            system.deleteEntity(entity);
-        }
-    };
-    /**
-     * Links a component to an entity. If a component of the same type has already
-     * been added, the properties of the new one will overwrite the original's.
-     * The method makes a deep copy of the original component before adding it, and returns this copy.
-     */
-    World.prototype.registerComponent = function (entity, component) {
-        // Create the entity if it doesn't exist yet
-        if (!this.entities.has(entity)) {
-            this.registerEntity(entity);
-        }
-        var components = this.entities.get(entity);
-        // Make a deep copy of the object
-        component = lodash_es_1.cloneDeep(component);
-        // If an entity of the same type has already been added,
-        // update its properties
-        var original = components.find(function (o) { return o._type === component._type; });
-        if (original) {
-            lodash_es_1.pull(components, original);
-            component = Object.assign(original, component);
-        }
-        components.push(component);
-        // Link entity to system if requiredComponents match
-        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
-            var system = _a[_i];
-            if (system.canAddEntity(entity)) {
-                system.addEntity(entity);
-            }
-        }
-        return component;
-    };
-    /**
-     * Removes a component from an entity
-     *
-     * @param entity
-     * @param component
-     */
-    World.prototype.removeComponent = function (entity, component) {
-        var components = this.getComponents(entity);
-        if (components.indexOf(component) === -1) {
-            var exists = components.find(function (o) { return o._type === component._type; });
-            console.warn("This component does not exist on entity " + entity + ". Is it the same object?");
-            if (exists) {
-                console.warn("Another component with _type \"" + component._type + "\" exists. Use world.removeComponentByType() to remove components by their _type value.");
-            }
-            return;
-        }
-        // Remove component from entityComponents
-        lodash_es_1.pull(components, component);
-        // Loop through systems to remove entity if needed
-        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
-            var system = _a[_i];
-            if (system.hasEntity(entity)) {
-                // pull(system.entityComponents[entity], component)
-                if (!utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), system.requiredComponents)) {
-                    system.deleteEntity(entity);
-                }
-            }
-        }
-    };
-    /**
-     * Removes a Component, from its `_type` value
-     *
-     * @param entity
-     * @param type
-     */
-    World.prototype.removeComponentByType = function (entity, type) {
-        var component = this.getComponents(entity).find(function (o) { return o._type === type; });
-        if (component) {
-            return this.removeComponent(entity, component);
-        }
-    };
-    /**
-     * Returns the components for a given entity
-     *
-     * @param entity
-     */
-    World.prototype.getComponents = function (entity) {
-        if (!this.entities.has(entity)) {
-            throw Error("Unknown entity " + entity);
-        }
-        return this.entities.get(entity);
-    };
-    /**
-     * Registers a system instance in the ECS database.
-     * You can only register one (1) instance of each System's subclass
-     */
-    World.prototype.registerSystem = function (system) {
-        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
-            var sys = _a[_i];
-            if (sys.constructor.name === system.constructor.name) {
-                throw new Error("There is already a registered instance of " + system.constructor.name);
-            }
-        }
-        // World owns Systems, and Systems reference World
-        this.systems.push(system);
-        system.world = this;
-        log("Registered System " + system.constructor.name);
-        // Add all concerned entities to this system
-        system.rebuildEntities(this.entities);
-    };
-    /**
-     * Remove a System from the ECS database.<br>
-     * This destroys the link between a System and a World
-     */
-    World.prototype.removeSystem = function (system) {
-        lodash_es_1.pull(this.systems, system);
-    };
-    /**
-     * Returns the systems' list
-     */
-    World.prototype.getSystems = function () {
-        return this.systems;
-    };
-    /**
-     * Returns a specific system instance from its class
-     *
-     * @param systemClass
-     */
-    World.prototype.getSystem = function (systemClass) {
-        return this.getSystems().find(function (o) { return o instanceof systemClass; });
-    };
-    return World;
-}());
-exports.World = World;
-//# sourceMappingURL=world.js.map
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(process) {/* eslint-env browser */
-
-/**
- * This is the web browser implementation of `debug()`.
- */
-
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = localstorage();
-
-/**
- * Colors.
- */
-
-exports.colors = [
-	'#0000CC',
-	'#0000FF',
-	'#0033CC',
-	'#0033FF',
-	'#0066CC',
-	'#0066FF',
-	'#0099CC',
-	'#0099FF',
-	'#00CC00',
-	'#00CC33',
-	'#00CC66',
-	'#00CC99',
-	'#00CCCC',
-	'#00CCFF',
-	'#3300CC',
-	'#3300FF',
-	'#3333CC',
-	'#3333FF',
-	'#3366CC',
-	'#3366FF',
-	'#3399CC',
-	'#3399FF',
-	'#33CC00',
-	'#33CC33',
-	'#33CC66',
-	'#33CC99',
-	'#33CCCC',
-	'#33CCFF',
-	'#6600CC',
-	'#6600FF',
-	'#6633CC',
-	'#6633FF',
-	'#66CC00',
-	'#66CC33',
-	'#9900CC',
-	'#9900FF',
-	'#9933CC',
-	'#9933FF',
-	'#99CC00',
-	'#99CC33',
-	'#CC0000',
-	'#CC0033',
-	'#CC0066',
-	'#CC0099',
-	'#CC00CC',
-	'#CC00FF',
-	'#CC3300',
-	'#CC3333',
-	'#CC3366',
-	'#CC3399',
-	'#CC33CC',
-	'#CC33FF',
-	'#CC6600',
-	'#CC6633',
-	'#CC9900',
-	'#CC9933',
-	'#CCCC00',
-	'#CCCC33',
-	'#FF0000',
-	'#FF0033',
-	'#FF0066',
-	'#FF0099',
-	'#FF00CC',
-	'#FF00FF',
-	'#FF3300',
-	'#FF3333',
-	'#FF3366',
-	'#FF3399',
-	'#FF33CC',
-	'#FF33FF',
-	'#FF6600',
-	'#FF6633',
-	'#FF9900',
-	'#FF9933',
-	'#FFCC00',
-	'#FFCC33'
-];
-
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-
-// eslint-disable-next-line complexity
-function useColors() {
-	// NB: In an Electron preload script, document will be defined but not fully
-	// initialized. Since we know we're in Chrome, we'll just detect this case
-	// explicitly
-	if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
-		return true;
-	}
-
-	// Internet Explorer and Edge do not support colors.
-	if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-		return false;
-	}
-
-	// Is webkit? http://stackoverflow.com/a/16459606/376773
-	// document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-	return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
-		// Is firebug? http://stackoverflow.com/a/398120/376773
-		(typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
-		// Is firefox >= v31?
-		// https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
-		// Double check webkit in userAgent just in case we are in a worker
-		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
-}
-
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-function formatArgs(args) {
-	args[0] = (this.useColors ? '%c' : '') +
-		this.namespace +
-		(this.useColors ? ' %c' : ' ') +
-		args[0] +
-		(this.useColors ? '%c ' : ' ') +
-		'+' + module.exports.humanize(this.diff);
-
-	if (!this.useColors) {
-		return;
-	}
-
-	const c = 'color: ' + this.color;
-	args.splice(1, 0, c, 'color: inherit');
-
-	// The final "%c" is somewhat tricky, because there could be other
-	// arguments passed either before or after the %c, so we need to
-	// figure out the correct index to insert the CSS into
-	let index = 0;
-	let lastC = 0;
-	args[0].replace(/%[a-zA-Z%]/g, match => {
-		if (match === '%%') {
-			return;
-		}
-		index++;
-		if (match === '%c') {
-			// We only are interested in the *last* %c
-			// (the user may have provided their own)
-			lastC = index;
-		}
-	});
-
-	args.splice(lastC, 0, c);
-}
-
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-function log(...args) {
-	// This hackery is required for IE8/9, where
-	// the `console.log` function doesn't have 'apply'
-	return typeof console === 'object' &&
-		console.log &&
-		console.log(...args);
-}
-
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-function save(namespaces) {
-	try {
-		if (namespaces) {
-			exports.storage.setItem('debug', namespaces);
-		} else {
-			exports.storage.removeItem('debug');
-		}
-	} catch (error) {
-		// Swallow
-		// XXX (@Qix-) should we be logging these?
-	}
-}
-
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-function load() {
-	let r;
-	try {
-		r = exports.storage.getItem('debug');
-	} catch (error) {
-		// Swallow
-		// XXX (@Qix-) should we be logging these?
-	}
-
-	// If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-	if (!r && typeof process !== 'undefined' && 'env' in process) {
-		r = process.env.DEBUG;
-	}
-
-	return r;
-}
-
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-function localstorage() {
-	try {
-		// TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
-		// The Browser also has localStorage in the global context.
-		return localStorage;
-	} catch (error) {
-		// Swallow
-		// XXX (@Qix-) should we be logging these?
-	}
-}
-
-module.exports = __webpack_require__(39)(exports);
-
-const {formatters} = module.exports;
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-formatters.j = function (v) {
-	try {
-		return JSON.stringify(v);
-	} catch (error) {
-		return '[UnexpectedJSONParseError]: ' + error.message;
-	}
-};
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(20)))
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- */
-
-function setup(env) {
-	createDebug.debug = createDebug;
-	createDebug.default = createDebug;
-	createDebug.coerce = coerce;
-	createDebug.disable = disable;
-	createDebug.enable = enable;
-	createDebug.enabled = enabled;
-	createDebug.humanize = __webpack_require__(40);
-
-	Object.keys(env).forEach(key => {
-		createDebug[key] = env[key];
-	});
-
-	/**
-	* Active `debug` instances.
-	*/
-	createDebug.instances = [];
-
-	/**
-	* The currently active debug mode names, and names to skip.
-	*/
-
-	createDebug.names = [];
-	createDebug.skips = [];
-
-	/**
-	* Map of special "%n" handling functions, for the debug "format" argument.
-	*
-	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-	*/
-	createDebug.formatters = {};
-
-	/**
-	* Selects a color for a debug namespace
-	* @param {String} namespace The namespace string for the for the debug instance to be colored
-	* @return {Number|String} An ANSI color code for the given namespace
-	* @api private
-	*/
-	function selectColor(namespace) {
-		let hash = 0;
-
-		for (let i = 0; i < namespace.length; i++) {
-			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
-			hash |= 0; // Convert to 32bit integer
-		}
-
-		return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
-	}
-	createDebug.selectColor = selectColor;
-
-	/**
-	* Create a debugger with the given `namespace`.
-	*
-	* @param {String} namespace
-	* @return {Function}
-	* @api public
-	*/
-	function createDebug(namespace) {
-		let prevTime;
-
-		function debug(...args) {
-			// Disabled?
-			if (!debug.enabled) {
-				return;
-			}
-
-			const self = debug;
-
-			// Set `diff` timestamp
-			const curr = Number(new Date());
-			const ms = curr - (prevTime || curr);
-			self.diff = ms;
-			self.prev = prevTime;
-			self.curr = curr;
-			prevTime = curr;
-
-			args[0] = createDebug.coerce(args[0]);
-
-			if (typeof args[0] !== 'string') {
-				// Anything else let's inspect with %O
-				args.unshift('%O');
-			}
-
-			// Apply any `formatters` transformations
-			let index = 0;
-			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
-				// If we encounter an escaped % then don't increase the array index
-				if (match === '%%') {
-					return match;
-				}
-				index++;
-				const formatter = createDebug.formatters[format];
-				if (typeof formatter === 'function') {
-					const val = args[index];
-					match = formatter.call(self, val);
-
-					// Now we need to remove `args[index]` since it's inlined in the `format`
-					args.splice(index, 1);
-					index--;
-				}
-				return match;
-			});
-
-			// Apply env-specific formatting (colors, etc.)
-			createDebug.formatArgs.call(self, args);
-
-			const logFn = self.log || createDebug.log;
-			logFn.apply(self, args);
-		}
-
-		debug.namespace = namespace;
-		debug.enabled = createDebug.enabled(namespace);
-		debug.useColors = createDebug.useColors();
-		debug.color = selectColor(namespace);
-		debug.destroy = destroy;
-		debug.extend = extend;
-		// Debug.formatArgs = formatArgs;
-		// debug.rawLog = rawLog;
-
-		// env-specific initialization logic for debug instances
-		if (typeof createDebug.init === 'function') {
-			createDebug.init(debug);
-		}
-
-		createDebug.instances.push(debug);
-
-		return debug;
-	}
-
-	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
-			return true;
-		}
-		return false;
-	}
-
-	function extend(namespace, delimiter) {
-		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
-		newDebug.log = this.log;
-		return newDebug;
-	}
-
-	/**
-	* Enables a debug mode by namespaces. This can include modes
-	* separated by a colon and wildcards.
-	*
-	* @param {String} namespaces
-	* @api public
-	*/
-	function enable(namespaces) {
-		createDebug.save(namespaces);
-
-		createDebug.names = [];
-		createDebug.skips = [];
-
-		let i;
-		const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-		const len = split.length;
-
-		for (i = 0; i < len; i++) {
-			if (!split[i]) {
-				// ignore empty strings
-				continue;
-			}
-
-			namespaces = split[i].replace(/\*/g, '.*?');
-
-			if (namespaces[0] === '-') {
-				createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-			} else {
-				createDebug.names.push(new RegExp('^' + namespaces + '$'));
-			}
-		}
-
-		for (i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
-			instance.enabled = createDebug.enabled(instance.namespace);
-		}
-	}
-
-	/**
-	* Disable debug output.
-	*
-	* @return {String} namespaces
-	* @api public
-	*/
-	function disable() {
-		const namespaces = [
-			...createDebug.names.map(toNamespace),
-			...createDebug.skips.map(toNamespace).map(namespace => '-' + namespace)
-		].join(',');
-		createDebug.enable('');
-		return namespaces;
-	}
-
-	/**
-	* Returns true if the given mode name is enabled, false otherwise.
-	*
-	* @param {String} name
-	* @return {Boolean}
-	* @api public
-	*/
-	function enabled(name) {
-		if (name[name.length - 1] === '*') {
-			return true;
-		}
-
-		let i;
-		let len;
-
-		for (i = 0, len = createDebug.skips.length; i < len; i++) {
-			if (createDebug.skips[i].test(name)) {
-				return false;
-			}
-		}
-
-		for (i = 0, len = createDebug.names.length; i < len; i++) {
-			if (createDebug.names[i].test(name)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	* Convert regexp to namespace
-	*
-	* @param {RegExp} regxep
-	* @return {String} namespace
-	* @api private
-	*/
-	function toNamespace(regexp) {
-		return regexp.toString()
-			.substring(2, regexp.toString().length - 2)
-			.replace(/\.\*\?$/, '*');
-	}
-
-	/**
-	* Coerce `val`.
-	*
-	* @param {Mixed} val
-	* @return {Mixed}
-	* @api private
-	*/
-	function coerce(val) {
-		if (val instanceof Error) {
-			return val.stack || val.message;
-		}
-		return val;
-	}
-
-	createDebug.enable(createDebug.load());
-
-	return createDebug;
-}
-
-module.exports = setup;
-
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports) {
-
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var w = d * 7;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isFinite(val)) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'weeks':
-    case 'week':
-    case 'w':
-      return n * w;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtShort(ms) {
-  var msAbs = Math.abs(ms);
-  if (msAbs >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (msAbs >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (msAbs >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (msAbs >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtLong(ms) {
-  var msAbs = Math.abs(ms);
-  if (msAbs >= d) {
-    return plural(ms, msAbs, d, 'day');
-  }
-  if (msAbs >= h) {
-    return plural(ms, msAbs, h, 'hour');
-  }
-  if (msAbs >= m) {
-    return plural(ms, msAbs, m, 'minute');
-  }
-  if (msAbs >= s) {
-    return plural(ms, msAbs, s, 'second');
-  }
-  return ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, msAbs, n, name) {
-  var isPlural = msAbs >= n * 1.5;
-  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
-}
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Immer", function() { return nn; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "applyPatches", function() { return an; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "castDraft", function() { return F; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "castImmutable", function() { return C; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createDraft", function() { return fn; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableAllPlugins", function() { return T; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableES5", function() { return R; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableMapSet", function() { return N; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enablePatches", function() { return D; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "finishDraft", function() { return cn; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "immerable", function() { return B; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDraft", function() { return t; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDraftable", function() { return r; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nothing", function() { return q; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "original", function() { return e; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "produce", function() { return rn; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "produceWithPatches", function() { return en; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setAutoFreeze", function() { return on; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setUseProxies", function() { return un; });
-function n(n){for(var t=arguments.length,r=Array(t>1?t-1:0),e=1;e<t;e++)r[e-1]=arguments[e];if(false){ var i, o; }throw Error("[Immer] minified error nr: "+n+(r.length?" "+r.join(","):"")+". Find the full error at: https://bit.ly/3cXEKWf")}function t(n){return!!n&&!!n[G]}function r(n){return!!n&&(function(n){if(!n||"object"!=typeof n)return!1;var t=Object.getPrototypeOf(n);return!t||t===Object.prototype}(n)||Array.isArray(n)||!!n[B]||!!n.constructor[B]||c(n)||s(n))}function e(n){if(n&&n[G])return n[G].t}function i(n,t,r){void 0===r&&(r=!1),0===o(n)?(r?Object.keys:Q)(n).forEach((function(r){return t(r,n[r],n)})):n.forEach((function(r,e){return t(e,r,n)}))}function o(n){var t=n[G];return t?t.i>3?t.i-4:t.i:Array.isArray(n)?1:c(n)?2:s(n)?3:0}function u(n,t){return 2===o(n)?n.has(t):Object.prototype.hasOwnProperty.call(n,t)}function a(n,t){return 2===o(n)?n.get(t):n[t]}function f(n,t){return n===t?0!==n||1/n==1/t:n!=n&&t!=t}function c(n){return U&&n instanceof Map}function s(n){return W&&n instanceof Set}function v(n){return n.o||n.t}function p(t,r){if(void 0===r&&(r=!1),Array.isArray(t))return t.slice();var e=Object.create(Object.getPrototypeOf(t));return i(t,(function(i){if(i!==G){var o=Object.getOwnPropertyDescriptor(t,i),u=o.value;o.get&&(r||n(1),u=o.get.call(t)),o.enumerable?e[i]=u:Object.defineProperty(e,i,{value:u,writable:!0,configurable:!0})}})),e}function d(n,e){t(n)||h(n)||!r(n)||(o(n)>1&&(n.set=n.add=n.clear=n.delete=l),Object.freeze(n),e&&i(n,(function(n,t){return d(t,!0)}),!0))}function l(){n(2)}function h(n){return null==n||"object"!=typeof n||Object.isFrozen(n)}function y(t){var r=V[t];return r||n( false?undefined:19,t),r}function b(n,t){V[n]=t}function m(){return true||false,K}function _(n,t){t&&(y("Patches"),n.u=[],n.s=[],n.v=t)}function j(n){O(n),n.p.forEach(w),n.p=null}function O(n){n===K&&(K=n.l)}function g(n){return K={p:[],l:K,h:n,m:!0,_:0}}function w(n){var t=n[G];0===t.i||1===t.i?t.j():t.O=!0}function S(t,e){e._=e.p.length;var i=e.p[0],o=void 0!==t&&t!==i;return e.h.g||y("ES5").S(e,t,o),o?(i[G].P&&(j(e),n(4)),r(t)&&(t=P(e,t),e.l||A(e,t)),e.u&&y("Patches").M(i[G],t,e.u,e.s)):t=P(e,i,[]),j(e),e.u&&e.v(e.u,e.s),t!==q?t:void 0}function P(n,t,r){if(h(t))return t;var e=t[G];if(!e)return i(t,(function(i,o){return M(n,e,t,i,o,r)}),!0),t;if(e.A!==n)return t;if(!e.P)return A(n,e.t,!0),e.t;if(!e.I){e.I=!0,e.A._--;var o=4===e.i||5===e.i?e.o=p(e.k,!0):e.o;i(o,(function(t,i){return M(n,e,o,t,i,r)})),A(n,o,!1),r&&n.u&&y("Patches").R(e,r,n.u,n.s)}return e.o}function M(e,i,c,s,v,p){if( false&&false,t(v)){var d=P(e,v,p&&i&&3!==i.i&&!u(i.D,s)?p.concat(s):void 0);if(h=s,y=d,2===(b=o(l=c))?l.set(h,y):3===b?(l.delete(h),l.add(y)):l[h]=y,!t(d))return;e.m=!1}var l,h,y,b;if((!i||!f(v,a(i.t,s)))&&r(v)){if(!e.h.N&&e._<1)return;P(e,v),i&&i.A.l||A(e,v)}}function A(n,t,r){void 0===r&&(r=!1),n.h.N&&n.m&&d(t,r)}function x(n,t){var r=n[G],e=Reflect.getOwnPropertyDescriptor(r?v(r):n,t);return e&&e.value}function z(n){if(!n.P){if(n.P=!0,0===n.i||1===n.i){var t=n.o=p(n.t);i(n.p,(function(n,r){t[n]=r})),n.p=void 0}n.l&&z(n.l)}}function I(n){n.o||(n.o=p(n.t))}function E(n,t,r){var e=c(t)?y("MapSet").T(t,r):s(t)?y("MapSet").F(t,r):n.g?function(n,t){var r=Array.isArray(n),e={i:r?1:0,A:t?t.A:m(),P:!1,I:!1,D:{},l:t,t:n,k:null,p:{},o:null,j:null,C:!1},i=e,o=Y;r&&(i=[e],o=Z);var u=Proxy.revocable(i,o),a=u.revoke,f=u.proxy;return e.k=f,e.j=a,f}(t,r):y("ES5").J(t,r);return(r?r.A:m()).p.push(e),e}function k(n,t){n.g?z(t):y("ES5").K(t)}function R(){function e(n,t){var r=n[G];if(r&&!r.$){r.$=!0;var e=n[t];return r.$=!1,e}return n[t]}function o(n){n.P||(n.P=!0,n.l&&o(n.l))}function a(n){n.o||(n.o=c(n.t))}function c(n){var t=n&&n[G];if(t){t.$=!0;var r=p(t.k,!0);return t.$=!1,r}return p(n)}function s(n){for(var t=n.length-1;t>=0;t--){var r=n[t][G];if(!r.P)switch(r.i){case 5:l(r)&&o(r);break;case 4:d(r)&&o(r)}}}function d(n){for(var t=n.t,r=n.k,e=Object.keys(r),i=e.length-1;i>=0;i--){var o=e[i],a=t[o];if(void 0===a&&!u(t,o))return!0;var c=r[o],s=c&&c[G];if(s?s.t!==a:!f(c,a))return!0}return e.length!==Object.keys(t).length}function l(n){var t=n.k;if(t.length!==n.t.length)return!0;var r=Object.getOwnPropertyDescriptor(t,t.length-1);return!(!r||r.get)}function h(t){t.O&&n(3,JSON.stringify(v(t)))}var y={};b("ES5",{J:function(n,t){var u=Array.isArray(n),s=c(n);i(s,(function(t){!function(n,t,i){var u=y[t];u?u.enumerable=i:y[t]=u={enumerable:i,get:function(){return function(n,t){h(n);var i=e(v(n),t);return n.$?i:i===e(n.t,t)&&r(i)?(a(n),n.o[t]=E(n.A.h,i,n)):i}(this[G],t)},set:function(n){!function(n,t,r){if(h(n),n.D[t]=!0,!n.P){if(f(r,e(v(n),t)))return;o(n),a(n)}n.o[t]=r}(this[G],t,n)}},Object.defineProperty(n,t,u)}(s,t,u||function(n,t){var r=Object.getOwnPropertyDescriptor(n,t);return!(!r||!r.enumerable)}(n,t))}));var p={i:u?5:4,A:t?t.A:m(),P:!1,$:!1,I:!1,D:{},l:t,t:n,k:s,o:null,O:!1,C:!1};return Object.defineProperty(s,G,{value:p,writable:!0}),s},K:o,S:function(n,r,e){n.p.forEach((function(n){n[G].$=!0})),e?t(r)&&r[G].A===n&&s(n.p):(n.u&&function n(t){if(t&&"object"==typeof t){var r=t[G];if(r){var e=r.t,a=r.k,f=r.D,c=r.i;if(4===c)i(a,(function(t){t!==G&&(void 0!==e[t]||u(e,t)?f[t]||n(a[t]):(f[t]=!0,o(r)))})),i(e,(function(n){void 0!==a[n]||u(a,n)||(f[n]=!1,o(r))}));else if(5===c){if(l(r)&&(o(r),f.length=!0),a.length<e.length)for(var s=a.length;s<e.length;s++)f[s]=!1;else for(var v=e.length;v<a.length;v++)f[v]=!0;for(var p=Math.min(a.length,e.length),d=0;d<p;d++)void 0===f[d]&&n(a[d])}}}}(n.p[0]),s(n.p))}})}function D(){function r(n){if(!n||"object"!=typeof n)return n;if(Array.isArray(n))return n.map(r);if(c(n))return new Map(Array.from(n.entries()).map((function(n){return[n[0],r(n[1])]})));if(s(n))return new Set(Array.from(n).map(r));var t=Object.create(Object.getPrototypeOf(n));for(var e in n)t[e]=r(n[e]);return t}function e(n){return t(n)?r(n):n}var f="add";b("Patches",{U:function(t,e){return e.forEach((function(e){for(var i=e.path,u=e.op,c=t,s=0;s<i.length-1;s++)"object"!=typeof(c=a(c,i[s]))&&n(15,i.join("/"));var v=o(c),p=r(e.value),d=i[i.length-1];switch(u){case"replace":switch(v){case 2:return c.set(d,p);case 3:n(16);default:return c[d]=p}case f:switch(v){case 1:return c.splice(d,0,p);case 2:return c.set(d,p);case 3:return c.add(p);default:return c[d]=p}case"remove":switch(v){case 1:return c.splice(d,1);case 2:return c.delete(d);case 3:return c.delete(e.value);default:return delete c[d]}default:n(17,u)}})),t},R:function(n,t,r,o){switch(n.i){case 0:case 4:case 2:return function(n,t,r,o){var c=n.t,s=n.o;i(n.D,(function(n,i){var v=a(c,n),p=a(s,n),d=i?u(c,n)?"replace":f:"remove";if(v!==p||"replace"!==d){var l=t.concat(n);r.push("remove"===d?{op:d,path:l}:{op:d,path:l,value:p}),o.push(d===f?{op:"remove",path:l}:"remove"===d?{op:f,path:l,value:e(v)}:{op:"replace",path:l,value:e(v)})}}))}(n,t,r,o);case 5:case 1:return function(n,t,r,i){var o=n.t,u=n.D,a=n.o;if(a.length<o.length){var c=[a,o];o=c[0],a=c[1];var s=[i,r];r=s[0],i=s[1]}for(var v=a.length-o.length,p=0;o[p]===a[p]&&p<o.length;)++p;for(var d=o.length;d>p&&o[d-1]===a[d+v-1];)--d;for(var l=p;l<d;++l)if(u[l]&&a[l]!==o[l]){var h=t.concat([l]);r.push({op:"replace",path:h,value:e(a[l])}),i.push({op:"replace",path:h,value:e(o[l])})}for(var y=r.length,b=d+v-1;b>=d;--b){var m=t.concat([b]);r[y+b-d]={op:f,path:m,value:e(a[b])},i.push({op:"remove",path:m})}}(n,t,r,o);case 3:return function(n,t,r,e){var i=n.t,o=n.o,u=0;i.forEach((function(n){if(!o.has(n)){var i=t.concat([u]);r.push({op:"remove",path:i,value:n}),e.unshift({op:f,path:i,value:n})}u++})),u=0,o.forEach((function(n){if(!i.has(n)){var o=t.concat([u]);r.push({op:f,path:o,value:n}),e.unshift({op:"remove",path:o,value:n})}u++}))}(n,t,r,o)}},M:function(n,t,r,e){r.push({op:"replace",path:[],value:t}),e.push({op:"replace",path:[],value:n.t})}})}function N(){function t(n,t){function r(){this.constructor=n}u(n,t),n.prototype=(r.prototype=t.prototype,new r)}function e(n){n.o||(n.D=new Map,n.o=new Map(n.t))}function i(n){n.o||(n.o=new Set,n.t.forEach((function(t){if(r(t)){var e=E(n.A.h,t,n);n.p.set(t,e),n.o.add(e)}else n.o.add(t)})))}function o(t){t.O&&n(3,JSON.stringify(v(t)))}var u=function(n,t){return(u=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(n,t){n.__proto__=t}||function(n,t){for(var r in t)t.hasOwnProperty(r)&&(n[r]=t[r])})(n,t)},a=function(){function n(n,t){return this[G]={i:2,l:t,A:t?t.A:m(),P:!1,I:!1,o:void 0,D:void 0,t:n,k:this,C:!1,O:!1},this}t(n,Map);var i=n.prototype;return Object.defineProperty(i,"size",{get:function(){return v(this[G]).size}}),i.has=function(n){return v(this[G]).has(n)},i.set=function(n,t){var r=this[G];return o(r),v(r).get(n)!==t&&(e(r),k(r.A.h,r),r.D.set(n,!0),r.o.set(n,t),r.D.set(n,!0)),this},i.delete=function(n){if(!this.has(n))return!1;var t=this[G];return o(t),e(t),k(t.A.h,t),t.D.set(n,!1),t.o.delete(n),!0},i.clear=function(){var n=this[G];return o(n),e(n),k(n.A.h,n),n.D=new Map,n.o.clear()},i.forEach=function(n,t){var r=this;v(this[G]).forEach((function(e,i){n.call(t,r.get(i),i,r)}))},i.get=function(n){var t=this[G];o(t);var i=v(t).get(n);if(t.I||!r(i))return i;if(i!==t.t.get(n))return i;var u=E(t.A.h,i,t);return e(t),t.o.set(n,u),u},i.keys=function(){return v(this[G]).keys()},i.values=function(){var n,t=this,r=this.keys();return(n={})[H]=function(){return t.values()},n.next=function(){var n=r.next();return n.done?n:{done:!1,value:t.get(n.value)}},n},i.entries=function(){var n,t=this,r=this.keys();return(n={})[H]=function(){return t.entries()},n.next=function(){var n=r.next();if(n.done)return n;var e=t.get(n.value);return{done:!1,value:[n.value,e]}},n},i[H]=function(){return this.entries()},n}(),f=function(){function n(n,t){return this[G]={i:3,l:t,A:t?t.A:m(),P:!1,I:!1,o:void 0,t:n,k:this,p:new Map,O:!1,C:!1},this}t(n,Set);var r=n.prototype;return Object.defineProperty(r,"size",{get:function(){return v(this[G]).size}}),r.has=function(n){var t=this[G];return o(t),t.o?!!t.o.has(n)||!(!t.p.has(n)||!t.o.has(t.p.get(n))):t.t.has(n)},r.add=function(n){var t=this[G];return o(t),this.has(n)||(i(t),k(t.A.h,t),t.o.add(n)),this},r.delete=function(n){if(!this.has(n))return!1;var t=this[G];return o(t),i(t),k(t.A.h,t),t.o.delete(n)||!!t.p.has(n)&&t.o.delete(t.p.get(n))},r.clear=function(){var n=this[G];return o(n),i(n),k(n.A.h,n),n.o.clear()},r.values=function(){var n=this[G];return o(n),i(n),n.o.values()},r.entries=function(){var n=this[G];return o(n),i(n),n.o.entries()},r.keys=function(){return this.values()},r[H]=function(){return this.values()},r.forEach=function(n,t){for(var r=this.values(),e=r.next();!e.done;)n.call(t,e.value,e.value,this),e=r.next()},n}();b("MapSet",{T:function(n,t){return new a(n,t)},F:function(n,t){return new f(n,t)}})}function T(){R(),N(),D()}function F(n){return n}function C(n){return n}var J,K,$="undefined"!=typeof Symbol&&"symbol"==typeof Symbol("x"),U="undefined"!=typeof Map,W="undefined"!=typeof Set,X="undefined"!=typeof Proxy&&void 0!==Proxy.revocable&&"undefined"!=typeof Reflect,q=$?Symbol("immer-nothing"):((J={})["immer-nothing"]=!0,J),B=$?Symbol("immer-draftable"):"__$immer_draftable",G=$?Symbol("immer-state"):"__$immer_state",H="undefined"!=typeof Symbol&&Symbol.iterator||"@@iterator",L={0:"Illegal state",1:"Immer drafts cannot have computed properties",2:"This object has been frozen and should not be mutated",3:function(n){return"Cannot use a proxy that has been revoked. Did you pass an object from inside an immer function to an async process? "+n},4:"An immer producer returned a new value *and* modified its draft. Either return a new value *or* modify the draft.",5:"Immer forbids circular references",6:"The first or second argument to `produce` must be a function",7:"The third argument to `produce` must be a function or undefined",8:"First argument to `createDraft` must be a plain object, an array, or an immerable object",9:"First argument to `finishDraft` must be a draft returned by `createDraft`",10:"The given draft is already finalized",11:"Object.defineProperty() cannot be used on an Immer draft",12:"Object.setPrototypeOf() cannot be used on an Immer draft",13:"Immer only supports deleting array indices",14:"Immer only supports setting array indices and the 'length' property",15:function(n){return"Cannot apply patch, path doesn't resolve: "+n},16:'Sets cannot have "replace" patches.',17:function(n){return"Unsupported patch operation: "+n},18:function(n){return"The plugin for '"+n+"' has not been loaded into Immer. To enable the plugin, import and call `enable"+n+"()` when initializing your application."},19:function(n){return"plugin not loaded: "+n},20:"Cannot use proxies if Proxy, Proxy.revocable or Reflect are not available"},Q="undefined"!=typeof Reflect&&Reflect.ownKeys?Reflect.ownKeys:void 0!==Object.getOwnPropertySymbols?function(n){return Object.getOwnPropertyNames(n).concat(Object.getOwnPropertySymbols(n))}:Object.getOwnPropertyNames,V={},Y={get:function(n,t){if(t===G)return n;var e=n.p;if(!n.P&&u(e,t))return e[t];var i=v(n)[t];if(n.I||!r(i))return i;if(n.P){if(i!==x(n.t,t))return i;e=n.o}return e[t]=E(n.A.h,i,n)},has:function(n,t){return t in v(n)},ownKeys:function(n){return Reflect.ownKeys(v(n))},set:function(n,t,r){if(!n.P){var e=x(n.t,t);if(r?f(e,r)||r===n.p[t]:f(e,r)&&t in n.t)return!0;I(n),z(n)}return n.D[t]=!0,n.o[t]=r,!0},deleteProperty:function(n,t){return void 0!==x(n.t,t)||t in n.t?(n.D[t]=!1,I(n),z(n)):n.D[t]&&delete n.D[t],n.o&&delete n.o[t],!0},getOwnPropertyDescriptor:function(n,t){var r=v(n),e=Reflect.getOwnPropertyDescriptor(r,t);return e&&(e.writable=!0,e.configurable=1!==n.i||"length"!==t),e},defineProperty:function(){n(11)},getPrototypeOf:function(n){return Object.getPrototypeOf(n.t)},setPrototypeOf:function(){n(12)}},Z={};i(Y,(function(n,t){Z[n]=function(){return arguments[0]=arguments[0][0],t.apply(this,arguments)}})),Z.deleteProperty=function(t,r){return false&&false,Y.deleteProperty.call(this,t[0],r)},Z.set=function(t,r,e){return false&&false,Y.set.call(this,t[0],r,e,t[0])};var nn=function(){function e(n){this.g=X,this.N="production"!=="production","boolean"==typeof(null==n?void 0:n.useProxies)&&this.setUseProxies(n.useProxies),"boolean"==typeof(null==n?void 0:n.autoFreeze)&&this.setAutoFreeze(n.autoFreeze),this.produce=this.produce.bind(this),this.produceWithPatches=this.produceWithPatches.bind(this)}var i=e.prototype;return i.produce=function(t,e,i){if("function"==typeof t&&"function"!=typeof e){var o=e;e=t;var u=this;return function(n){var t=this;void 0===n&&(n=o);for(var r=arguments.length,i=Array(r>1?r-1:0),a=1;a<r;a++)i[a-1]=arguments[a];return u.produce(n,(function(n){var r;return(r=e).call.apply(r,[t,n].concat(i))}))}}var a;if("function"!=typeof e&&n(6),void 0!==i&&"function"!=typeof i&&n(7),r(t)){var f=g(this),c=E(this,t,void 0),s=!0;try{a=e(c),s=!1}finally{s?j(f):O(f)}return"undefined"!=typeof Promise&&a instanceof Promise?a.then((function(n){return _(f,i),S(n,f)}),(function(n){throw j(f),n})):(_(f,i),S(a,f))}if((a=e(t))!==q)return void 0===a&&(a=t),this.N&&d(a,!0),a},i.produceWithPatches=function(n,t){var r,e,i=this;return"function"==typeof n?function(t){for(var r=arguments.length,e=Array(r>1?r-1:0),o=1;o<r;o++)e[o-1]=arguments[o];return i.produceWithPatches(t,(function(t){return n.apply(void 0,[t].concat(e))}))}:[this.produce(n,t,(function(n,t){r=n,e=t})),r,e]},i.createDraft=function(t){r(t)||n(8);var e=g(this),i=E(this,t,void 0);return i[G].C=!0,O(e),i},i.finishDraft=function(t,r){var e=t&&t[G]; false&&(false);var i=e.A;return _(i,r),S(void 0,i)},i.setAutoFreeze=function(n){this.N=n},i.setUseProxies=function(t){X||n(20),this.g=t},i.applyPatches=function(n,r){var e;for(e=r.length-1;e>=0;e--){var i=r[e];if(0===i.path.length&&"replace"===i.op){n=i.value;break}}var o=y("Patches").U;return t(n)?o(n,r):this.produce(n,(function(n){return o(n,r.slice(e+1))}))},e}(),tn=new nn,rn=tn.produce,en=tn.produceWithPatches.bind(tn),on=tn.setAutoFreeze.bind(tn),un=tn.setUseProxies.bind(tn),an=tn.applyPatches.bind(tn),fn=tn.createDraft.bind(tn),cn=tn.finishDraft.bind(tn);/* harmony default export */ __webpack_exports__["default"] = (rn);
-//# sourceMappingURL=immer.esm.js.map
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Mrpas = (function () {
-    function Mrpas(mapWidth, mapHeight, isTransparent) {
-        this.mapWidth = mapWidth;
-        this.mapHeight = mapHeight;
-        this.isTransparent = isTransparent;
-    }
-    Mrpas.prototype.computeOctantY = function (deltaX, deltaY, data) {
-        var startSlopes = [];
-        var endSlopes = [];
-        var iteration = 1;
-        var totalObstacles = 0;
-        var obstaclesInLastLine = 0;
-        var minSlope = 0;
-        var x;
-        var y;
-        var halfSlope;
-        var processedCell;
-        var visible;
-        var extended;
-        var centreSlope;
-        var startSlope;
-        var endSlope;
-        var previousEndSlope;
-        for (y = data.originY + deltaY; y >= data.minY && y <= data.maxY; y += deltaY, obstaclesInLastLine = totalObstacles, ++iteration) {
-            halfSlope = 0.5 / iteration;
-            previousEndSlope = -1;
-            for (processedCell = Math.floor(minSlope * iteration + 0.5), x = data.originX + (processedCell * deltaX); processedCell <= iteration && x >= data.minX && x <= data.maxX; x += deltaX, ++processedCell, previousEndSlope = endSlope) {
-                visible = true;
-                extended = false;
-                centreSlope = processedCell / iteration;
-                startSlope = previousEndSlope;
-                endSlope = centreSlope + halfSlope;
-                if (obstaclesInLastLine > 0) {
-                    if (!(data.isVisible(x, y - deltaY) &&
-                        this.isTransparent(x, y - deltaY)) &&
-                        !(data.isVisible(x - deltaX, y - deltaY) &&
-                            this.isTransparent(x - deltaX, y - deltaY))) {
-                        visible = false;
-                    }
-                    else {
-                        for (var idx = 0; idx < obstaclesInLastLine && visible; ++idx) {
-                            if (startSlope <= endSlopes[idx] && endSlope >= startSlopes[idx]) {
-                                if (this.isTransparent(x, y)) {
-                                    if (centreSlope > startSlopes[idx] && centreSlope < endSlopes[idx]) {
-                                        visible = false;
-                                        break;
-                                    }
-                                }
-                                else {
-                                    if (startSlope >= startSlopes[idx] && endSlope <= endSlopes[idx]) {
-                                        visible = false;
-                                        break;
-                                    }
-                                    else {
-                                        startSlopes[idx] = Math.min(startSlopes[idx], startSlope);
-                                        endSlopes[idx] = Math.max(endSlopes[idx], endSlope);
-                                        extended = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (visible) {
-                    data.setVisible(x, y);
-                    if (!this.isTransparent(x, y)) {
-                        if (minSlope >= startSlope) {
-                            minSlope = endSlope;
-                        }
-                        else if (!extended) {
-                            startSlopes[totalObstacles] = startSlope;
-                            endSlopes[totalObstacles++] = endSlope;
-                        }
-                    }
-                }
-            }
-        }
-    };
-    Mrpas.prototype.computeOctantX = function (deltaX, deltaY, data) {
-        var startSlopes = [];
-        var endSlopes = [];
-        var iteration = 1;
-        var totalObstacles = 0;
-        var obstaclesInLastLine = 0;
-        var minSlope = 0;
-        var x;
-        var y;
-        var halfSlope;
-        var processedCell;
-        var visible;
-        var extended;
-        var centreSlope;
-        var startSlope;
-        var endSlope;
-        var previousEndSlope;
-        for (x = data.originX + deltaX; x >= data.minX && x <= data.maxX; x += deltaX, obstaclesInLastLine = totalObstacles, ++iteration) {
-            halfSlope = 0.5 / iteration;
-            previousEndSlope = -1;
-            for (processedCell = Math.floor(minSlope * iteration + 0.5), y = data.originY + (processedCell * deltaY); processedCell <= iteration && y >= data.minY && y <= data.maxY; y += deltaY, ++processedCell, previousEndSlope = endSlope) {
-                visible = true;
-                extended = false;
-                centreSlope = processedCell / iteration;
-                startSlope = previousEndSlope;
-                endSlope = centreSlope + halfSlope;
-                if (obstaclesInLastLine > 0) {
-                    if (!(data.isVisible(x - deltaX, y) &&
-                        this.isTransparent(x - deltaX, y)) &&
-                        !(data.isVisible(x - deltaX, y - deltaY) &&
-                            this.isTransparent(x - deltaX, y - deltaY))) {
-                        visible = false;
-                    }
-                    else {
-                        for (var idx = 0; idx < obstaclesInLastLine && visible; ++idx) {
-                            if (startSlope <= endSlopes[idx] && endSlope >= startSlopes[idx]) {
-                                if (this.isTransparent(x, y)) {
-                                    if (centreSlope > startSlopes[idx] && centreSlope < endSlopes[idx]) {
-                                        visible = false;
-                                        break;
-                                    }
-                                }
-                                else {
-                                    if (startSlope >= startSlopes[idx] && endSlope <= endSlopes[idx]) {
-                                        visible = false;
-                                        break;
-                                    }
-                                    else {
-                                        startSlopes[idx] = Math.min(startSlopes[idx], startSlope);
-                                        endSlopes[idx] = Math.max(endSlopes[idx], endSlope);
-                                        extended = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (visible) {
-                    data.setVisible(x, y);
-                    if (!this.isTransparent(x, y)) {
-                        if (minSlope >= startSlope) {
-                            minSlope = endSlope;
-                        }
-                        else if (!extended) {
-                            startSlopes[totalObstacles] = startSlope;
-                            endSlopes[totalObstacles++] = endSlope;
-                        }
-                    }
-                }
-            }
-        }
-    };
-    Mrpas.prototype.setMapDimensions = function (mapWidth, mapHeight) {
-        this.mapWidth = mapWidth;
-        this.mapHeight = mapHeight;
-    };
-    Mrpas.prototype.compute = function (originX, originY, radius, isVisible, setVisible) {
-        setVisible(originX, originY);
-        var data = {
-            minX: Math.max(0, originX - radius),
-            minY: Math.max(0, originY - radius),
-            maxX: Math.min(this.mapWidth - 1, originX + radius),
-            maxY: Math.min(this.mapHeight - 1, originY + radius),
-            originX: originX,
-            originY: originY,
-            radius: radius,
-            isVisible: isVisible,
-            setVisible: setVisible
-        };
-        this.computeOctantY(1, 1, data);
-        this.computeOctantX(1, 1, data);
-        this.computeOctantY(1, -1, data);
-        this.computeOctantX(1, -1, data);
-        this.computeOctantY(-1, 1, data);
-        this.computeOctantX(-1, 1, data);
-        this.computeOctantY(-1, -1, data);
-        this.computeOctantX(-1, -1, data);
-    };
-    return Mrpas;
-}());
-exports.Mrpas = Mrpas;
-
-
-/***/ }),
-/* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWallGlyphForMask = exports.normalizeScore = void 0;
-exports.normalizeScore = (score) => {
-    let normalizedScore = score;
-    const masks = {
-        NW: 0b00000001,
-        N: 0b00000010,
-        NE: 0b00000100,
-        W: 0b00001000,
-        E: 0b00010000,
-        SW: 0b00100000,
-        S: 0b01000000,
-        SE: 0b10000000,
-    };
-    if ((normalizedScore & masks.NW) != 0) {
-        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.W) == 0) {
-            normalizedScore &= ~masks.NW;
-        }
-    }
-    if ((normalizedScore & masks.NE) != 0) {
-        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.E) == 0) {
-            normalizedScore &= ~masks.NE;
-        }
-    }
-    if ((normalizedScore & masks.SW) != 0) {
-        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.W) == 0) {
-            normalizedScore &= ~masks.SW;
-        }
-    }
-    if ((normalizedScore & masks.SE) != 0) {
-        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.E) == 0) {
-            normalizedScore &= ~masks.SE;
-        }
-    }
-    return normalizedScore;
-};
-exports.getWallGlyphForMask = (score) => {
-    let normalizedScore = exports.normalizeScore(score);
-    const pillar = '○';
-    const wallN = '║';
-    const wallE = '═';
-    const wallS = '║';
-    const wallW = '═';
-    const tiles = [
-        ' ', wallN, wallW, '╝', '╝', wallE, '╚', '╚',
-        '═', '╩', '╩', '╩', '═', wallS, '║', '╗',
-        '╣', '╣', '╔', '╠', '╠', '╦', '╬', '╬',
-        '╬', '╦', '╗', '╣', '║', '╦', '╬', '╠',
-        '╬', '╔', '╔', '╠', '║', '╦', '╬', '╬',
-        '╣', '╗', '═', '╩', '╚', '╝', ' ', pillar
-    ];
-    const scoreLookup = {
-        0: 47,
-        2: 1,
-        8: 2,
-        10: 3,
-        11: 4,
-        16: 5,
-        18: 6,
-        22: 7,
-        24: 8,
-        26: 9,
-        27: 10,
-        30: 11,
-        31: 12,
-        64: 13,
-        66: 14,
-        72: 15,
-        74: 16,
-        75: 17,
-        80: 18,
-        82: 19,
-        86: 20,
-        88: 21,
-        90: 22,
-        91: 23,
-        94: 24,
-        95: 25,
-        104: 26,
-        106: 27,
-        107: 28,
-        120: 29,
-        122: 30,
-        123: 31,
-        126: 32,
-        127: 33,
-        208: 34,
-        210: 35,
-        214: 36,
-        216: 37,
-        218: 38,
-        219: 39,
-        222: 40,
-        223: 41,
-        248: 42,
-        250: 43,
-        251: 44,
-        254: 45,
-        255: 46
-    };
-    const idx = scoreLookup[normalizedScore];
-    if (!idx) {
-        return ' ';
-    }
-    return tiles[idx];
-};
-
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createWeightTrigger = exports.createStash = exports.createKey = exports.createKobold = exports.createPlayer = void 0;
-const _1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
-exports.createPlayer = ({ x, y }) => {
-    const player = _1.default.world.createEntity();
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Player
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Position,
-        x: x,
-        y: y,
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Glyph,
-        glyph: '@',
-        fg: '#fa0',
-        bg: '#000',
-        z: 2
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Viewshed,
-        range: 24,
-        exploredCells: new Set(),
-        visibleCells: new Set(),
-        dirty: true,
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Body,
-        weight: 3,
-        solid: true,
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Camera,
-        active: true,
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.MeleeCombat,
-        damage: '1d3',
-        verb: 'punch|punches'
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Health,
-        health: 5,
-        maxHealth: 5,
-        dead: false
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Name,
-        name: 'you'
-    });
-    _1.default.world.registerComponent(player, {
-        _type: components_1.Inventory,
-        capacity: 3,
-        contents: [],
-    });
-    _1.default.map.setEntityLocation(player, _1.default.map.getIdx(x, y));
-    return player;
-};
-exports.createKobold = ({ x, y }) => {
-    const kobold = _1.default.world.createEntity();
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Position,
-        x,
-        y,
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Glyph,
-        glyph: 'k',
-        fg: '#666',
-        bg: '#000',
-        z: 1
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.AI,
-        ai: [
-            'RETALIATE',
-            'AVOID_PLAYER',
-            'RANDOM_WALK'
-        ]
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Viewshed,
-        range: 5,
-        exploredCells: new Set(),
-        visibleCells: new Set(),
-        dirty: true,
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Body,
-        solid: true,
-        weight: 4,
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.MeleeCombat,
-        damage: '1d2',
-        verb: 'claw|claws'
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Health,
-        health: 5,
-        maxHealth: 5,
-        dead: false
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Name,
-        name: 'kobold'
-    });
-    _1.default.world.registerComponent(kobold, {
-        _type: components_1.Inventory,
-        capacity: 1,
-        contents: [],
-    });
-    _1.default.map.setEntityLocation(kobold, _1.default.map.getIdx(x, y));
-    return kobold;
-};
-exports.createKey = (params) => {
-    const { x, y, owner, doorIdx } = params;
-    const item = _1.default.world.createEntity();
-    let X = x, Y = y;
-    if (owner) {
-        const ownerCmp = _1.default.world.getComponentMap(owner);
-        const inventory = ownerCmp.get(components_1.Inventory);
-        inventory.contents.push(item);
-        const pos = ownerCmp.get(components_1.Position);
-        X = pos.x;
-        Y = pos.y;
-    }
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Item,
-        weight: 1,
-        owner: owner || null,
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Glyph,
-        glyph: '-',
-        fg: '#aa0',
-        bg: '#000',
-        z: 0
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Name,
-        name: 'key'
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Position,
-        x: X,
-        y: Y,
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Key,
-        doorIdx,
-    });
-    _1.default.map.setEntityLocation(item, _1.default.map.getIdx(X, Y));
-    return item;
-};
-exports.createStash = (params) => {
-    const { x, y, owner } = params;
-    const item = _1.default.world.createEntity();
-    let X = x, Y = y;
-    if (owner) {
-        const ownerCmp = _1.default.world.getComponentMap(owner);
-        const inventory = ownerCmp.get(components_1.Inventory);
-        inventory.contents.push(item);
-        const pos = ownerCmp.get(components_1.Position);
-        X = pos.x;
-        Y = pos.y;
-    }
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Item,
-        weight: 2,
-        owner: owner || null,
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Glyph,
-        glyph: '$',
-        fg: '#ff0',
-        bg: '#000',
-        z: 0
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Name,
-        name: 'stash of coins'
-    });
-    _1.default.world.registerComponent(item, {
-        _type: components_1.Position,
-        x: X,
-        y: Y,
-    });
-    _1.default.map.setEntityLocation(item, _1.default.map.getIdx(X, Y));
-    return item;
-};
-exports.createWeightTrigger = ({ x, y, weight, idx, newType, oldType, triggered, messages }) => {
-    const trigger = _1.default.world.createEntity();
-    _1.default.world.registerComponent(trigger, {
-        _type: components_1.Position,
-        x,
-        y,
-    });
-    _1.default.world.registerComponent(trigger, {
-        _type: components_1.Glyph,
-        glyph: '≡',
-        fg: '#333',
-        bg: 'black',
-        z: 0,
-    });
-    _1.default.world.registerComponent(trigger, {
-        _type: components_1.Name,
-        name: 'altar',
-        article: 'an'
-    });
-    _1.default.world.registerComponent(trigger, {
-        _type: components_1.Item,
-        weight: 10,
-        owner: null
-    });
-    _1.default.world.registerComponent(trigger, {
-        _type: components_1.Trigger,
-        triggered,
-        messages,
-        condition: {
-            type: 'WEIGHT',
-            amount: weight,
-        },
-        event: {
-            type: 'CHANGE_CELL',
-            idx,
-            newType,
-            oldType,
-        },
-        repeat: 'TOGGLE'
-    });
-    _1.default.map.setEntityLocation(trigger, _1.default.map.getIdx(x, y));
-};
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPosition = exports.Position = void 0;
-exports.Position = 'Position';
-exports.isPosition = (cmp) => {
-    return cmp._type === exports.Position;
-};
-
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isGlyph = exports.Glyph = void 0;
-exports.Glyph = 'Glyph';
-exports.isGlyph = (cmp) => {
-    return cmp._type === exports.Glyph;
-};
-
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isIntentOfType = exports.isIntent = exports.Intent = void 0;
-exports.Intent = 'Intent';
-exports.isIntent = (cmp) => {
-    return cmp._type === exports.Intent;
-};
-exports.isIntentOfType = (intent) => (cmp) => {
-    return exports.isIntent(cmp) && cmp.intent === intent;
-};
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAIOfType = exports.isAI = exports.AI = void 0;
-exports.AI = 'AI';
-exports.isAI = (cmp) => {
-    return cmp._type === exports.AI;
-};
-exports.isAIOfType = (ai) => (cmp) => {
-    return exports.isAI(cmp) && cmp.ai.includes(ai);
-};
-
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPlayer = exports.Player = void 0;
-exports.Player = 'Player';
-exports.isPlayer = (cmp) => {
-    return cmp._type === exports.Player;
-};
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isViewshed = exports.Viewshed = void 0;
-exports.Viewshed = 'Viewshed';
-exports.isViewshed = (cmp) => {
-    return cmp._type === exports.Viewshed;
-};
-
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isBody = exports.Body = void 0;
-exports.Body = 'Body';
-exports.isBody = (cmp) => {
-    return cmp._type === exports.Body;
-};
-
-
-/***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isCamera = exports.Camera = void 0;
-exports.Camera = 'Camera';
-exports.isCamera = (cmp) => {
-    return cmp._type === exports.Camera;
-};
-
-
-/***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isMeleeCombat = exports.MeleeCombat = void 0;
-exports.MeleeCombat = 'MeleeCombat';
-exports.isMeleeCombat = (cmp) => {
-    return cmp._type === exports.MeleeCombat;
-};
-
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isHealth = exports.Health = void 0;
-exports.Health = 'Health';
-exports.isHealth = (cmp) => {
-    return cmp._type === exports.Health;
-};
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isName = exports.Name = void 0;
-exports.Name = 'Name';
-exports.isName = (cmp) => {
-    return cmp._type === exports.Name;
-};
-
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isInventory = exports.Inventory = void 0;
-exports.Inventory = 'Inventory';
-exports.isInventory = (cmp) => {
-    return cmp._type === exports.Inventory;
-};
-
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isItem = exports.Item = void 0;
-exports.Item = 'Item';
-exports.isItem = (cmp) => {
-    return cmp._type === exports.Item;
-};
-
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isKey = exports.Key = void 0;
-exports.Key = 'Key';
-exports.isKey = (cmp) => {
-    return cmp._type === exports.Key;
-};
-
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isTrigger = exports.Trigger = void 0;
-exports.Trigger = 'Trigger';
-exports.isTrigger = (cmp) => {
-    return cmp._type === exports.Trigger;
-};
-
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderingSystem = void 0;
-const ecs_machina_1 = __webpack_require__(9);
-const __1 = __importDefault(__webpack_require__(4));
-const constants_1 = __webpack_require__(10);
-const gui_1 = __webpack_require__(61);
-const components_1 = __webpack_require__(6);
-class RenderingSystem extends ecs_machina_1.System {
-    constructor() {
-        super(...arguments);
-        this.requiredComponents = [components_1.Glyph, components_1.Position];
-    }
-    beforeDraw() {
-    }
-    draw({ layer }) {
-        if (layer === 'map') {
-            __1.default.display.clear();
-            this.drawMap();
-        }
-        else if (layer === 'entities') {
-            Array.from(__1.default.world.entities)
-                .filter(([e]) => __1.default.world.getComponentMap(e).get(components_1.Glyph))
-                .sort((a, b) => a[1].find(components_1.isGlyph).z - b[1].find(components_1.isGlyph).z).forEach(([entity, components]) => {
-                this.drawEntity(entity, components);
-            });
-        }
-        else if (layer === 'gui') {
-            gui_1.drawGUI();
-        }
-    }
-    drawMap() {
-        const { map, camera } = __1.default;
-        const { width, height } = map;
-        const [cameraX, cameraY] = camera;
-        const cameraBounds = [
-            ~~(cameraX - constants_1.WIDTH / 2),
-            ~~(cameraY - constants_1.HEIGHT / 2),
-            ~~(cameraX + constants_1.WIDTH / 2),
-            ~~(cameraY + constants_1.HEIGHT / 2)
-        ];
-        const viewshed = __1.default.world.getComponentMap(__1.default.getState().player).get(components_1.Viewshed);
-        const { visibleCells, exploredCells } = viewshed || {};
-        for (let x = cameraBounds[0]; x < cameraBounds[2]; x++) {
-            for (let y = cameraBounds[1]; y < cameraBounds[3]; y++) {
-                const idx = __1.default.map.getIdx(x, y);
-                if (idx != null && (!visibleCells || visibleCells.has(idx))) {
-                    __1.default.display.draw(x - cameraBounds[0], y - cameraBounds[1], __1.default.map.getCellGlyph(x, y), __1.default.map.getCellColor(x, y), 'black');
-                }
-                else if (idx != null && exploredCells.has(idx)) {
-                    __1.default.display.draw(x - cameraBounds[0], y - cameraBounds[1], __1.default.map.getCellGlyph(x, y), '#111', 'black');
-                }
-            }
-        }
-    }
-    drawEntity(entity, components) {
-        const position = components.find(components_1.isPosition);
-        const item = components.find(components_1.isItem);
-        if (item && item.owner) {
-            return;
-        }
-        const { x, y } = position;
-        if (x < 0 || x >= __1.default.map.width || y < 0 || y >= __1.default.map.height) {
-            return;
-        }
-        const { camera } = __1.default;
-        const [cameraX, cameraY] = camera;
-        const cameraBounds = [
-            ~~(cameraX - constants_1.WIDTH / 2),
-            ~~(cameraY - constants_1.HEIGHT / 2),
-            ~~(cameraX + constants_1.WIDTH / 2),
-            ~~(cameraY + constants_1.HEIGHT / 2)
-        ];
-        const viewshed = __1.default.world.getComponentMap(__1.default.getState().player).get(components_1.Viewshed);
-        const { visibleCells } = viewshed || {};
-        const glyph = components.find(components_1.isGlyph);
-        const idx = __1.default.map.getIdx(position.x, position.y);
-        if (idx != null && (!visibleCells || visibleCells.has(idx))) {
-            __1.default.display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
-        }
-    }
-}
-exports.RenderingSystem = RenderingSystem;
-
-
-/***/ }),
-/* 61 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.drawGUI = void 0;
-const state_1 = __importDefault(__webpack_require__(4));
-const constants_1 = __webpack_require__(10);
-const fsm_1 = __webpack_require__(17);
-const components_1 = __webpack_require__(6);
-exports.drawGUI = () => {
-    drawBorders();
-    drawLog();
-    drawStats();
-    drawInventory(state_1.default.getState().runState);
-};
-const drawBorders = () => {
-    const fg = '#333';
-    const bg = 'black';
-    for (let x = 1; x < constants_1.WIDTH - 1; x++) {
-        state_1.default.display.draw(x, 0, '─', fg, bg);
-        state_1.default.display.draw(x, constants_1.HEIGHT - 1, '═', fg, bg);
-        state_1.default.display.draw(x, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '═', fg, bg);
-        state_1.default.display.draw(x, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '─', fg, bg);
-    }
-    for (let y = 1; y < constants_1.HEIGHT + constants_1.STATS_HEIGHT + constants_1.LOG_HEIGHT - 1; y++) {
-        state_1.default.display.draw(0, y, '│', fg, bg);
-        state_1.default.display.draw(constants_1.WIDTH - 1, y, '│', fg, bg);
-    }
-    state_1.default.display.draw(0, 0, '┌', fg, bg);
-    state_1.default.display.draw(0, constants_1.HEIGHT - 1, '╞', fg, bg);
-    state_1.default.display.draw(0, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '╞', fg, bg);
-    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT - 1, '╡', fg, bg);
-    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '╡', fg, bg);
-    state_1.default.display.draw(constants_1.WIDTH - 1, 0, '┐', fg, bg);
-    state_1.default.display.draw(0, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '└', fg, bg);
-    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '┘', fg, bg);
-};
-const drawLog = () => {
-    const log = state_1.default.getState().log;
-    if (!state_1.default.display) {
-        return;
-    }
-    const N = constants_1.LOG_HEIGHT - 1;
-    const colorOffset = Math.max(N - log.length, 0);
-    const lastLines = (log.length <= N ? [...log] : [...log].slice(log.length - N)).reverse();
-    for (let i = 0; i < lastLines.length; i++) {
-        const line = lastLines[lastLines.length - i - 1];
-        const chars = '4579bdf'.split('');
-        const lineColor = `#${(new Array(3)).fill(chars[i + colorOffset]).join('')}`;
-        state_1.default.display.drawText(2, constants_1.HEIGHT + constants_1.STATS_HEIGHT + i, `%c{${lineColor}}${line}`);
-    }
-};
-const drawStats = () => {
-    if (!state_1.default.display) {
-        return;
-    }
-    const cmp = state_1.default.world.getComponentMap(state_1.default.getState().player);
-    const { health, maxHealth, dead } = cmp.get(components_1.Health) || {};
-    const { damage } = cmp.get(components_1.MeleeCombat) || {};
-    let text;
-    if (!health || dead) {
-        text = `%c{#333}HP: %c{#666}DEAD`;
-    }
-    else {
-        text = `%c{#333}HP: %c{#666}${health}%c{#333}/%c{#666}${maxHealth}  %c{#333}DMG: %c{#666}${damage}`;
-    }
-    const inventory = cmp.get(components_1.Inventory);
-    if (inventory && inventory.contents.length > 0) {
-        const weight = getWeight(inventory);
-        const capacity = inventory.capacity;
-        text += `  %c{#333}Weight: %c{#666}${weight}%c{#333}/%c{#666}${capacity}`;
-    }
-    state_1.default.display.drawText(2, constants_1.HEIGHT, text);
-};
-const getWeight = (inventory) => {
-    return inventory.contents.reduce((sum, e) => {
-        const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
-        if (!item) {
-            return sum;
-        }
-        return sum + item.weight;
-    }, 0);
-};
-const drawInventory = (runState) => {
-    const states = [
-        fsm_1.RunState.GUI_INVENTORY,
-        fsm_1.RunState.GUI_INVENTORY_DROP,
-        fsm_1.RunState.GUI_INVENTORY_GET,
-    ];
-    if (!states.includes(runState)) {
-        return;
-    }
-    const player = state_1.default.getState().player;
-    const playerCmp = state_1.default.world.getComponentMap(player);
-    const inventory = playerCmp.get(components_1.Inventory);
-    if (!inventory) {
-        return;
-    }
-    const weight = getWeight(inventory);
-    const fg = '#333';
-    const bg = 'black';
-    const hPad = 10;
-    const vPad = 4;
-    for (let x = hPad; x < constants_1.WIDTH - hPad; x++) {
-        for (let y = vPad; y < constants_1.HEIGHT - vPad; y++) {
-            if (x === hPad && y === vPad) {
-                state_1.default.display.draw(x, y, '┌', fg, bg);
-            }
-            else if (x === constants_1.WIDTH - hPad - 1 && y === vPad) {
-                state_1.default.display.draw(x, y, '┐', fg, bg);
-            }
-            else if (x === hPad && y === constants_1.HEIGHT - vPad - 1) {
-                state_1.default.display.draw(x, y, '└', fg, bg);
-            }
-            else if (x === constants_1.WIDTH - hPad - 1 && y === constants_1.HEIGHT - vPad - 1) {
-                state_1.default.display.draw(x, y, '┘', fg, bg);
-            }
-            else if (y === vPad + 2) {
-                if (x === hPad) {
-                    state_1.default.display.draw(x, y, '├', fg, bg);
-                }
-                else if (x === constants_1.WIDTH - hPad - 1) {
-                    state_1.default.display.draw(x, y, '┤', fg, bg);
-                }
-                else {
-                    state_1.default.display.draw(x, y, '─', fg, bg);
-                }
-            }
-            else if (x === hPad || x === constants_1.WIDTH - hPad - 1) {
-                state_1.default.display.draw(x, y, '│', fg, bg);
-            }
-            else if (y === vPad || y === constants_1.HEIGHT - vPad - 1) {
-                state_1.default.display.draw(x, y, '─', fg, bg);
-            }
-            else {
-                state_1.default.display.draw(x, y, ' ', fg, bg);
-            }
-        }
-    }
-    if (runState === fsm_1.RunState.GUI_INVENTORY) {
-        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Inventory: %c{#666}${weight}/${inventory.capacity}`);
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
-        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Drop which item?`);
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
-        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Pick up which item?`);
-    }
-    const offset = vPad + 4;
-    const keys = 'ASDFGHJKL'.split('');
-    let names = [];
-    if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
-        const pos = playerCmp.get(components_1.Position);
-        names = (state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)) || [])
-            .filter(e => {
-            const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
-            return !!item && !item.owner;
-        })
-            .map(item => {
-            const name = state_1.default.world.getComponentMap(item).get(components_1.Name);
-            return name ? name.name : 'something';
-        });
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
-        const inventory = playerCmp.get(components_1.Inventory);
-        names = inventory.contents.map(e => {
-            const cmps = state_1.default.world.getComponentMap(e);
-            const name = cmps.get(components_1.Name);
-            return name ? name.name : 'something';
-        });
-    }
-    else if (runState === fsm_1.RunState.GUI_INVENTORY) {
-        const inventory = playerCmp.get(components_1.Inventory);
-        names = inventory.contents.map(e => {
-            const cmps = state_1.default.world.getComponentMap(e);
-            const name = cmps.get(components_1.Name);
-            return name ? name.name : 'something';
-        });
-    }
-    for (let idx = 0; idx < names.length; idx++) {
-        const name = names[idx];
-        let prefix = '';
-        if ([
-            fsm_1.RunState.GUI_INVENTORY_DROP,
-            fsm_1.RunState.GUI_INVENTORY_GET
-        ].includes(runState)) {
-            prefix = `${keys[idx]}) `;
-        }
-        state_1.default.display.drawText(hPad + 2, offset + idx, prefix + name);
-    }
-};
-
-
-/***/ }),
-/* 62 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AISystem = void 0;
-const ecs_machina_1 = __webpack_require__(9);
-const __1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
-class AISystem extends ecs_machina_1.System {
-    constructor() {
-        super(...arguments);
-        this.requiredComponents = [components_1.AI, components_1.Viewshed];
-        this.updateEntity = (entity, components) => {
-            const ai = components.find(components_1.isAI);
-            const intents = ai.ai.map(type => {
-                switch (type) {
-                    case 'AGGRESS':
-                        return handleAggress(entity, components);
-                    case 'RETALIATE':
-                        return handleRetaliate(entity, components);
-                    case 'AVOID_PLAYER':
-                        return handleAvoidPlayer(entity, components);
-                    case 'RANDOM_WALK':
-                        return handleRandomWalk(entity, components);
-                    default:
-                        return null;
-                }
-            });
-            for (let intent of intents) {
-                if (intent) {
-                    this.world.registerComponent(entity, intent);
-                    break;
-                }
-            }
-        };
-    }
-}
-exports.AISystem = AISystem;
-const handleAvoidPlayer = (entity, components) => {
-    const viewshed = components.find(components_1.isViewshed);
-    const range = 5;
-    const playerID = __1.default.getState().player;
-    const playerPos = __1.default.world.getComponents(playerID).find(components_1.isPosition);
-    const playerIdx = __1.default.map.getIdx(playerPos.x, playerPos.y);
-    if (viewshed.visibleCells.has(playerIdx)) {
-        const entityPos = __1.default.world.getComponents(entity).find(components_1.isPosition);
-        const dx = playerPos.x - entityPos.x;
-        const dy = playerPos.y - entityPos.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist <= range) {
-            const vector = [dx ? -dx / Math.abs(dx) : 0, dy ? -dy / Math.abs(dy) : 0];
-            return {
-                _type: components_1.Intent,
-                intent: 'MOVE',
-                payload: {
-                    dx: vector[0],
-                    dy: vector[1],
-                }
-            };
-        }
-    }
-};
-const handleRandomWalk = (entity, components) => {
-    const rng = __1.default.world.rng;
-    if (Math.abs(rng()) > 0.75) {
-        const dx = [-1, 0, 1][Math.round(rng() * 2)];
-        const dy = [-1, 0, 1][Math.round(rng() * 2)];
-        if (dx === 0 && dy === 0) {
-            return;
-        }
-        return {
-            _type: components_1.Intent,
-            intent: 'MOVE',
-            payload: {
-                dx, dy
-            }
-        };
-    }
-};
-const handleRetaliate = (entity, components) => {
-    const health = components.find(components_1.isHealth);
-    if (!health || !health.lastAttacker) {
-        return;
-    }
-    const attacker = health.lastAttacker;
-    const position = components.find(components_1.isPosition);
-    const viewshed = components.find(components_1.isViewshed);
-    const attackerPosition = __1.default.world.getComponents(attacker).find(components_1.isPosition);
-    const inRange = Math.abs(attackerPosition.x - position.x) <= 1 && Math.abs(attackerPosition.y - position.y) <= 1;
-    if (!inRange || !viewshed || !viewshed.visibleCells.has(__1.default.map.getIdx(position.x, position.y))) {
-        return;
-    }
-    return {
-        _type: components_1.Intent,
-        intent: 'ATTACK',
-        payload: {
-            target: attacker
-        }
-    };
-};
-const handleAggress = (entity, components) => {
-    const target = __1.default.getState().player;
-    const position = components.find(components_1.isPosition);
-    const viewshed = components.find(components_1.isViewshed);
-    const targetPos = __1.default.world.getComponents(target).find(components_1.isPosition);
-    const inRange = Math.abs(targetPos.x - position.x) <= 1 && Math.abs(targetPos.y - position.y) <= 1;
-    if (!inRange || !viewshed || !viewshed.visibleCells.has(__1.default.map.getEntityLocation(target))) {
-        return;
-    }
-    return {
-        _type: components_1.Intent,
-        intent: 'ATTACK',
-        payload: {
-            target: target
-        }
-    };
-};
-
-
-/***/ }),
-/* 63 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4509,7 +1812,7 @@ const ecs_machina_1 = __webpack_require__(9);
 const __1 = __importDefault(__webpack_require__(4));
 const map_1 = __webpack_require__(16);
 const rng_1 = __webpack_require__(64);
-const components_1 = __webpack_require__(6);
+const components_1 = __webpack_require__(5);
 class IntentSystem extends ecs_machina_1.System {
     constructor() {
         super(...arguments);
@@ -4828,6 +2131,2795 @@ const dropItem = (entity, droppedItem) => {
 
 
 /***/ }),
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */,
+/* 28 */,
+/* 29 */,
+/* 30 */,
+/* 31 */,
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.loop = void 0;
+const browser_game_loop_1 = __importDefault(__webpack_require__(33));
+const keys_1 = __webpack_require__(34);
+const setup_1 = __webpack_require__(69);
+const constants_1 = __webpack_require__(10);
+const state_1 = __importStar(__webpack_require__(4));
+const systems_1 = __webpack_require__(21);
+__webpack_require__(71);
+const update = (delta) => {
+    state_1.default.update();
+};
+const render = (display) => (interpolation) => {
+    const renderingSystem = state_1.default.world.getSystem(systems_1.RenderingSystem);
+    display.clear();
+    renderingSystem.draw({ layer: 'map' });
+    renderingSystem.draw({ layer: 'entities' });
+    renderingSystem.draw({ layer: 'gui' });
+};
+const main = () => {
+    const display = setup_1.setupDisplay({
+        width: constants_1.WIDTH,
+        height: constants_1.HEIGHT + constants_1.STATS_HEIGHT + constants_1.LOG_HEIGHT
+    });
+    state_1.default.display = display;
+    document.querySelector('.main-container .loading').remove();
+    const { player } = state_1.setupEntities();
+    state_1.default.setState(state => {
+        state.player = player;
+    });
+    exports.loop = browser_game_loop_1.default({
+        updateTimeStep: 1000 / 60,
+        fpsFilterStrength: 1,
+        slow: 1,
+        input: keys_1.input(player),
+        update,
+        render: render(display),
+    });
+    exports.loop.start();
+};
+document.addEventListener('DOMContentLoaded', () => {
+    main();
+});
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(e){"use strict";if(true){!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (e),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))}else {}})(function(){return function(e){"use strict";var n=1e3,t=e.updateTimeStep||n/30,o=0,r=0,i=performance.now(),u=i,f=u,a=e.fpsFilterStrength||20,c=0,s=false,p=e.slow||1,m=p*t,l=e.update,d=e.render,w=e.input,F;function g(){F=requestAnimationFrame(g);w();i=performance.now();o=i-u;u=i;r+=Math.min(n,o);while(r>=m){r-=m;l(t)}c+=(o-c)/a;d(r/m)}function S(){u=performance.now();if(!s){s=true;f=u}F=requestAnimationFrame(g)}function h(){cancelAnimationFrame(F)}function A(){return n/c}function q(){return(u-f)/n}function x(e){p=e;m=p*t}function y(){return p}return{start:S,stop:h,getFps:A,getElapsedTime:q,setSlow:x,getSlow:y}}});
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.input = exports.invInputs = exports.inputs = void 0;
+const eylem_1 = __importDefault(__webpack_require__(35));
+const egna_1 = __webpack_require__(12);
+const state_1 = __importDefault(__webpack_require__(4));
+const components_1 = __webpack_require__(5);
+const fsm_1 = __webpack_require__(17);
+const constants_1 = __webpack_require__(10);
+const map_1 = __webpack_require__(16);
+exports.inputs = new eylem_1.default(document, [
+    'MOVE',
+    'DWIM',
+    'GET',
+    'GUI',
+    'ESC'
+]);
+exports.invInputs = new eylem_1.default(document, [
+    'DROP',
+    'ESC'
+]);
+exports.inputs.bindInputMap(eylem_1.default.KEY_DOWN, {
+    72: { action: 'MOVE', value: 'W' },
+    65: { action: 'MOVE', value: 'W' },
+    37: { action: 'MOVE', value: 'W' },
+    74: { action: 'MOVE', value: 'S' },
+    83: { action: 'MOVE', value: 'S' },
+    40: { action: 'MOVE', value: 'S' },
+    75: { action: 'MOVE', value: 'N' },
+    87: { action: 'MOVE', value: 'N' },
+    38: { action: 'MOVE', value: 'N' },
+    76: { action: 'MOVE', value: 'E' },
+    68: { action: 'MOVE', value: 'E' },
+    39: { action: 'MOVE', value: 'E' },
+    89: { action: 'MOVE', value: 'NW' },
+    85: { action: 'MOVE', value: 'NE' },
+    66: { action: 'MOVE', value: 'SW' },
+    78: { action: 'MOVE', value: 'SE' },
+    32: { action: 'DWIM', value: 'DWIM' },
+    71: { action: 'GET', value: 'GET' },
+    73: { action: 'GUI', value: 'INVENTORY' },
+    27: { action: 'ESC', value: 'ESC' },
+});
+const itemKeys = new eylem_1.default(document, [
+    'ASDFGHJKL'.split('')
+]);
+exports.invInputs.bindInputMap(eylem_1.default.KEY_DOWN, {
+    68: { action: 'DROP', value: 'DROP' },
+    27: { action: 'ESC', value: 'ESC' },
+});
+itemKeys.bindInputMap(eylem_1.default.KEY_DOWN, {
+    65: { action: 'ITEM', value: 'A' },
+    83: { action: 'ITEM', value: 'S' },
+    68: { action: 'ITEM', value: 'D' },
+    70: { action: 'ITEM', value: 'F' },
+    71: { action: 'ITEM', value: 'G' },
+    72: { action: 'ITEM', value: 'H' },
+    74: { action: 'ITEM', value: 'J' },
+    75: { action: 'ITEM', value: 'K' },
+    76: { action: 'ITEM', value: 'L' },
+});
+exports.input = (player) => () => {
+    const esc = exports.inputs.getValue('ESC') || exports.invInputs.getValue('ESC');
+    if (esc) {
+        state_1.default.setState(state => { state.runState = fsm_1.RunState.WAITING_INPUT; });
+    }
+    const runState = state_1.default.getState().runState;
+    const cmp = state_1.default.world.getComponentMap(player);
+    const move = exports.inputs.getValue('MOVE');
+    const dwim = exports.inputs.getValue('DWIM');
+    const get = exports.inputs.getValue('GET');
+    const gui = exports.inputs.getValue('GUI');
+    if (runState === fsm_1.RunState.GUI_INVENTORY) {
+        const drop = exports.invInputs.getValue('DROP');
+        if (drop) {
+            state_1.default.setState(state => { state.runState = fsm_1.RunState.GUI_INVENTORY_DROP; });
+        }
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
+        const key = itemKeys.getValue('ITEM');
+        if (key) {
+            const player = state_1.default.getState().player;
+            const playerCmp = state_1.default.world.getComponentMap(player);
+            const inventory = playerCmp.get(components_1.Inventory);
+            if (inventory) {
+                const keys = 'ASDFGHJKL'.split('');
+                const items = inventory.contents.reduce((acc, e, idx) => {
+                    return {
+                        ...acc,
+                        [keys[idx]]: e
+                    };
+                }, {});
+                const item = items[key];
+                if (item) {
+                    state_1.default.world.registerComponent(player, {
+                        _type: components_1.Intent,
+                        intent: 'DROP_ITEM',
+                        payload: {
+                            item
+                        }
+                    });
+                    state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
+                }
+            }
+        }
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
+        const player = state_1.default.getState().player;
+        const playerCmp = state_1.default.world.getComponentMap(player);
+        const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
+        const entities = state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)).filter(e => {
+            const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
+            return !!item && !item.owner && !item.static;
+        });
+        if (!entities || entities.length === 0) {
+            state_1.default.setState(state => {
+                state.runState = fsm_1.RunState.WAITING_INPUT;
+            });
+        }
+        const key = itemKeys.getValue('ITEM');
+        if (key) {
+            if (entities.length > 0) {
+                const keys = 'ASDFGHJKL'.split('');
+                const items = entities.reduce((acc, e, idx) => {
+                    return {
+                        ...acc,
+                        [keys[idx]]: e
+                    };
+                }, {});
+                const item = items[key];
+                if (item) {
+                    state_1.default.world.registerComponent(player, {
+                        _type: components_1.Intent,
+                        intent: 'PICK_UP',
+                        payload: {
+                            target: item
+                        }
+                    });
+                    state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
+                }
+            }
+        }
+    }
+    else if (runState === fsm_1.RunState.WAITING_INPUT) {
+        if (cmp.get(components_1.Health) == null) {
+            exports.inputs.clear();
+            return;
+        }
+        if (gui) {
+            const newState = egna_1.match('INVENTORY', fsm_1.RunState.GUI_INVENTORY)(gui);
+            if (newState) {
+                state_1.default.setState(state => {
+                    state.runState = newState;
+                });
+            }
+        }
+        else if (move) {
+            const { dx, dy } = egna_1.match('N', () => constants_1.DIRS.N, 'E', () => constants_1.DIRS.E, 'S', () => constants_1.DIRS.S, 'W', () => constants_1.DIRS.W, 'NW', () => constants_1.DIRS.NW, 'NE', () => constants_1.DIRS.NE, 'SW', () => constants_1.DIRS.SW, 'SE', () => constants_1.DIRS.SE, constants_1.DIRS.NONE)(move);
+            state_1.default.world.registerComponent(player, {
+                _type: components_1.Intent,
+                intent: 'MOVE',
+                payload: {
+                    dx, dy
+                }
+            });
+            state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
+        }
+        else if (dwim) {
+            const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
+            const neighbors = state_1.default.map.getNeighbors(pos.x, pos.y);
+            let intent;
+            let dir;
+            for (const key of Object.keys(neighbors)) {
+                const cell = neighbors[key];
+                if ([
+                    map_1.CellType.DOOR_LOCKED,
+                    map_1.CellType.DOOR_CLOSED
+                ].includes(cell)) {
+                    intent = 'OPEN_DOOR';
+                    dir = key;
+                    break;
+                }
+                else if (cell === map_1.CellType.DOOR_OPEN) {
+                    intent = 'CLOSE_DOOR';
+                    dir = key;
+                    break;
+                }
+            }
+            if (intent) {
+                state_1.default.world.registerComponent(player, {
+                    _type: components_1.Intent,
+                    intent: intent,
+                    payload: constants_1.DIRS[dir]
+                });
+                state_1.default.setState(state => { state.runState = fsm_1.RunState.PLAYER_TURN; });
+            }
+        }
+        else if (get) {
+            const player = state_1.default.getState().player;
+            const playerCmp = state_1.default.world.getComponentMap(player);
+            const pos = state_1.default.world.getComponentMap(player).get(components_1.Position);
+            const entities = state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)).filter(e => {
+                const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
+                return !!item && !item.owner && !item.static;
+            });
+            if (entities && entities.length > 0) {
+                state_1.default.setState(state => { state.runState = fsm_1.RunState.GUI_INVENTORY_GET; });
+            }
+        }
+    }
+    exports.inputs.clear();
+    itemKeys.clear();
+    exports.invInputs.clear();
+};
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports) {
+
+class Eylem {
+  static get KEY_DOWN() {
+    return {
+      name: 'keydown',
+      code: 'keyCode',
+    };
+  }
+
+  static get KEY_PRESS() {
+    return {
+      name: 'keypress',
+      code: 'keyCode',
+    };
+  }
+
+  static get KEY_UP() {
+    return {
+      name: 'keyup',
+      code: 'keyCode',
+    };
+  }
+
+  static get MOUSE_DOWN() {
+    return {
+      name: 'mousedown',
+      code: 'button',
+    };
+  }
+
+  static get MOUSE_UP() {
+    return {
+      name: 'mouseup',
+      code: 'button',
+    };
+  }
+
+  constructor(doc, actions) {
+    this.doc = doc;
+    this.key = null;
+    this.actions = {};
+    this.mouse = new MouseEvent('mousemove');
+
+    this._mouseMoveListener = event => {
+      this.mouse = event;
+    };
+
+    actions.forEach(action => {
+      this.actions[action] = 0;
+    });
+  }
+
+  bindInputMap(event, inputMap) {
+    this.doc.addEventListener(
+      event.name,
+      e => this._handleInput(inputMap, e[event.code]),
+      true
+    );
+  }
+
+  watchMouse() {
+    this.doc.addEventListener('mousemove', this._mouseMoveListener, true);
+  }
+
+  stopWatchMouse() {
+    this.doc.removeEventListener('mousemove', this._mouseMoveListener, true);
+  }
+
+  clear() {
+    for (let prop in this.actions) {
+      this.actions[prop] = 0;
+    }
+    this.mouse = new MouseEvent('mousemove');
+  }
+
+  getValue(action) {
+    return this.actions[action];
+  }
+
+  _handleInput(map, code) {
+    const pair = map[code];
+    if (!pair) return;
+    this.actions[pair.action] = pair.value;
+  }
+}
+
+module.exports = Eylem;
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var utils_1 = __webpack_require__(19);
+/**
+ * The base abstract class for all Systems
+ */
+var System = /** @class */ (function () {
+    function System() {
+        /**
+         * Hash of { entity: component[] }
+         * TODO: use a Map type?
+         */
+        // protected entityComponents: { [entity: string]: BaseComponent[] } = {}
+        this.entityComponents = new Map();
+        //#endregion Callbacks
+    }
+    Object.defineProperty(System.prototype, "world", {
+        get: function () {
+            return this._world;
+        },
+        set: function (v) {
+            if (this._world) {
+                throw Error('Cannot reassign a System to a different World');
+            }
+            this._world = v;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Returns the components array of an entity
+     *
+     * @param entity The entity id
+     */
+    System.prototype.getComponents = function (entity) {
+        return this.entityComponents.get(entity);
+    };
+    /**
+     *  Returns the list of entities for this system
+     */
+    System.prototype.getEntities = function () {
+        return Array.from(this.entityComponents.keys());
+    };
+    /**
+     * Returns the hash of { entity: component[] }
+     */
+    System.prototype.getEntityComponents = function () {
+        return this.entityComponents;
+    };
+    /**
+     * Rebuilds the entities hash
+     */
+    System.prototype.rebuildEntities = function (entities) {
+        var _this = this;
+        // Convert Object to Map
+        if (!(entities instanceof Map)) {
+            entities = utils_1.hashToMap(entities);
+        }
+        this.entityComponents.clear();
+        entities.forEach(function (components, entity) {
+            if (utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), _this.requiredComponents)) {
+                _this.entityComponents.set(entity, components);
+            }
+        });
+    };
+    /**
+     * Adds an entity and its components to the current hash.<br>
+     * You should not call this method
+     *
+     * @param entity
+     */
+    System.prototype.addEntity = function (entity) {
+        var components = this.world.getComponents(entity);
+        if (!this.canAddEntity(entity)) {
+            throw new Error('Components list incompatible with this system');
+        }
+        this.entityComponents.set(entity, components);
+        this.addedEntity(entity, components);
+    };
+    /**
+     * Deletes the entity from the hash
+     *
+     * @param entity
+     */
+    System.prototype.deleteEntity = function (entity) {
+        this.entityComponents.delete(entity);
+    };
+    /**
+     * Does the entity exists with the system
+     */
+    System.prototype.hasEntity = function (entity) {
+        return this.entityComponents.has(entity);
+    };
+    /**
+     * Returns if this system is compatible with the components
+     * @param entity
+     * @param components
+     */
+    System.prototype.canAddEntity = function (entity) {
+        var components = this.world.getComponents(entity);
+        return utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), this.requiredComponents);
+    };
+    //#region Callbacks
+    /**
+     * Called each time an entity is added
+     *
+     * @param entity
+     */
+    System.prototype.addedEntity = function (entity, components) { };
+    /**
+     * Called before the entities update loop
+     */
+    System.prototype.beforeUpdate = function () { };
+    /**
+     * Called for each entity related to the System
+     *
+     * @param entity - The entity ID
+     * @param components - Its array of components
+     */
+    System.prototype.updateEntity = function (entity, components) { };
+    /**
+     * Called after the entities update loop
+     */
+    System.prototype.afterUpdate = function () { };
+    /**
+     * Calls [[System.beforeDraw]], then [[System.drawEntity]], then [[System.afterDraw]]
+     *
+     * @param options
+     */
+    System.prototype.draw = function (options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        this.beforeDraw();
+        this.entityComponents.forEach(function (components, entity) {
+            _this.drawEntity(entity, components, options);
+        });
+        this.afterDraw();
+    };
+    /**
+     * Called before the entities draw loop
+     */
+    System.prototype.beforeDraw = function () { };
+    /**
+     * Called for each entity related to the System, after the update loop
+     *
+     * @param entity - The entity ID
+     * @param components - Its array of components
+     * @param options - An object to pass your own data
+     */
+    System.prototype.drawEntity = function (entity, components, options) {
+        if (options === void 0) { options = {}; }
+    };
+    /**
+     * Called after the entities draw loop
+     */
+    System.prototype.afterDraw = function () { };
+    return System;
+}());
+exports.System = System;
+//# sourceMappingURL=system.js.map
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var lodash_es_1 = __webpack_require__(78);
+var utils_1 = __webpack_require__(19);
+var log = __webpack_require__(39)('ECS-Machina');
+var World = /** @class */ (function () {
+    function World() {
+        // TODO: make protected with getter
+        this.entities = new Map();
+        this.systems = [];
+        this.entityIncrements = 0;
+    }
+    World.prototype.update = function () {
+        var _loop_1 = function (system) {
+            system.beforeUpdate();
+            system.getEntityComponents().forEach(function (components, entity) {
+                system.updateEntity(entity, components);
+            });
+            system.afterUpdate();
+        };
+        for (var _i = 0, _a = this.getSystems(); _i < _a.length; _i++) {
+            var system = _a[_i];
+            _loop_1(system);
+        }
+    };
+    /**
+     * Creates AND registers a new Entity inside the World
+     *
+     * @returns The newly registered Entity
+     */
+    World.prototype.createEntity = function () {
+        var entity = (++this.entityIncrements).toString();
+        return this.registerEntity(entity);
+    };
+    /**
+     * Registers a new Entity inside the World
+     *
+     * @param entity
+     * @returns The newly registered Entity
+     */
+    World.prototype.registerEntity = function (entity) {
+        if (this.entities.get(entity)) {
+            throw new Error("The entity \"" + entity + "\" has already been registered");
+        }
+        else {
+            this.entities.set(entity, []);
+        }
+        return entity;
+    };
+    /**
+     * Returns the array of entities
+     */
+    World.prototype.getEntities = function () {
+        return Array.from(this.entities.keys());
+    };
+    /**
+     * Returns a Map<Entity, BaseComponent[]> matching the componentTypes
+     *
+     * @param componentTypes - The components used to filter
+     */
+    World.prototype.findEntitiesByComponents = function (componentTypes) {
+        var result = new Map();
+        this.entities.forEach(function (components, entity) {
+            var entityCmpTypes = components.map(function (o) { return o._type; });
+            if (utils_1.arrayContainsArray(entityCmpTypes, componentTypes)) {
+                result.set(entity, components);
+            }
+        });
+        return result;
+    };
+    /**
+     * Destroys an entity and its components from the ECS database
+     */
+    World.prototype.destroyEntity = function (entity) {
+        // Remove entity references from ECS
+        this.entities.delete(entity);
+        // Remove entity references from concerned systems
+        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
+            var system = _a[_i];
+            system.deleteEntity(entity);
+        }
+    };
+    /**
+     * Links a component to an entity. If a component of the same type has already
+     * been added, the properties of the new one will overwrite the original's.
+     * The method makes a deep copy of the original component before adding it, and returns this copy.
+     */
+    World.prototype.registerComponent = function (entity, component) {
+        // Create the entity if it doesn't exist yet
+        if (!this.entities.has(entity)) {
+            this.registerEntity(entity);
+        }
+        var components = this.entities.get(entity);
+        // Make a deep copy of the object
+        component = lodash_es_1.cloneDeep(component);
+        // If an entity of the same type has already been added,
+        // update its properties
+        var original = components.find(function (o) { return o._type === component._type; });
+        if (original) {
+            lodash_es_1.pull(components, original);
+            component = Object.assign(original, component);
+        }
+        components.push(component);
+        // Link entity to system if requiredComponents match
+        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
+            var system = _a[_i];
+            if (system.canAddEntity(entity)) {
+                system.addEntity(entity);
+            }
+        }
+        return component;
+    };
+    /**
+     * Removes a component from an entity
+     *
+     * @param entity
+     * @param component
+     */
+    World.prototype.removeComponent = function (entity, component) {
+        var components = this.getComponents(entity);
+        if (components.indexOf(component) === -1) {
+            var exists = components.find(function (o) { return o._type === component._type; });
+            console.warn("This component does not exist on entity " + entity + ". Is it the same object?");
+            if (exists) {
+                console.warn("Another component with _type \"" + component._type + "\" exists. Use world.removeComponentByType() to remove components by their _type value.");
+            }
+            return;
+        }
+        // Remove component from entityComponents
+        lodash_es_1.pull(components, component);
+        // Loop through systems to remove entity if needed
+        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
+            var system = _a[_i];
+            if (system.hasEntity(entity)) {
+                // pull(system.entityComponents[entity], component)
+                if (!utils_1.arrayContainsArray(components.map(function (o) { return o._type; }), system.requiredComponents)) {
+                    system.deleteEntity(entity);
+                }
+            }
+        }
+    };
+    /**
+     * Removes a Component, from its `_type` value
+     *
+     * @param entity
+     * @param type
+     */
+    World.prototype.removeComponentByType = function (entity, type) {
+        var component = this.getComponents(entity).find(function (o) { return o._type === type; });
+        if (component) {
+            return this.removeComponent(entity, component);
+        }
+    };
+    /**
+     * Returns the components for a given entity
+     *
+     * @param entity
+     */
+    World.prototype.getComponents = function (entity) {
+        if (!this.entities.has(entity)) {
+            throw Error("Unknown entity " + entity);
+        }
+        return this.entities.get(entity);
+    };
+    /**
+     * Registers a system instance in the ECS database.
+     * You can only register one (1) instance of each System's subclass
+     */
+    World.prototype.registerSystem = function (system) {
+        for (var _i = 0, _a = this.systems; _i < _a.length; _i++) {
+            var sys = _a[_i];
+            if (sys.constructor.name === system.constructor.name) {
+                throw new Error("There is already a registered instance of " + system.constructor.name);
+            }
+        }
+        // World owns Systems, and Systems reference World
+        this.systems.push(system);
+        system.world = this;
+        log("Registered System " + system.constructor.name);
+        // Add all concerned entities to this system
+        system.rebuildEntities(this.entities);
+    };
+    /**
+     * Remove a System from the ECS database.<br>
+     * This destroys the link between a System and a World
+     */
+    World.prototype.removeSystem = function (system) {
+        lodash_es_1.pull(this.systems, system);
+    };
+    /**
+     * Returns the systems' list
+     */
+    World.prototype.getSystems = function () {
+        return this.systems;
+    };
+    /**
+     * Returns a specific system instance from its class
+     *
+     * @param systemClass
+     */
+    World.prototype.getSystem = function (systemClass) {
+        return this.getSystems().find(function (o) { return o instanceof systemClass; });
+    };
+    return World;
+}());
+exports.World = World;
+//# sourceMappingURL=world.js.map
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process) {/* eslint-env browser */
+
+/**
+ * This is the web browser implementation of `debug()`.
+ */
+
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+	'#0000CC',
+	'#0000FF',
+	'#0033CC',
+	'#0033FF',
+	'#0066CC',
+	'#0066FF',
+	'#0099CC',
+	'#0099FF',
+	'#00CC00',
+	'#00CC33',
+	'#00CC66',
+	'#00CC99',
+	'#00CCCC',
+	'#00CCFF',
+	'#3300CC',
+	'#3300FF',
+	'#3333CC',
+	'#3333FF',
+	'#3366CC',
+	'#3366FF',
+	'#3399CC',
+	'#3399FF',
+	'#33CC00',
+	'#33CC33',
+	'#33CC66',
+	'#33CC99',
+	'#33CCCC',
+	'#33CCFF',
+	'#6600CC',
+	'#6600FF',
+	'#6633CC',
+	'#6633FF',
+	'#66CC00',
+	'#66CC33',
+	'#9900CC',
+	'#9900FF',
+	'#9933CC',
+	'#9933FF',
+	'#99CC00',
+	'#99CC33',
+	'#CC0000',
+	'#CC0033',
+	'#CC0066',
+	'#CC0099',
+	'#CC00CC',
+	'#CC00FF',
+	'#CC3300',
+	'#CC3333',
+	'#CC3366',
+	'#CC3399',
+	'#CC33CC',
+	'#CC33FF',
+	'#CC6600',
+	'#CC6633',
+	'#CC9900',
+	'#CC9933',
+	'#CCCC00',
+	'#CCCC33',
+	'#FF0000',
+	'#FF0033',
+	'#FF0066',
+	'#FF0099',
+	'#FF00CC',
+	'#FF00FF',
+	'#FF3300',
+	'#FF3333',
+	'#FF3366',
+	'#FF3399',
+	'#FF33CC',
+	'#FF33FF',
+	'#FF6600',
+	'#FF6633',
+	'#FF9900',
+	'#FF9933',
+	'#FFCC00',
+	'#FFCC33'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+// eslint-disable-next-line complexity
+function useColors() {
+	// NB: In an Electron preload script, document will be defined but not fully
+	// initialized. Since we know we're in Chrome, we'll just detect this case
+	// explicitly
+	if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
+		return true;
+	}
+
+	// Internet Explorer and Edge do not support colors.
+	if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+		return false;
+	}
+
+	// Is webkit? http://stackoverflow.com/a/16459606/376773
+	// document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+	return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+		// Is firebug? http://stackoverflow.com/a/398120/376773
+		(typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+		// Is firefox >= v31?
+		// https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
+		// Double check webkit in userAgent just in case we are in a worker
+		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+}
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs(args) {
+	args[0] = (this.useColors ? '%c' : '') +
+		this.namespace +
+		(this.useColors ? ' %c' : ' ') +
+		args[0] +
+		(this.useColors ? '%c ' : ' ') +
+		'+' + module.exports.humanize(this.diff);
+
+	if (!this.useColors) {
+		return;
+	}
+
+	const c = 'color: ' + this.color;
+	args.splice(1, 0, c, 'color: inherit');
+
+	// The final "%c" is somewhat tricky, because there could be other
+	// arguments passed either before or after the %c, so we need to
+	// figure out the correct index to insert the CSS into
+	let index = 0;
+	let lastC = 0;
+	args[0].replace(/%[a-zA-Z%]/g, match => {
+		if (match === '%%') {
+			return;
+		}
+		index++;
+		if (match === '%c') {
+			// We only are interested in the *last* %c
+			// (the user may have provided their own)
+			lastC = index;
+		}
+	});
+
+	args.splice(lastC, 0, c);
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+function log(...args) {
+	// This hackery is required for IE8/9, where
+	// the `console.log` function doesn't have 'apply'
+	return typeof console === 'object' &&
+		console.log &&
+		console.log(...args);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+function save(namespaces) {
+	try {
+		if (namespaces) {
+			exports.storage.setItem('debug', namespaces);
+		} else {
+			exports.storage.removeItem('debug');
+		}
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+function load() {
+	let r;
+	try {
+		r = exports.storage.getItem('debug');
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
+
+	// If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+	if (!r && typeof process !== 'undefined' && 'env' in process) {
+		r = process.env.DEBUG;
+	}
+
+	return r;
+}
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage() {
+	try {
+		// TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
+		// The Browser also has localStorage in the global context.
+		return localStorage;
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
+}
+
+module.exports = __webpack_require__(40)(exports);
+
+const {formatters} = module.exports;
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+formatters.j = function (v) {
+	try {
+		return JSON.stringify(v);
+	} catch (error) {
+		return '[UnexpectedJSONParseError]: ' + error.message;
+	}
+};
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(20)))
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ */
+
+function setup(env) {
+	createDebug.debug = createDebug;
+	createDebug.default = createDebug;
+	createDebug.coerce = coerce;
+	createDebug.disable = disable;
+	createDebug.enable = enable;
+	createDebug.enabled = enabled;
+	createDebug.humanize = __webpack_require__(41);
+
+	Object.keys(env).forEach(key => {
+		createDebug[key] = env[key];
+	});
+
+	/**
+	* Active `debug` instances.
+	*/
+	createDebug.instances = [];
+
+	/**
+	* The currently active debug mode names, and names to skip.
+	*/
+
+	createDebug.names = [];
+	createDebug.skips = [];
+
+	/**
+	* Map of special "%n" handling functions, for the debug "format" argument.
+	*
+	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+	*/
+	createDebug.formatters = {};
+
+	/**
+	* Selects a color for a debug namespace
+	* @param {String} namespace The namespace string for the for the debug instance to be colored
+	* @return {Number|String} An ANSI color code for the given namespace
+	* @api private
+	*/
+	function selectColor(namespace) {
+		let hash = 0;
+
+		for (let i = 0; i < namespace.length; i++) {
+			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+			hash |= 0; // Convert to 32bit integer
+		}
+
+		return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+	}
+	createDebug.selectColor = selectColor;
+
+	/**
+	* Create a debugger with the given `namespace`.
+	*
+	* @param {String} namespace
+	* @return {Function}
+	* @api public
+	*/
+	function createDebug(namespace) {
+		let prevTime;
+
+		function debug(...args) {
+			// Disabled?
+			if (!debug.enabled) {
+				return;
+			}
+
+			const self = debug;
+
+			// Set `diff` timestamp
+			const curr = Number(new Date());
+			const ms = curr - (prevTime || curr);
+			self.diff = ms;
+			self.prev = prevTime;
+			self.curr = curr;
+			prevTime = curr;
+
+			args[0] = createDebug.coerce(args[0]);
+
+			if (typeof args[0] !== 'string') {
+				// Anything else let's inspect with %O
+				args.unshift('%O');
+			}
+
+			// Apply any `formatters` transformations
+			let index = 0;
+			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+				// If we encounter an escaped % then don't increase the array index
+				if (match === '%%') {
+					return match;
+				}
+				index++;
+				const formatter = createDebug.formatters[format];
+				if (typeof formatter === 'function') {
+					const val = args[index];
+					match = formatter.call(self, val);
+
+					// Now we need to remove `args[index]` since it's inlined in the `format`
+					args.splice(index, 1);
+					index--;
+				}
+				return match;
+			});
+
+			// Apply env-specific formatting (colors, etc.)
+			createDebug.formatArgs.call(self, args);
+
+			const logFn = self.log || createDebug.log;
+			logFn.apply(self, args);
+		}
+
+		debug.namespace = namespace;
+		debug.enabled = createDebug.enabled(namespace);
+		debug.useColors = createDebug.useColors();
+		debug.color = selectColor(namespace);
+		debug.destroy = destroy;
+		debug.extend = extend;
+		// Debug.formatArgs = formatArgs;
+		// debug.rawLog = rawLog;
+
+		// env-specific initialization logic for debug instances
+		if (typeof createDebug.init === 'function') {
+			createDebug.init(debug);
+		}
+
+		createDebug.instances.push(debug);
+
+		return debug;
+	}
+
+	function destroy() {
+		const index = createDebug.instances.indexOf(this);
+		if (index !== -1) {
+			createDebug.instances.splice(index, 1);
+			return true;
+		}
+		return false;
+	}
+
+	function extend(namespace, delimiter) {
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
+	}
+
+	/**
+	* Enables a debug mode by namespaces. This can include modes
+	* separated by a colon and wildcards.
+	*
+	* @param {String} namespaces
+	* @api public
+	*/
+	function enable(namespaces) {
+		createDebug.save(namespaces);
+
+		createDebug.names = [];
+		createDebug.skips = [];
+
+		let i;
+		const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+		const len = split.length;
+
+		for (i = 0; i < len; i++) {
+			if (!split[i]) {
+				// ignore empty strings
+				continue;
+			}
+
+			namespaces = split[i].replace(/\*/g, '.*?');
+
+			if (namespaces[0] === '-') {
+				createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+			} else {
+				createDebug.names.push(new RegExp('^' + namespaces + '$'));
+			}
+		}
+
+		for (i = 0; i < createDebug.instances.length; i++) {
+			const instance = createDebug.instances[i];
+			instance.enabled = createDebug.enabled(instance.namespace);
+		}
+	}
+
+	/**
+	* Disable debug output.
+	*
+	* @return {String} namespaces
+	* @api public
+	*/
+	function disable() {
+		const namespaces = [
+			...createDebug.names.map(toNamespace),
+			...createDebug.skips.map(toNamespace).map(namespace => '-' + namespace)
+		].join(',');
+		createDebug.enable('');
+		return namespaces;
+	}
+
+	/**
+	* Returns true if the given mode name is enabled, false otherwise.
+	*
+	* @param {String} name
+	* @return {Boolean}
+	* @api public
+	*/
+	function enabled(name) {
+		if (name[name.length - 1] === '*') {
+			return true;
+		}
+
+		let i;
+		let len;
+
+		for (i = 0, len = createDebug.skips.length; i < len; i++) {
+			if (createDebug.skips[i].test(name)) {
+				return false;
+			}
+		}
+
+		for (i = 0, len = createDebug.names.length; i < len; i++) {
+			if (createDebug.names[i].test(name)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	* Convert regexp to namespace
+	*
+	* @param {RegExp} regxep
+	* @return {String} namespace
+	* @api private
+	*/
+	function toNamespace(regexp) {
+		return regexp.toString()
+			.substring(2, regexp.toString().length - 2)
+			.replace(/\.\*\?$/, '*');
+	}
+
+	/**
+	* Coerce `val`.
+	*
+	* @param {Mixed} val
+	* @return {Mixed}
+	* @api private
+	*/
+	function coerce(val) {
+		if (val instanceof Error) {
+			return val.stack || val.message;
+		}
+		return val;
+	}
+
+	createDebug.enable(createDebug.load());
+
+	return createDebug;
+}
+
+module.exports = setup;
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports) {
+
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var w = d * 7;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isFinite(val)) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return n * w;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (msAbs >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (msAbs >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (msAbs >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return plural(ms, msAbs, d, 'day');
+  }
+  if (msAbs >= h) {
+    return plural(ms, msAbs, h, 'hour');
+  }
+  if (msAbs >= m) {
+    return plural(ms, msAbs, m, 'minute');
+  }
+  if (msAbs >= s) {
+    return plural(ms, msAbs, s, 'second');
+  }
+  return ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, msAbs, n, name) {
+  var isPlural = msAbs >= n * 1.5;
+  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
+}
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Immer", function() { return nn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "applyPatches", function() { return an; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "castDraft", function() { return F; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "castImmutable", function() { return C; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createDraft", function() { return fn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableAllPlugins", function() { return T; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableES5", function() { return R; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enableMapSet", function() { return N; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enablePatches", function() { return D; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "finishDraft", function() { return cn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "immerable", function() { return B; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDraft", function() { return t; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDraftable", function() { return r; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nothing", function() { return q; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "original", function() { return e; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "produce", function() { return rn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "produceWithPatches", function() { return en; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setAutoFreeze", function() { return on; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setUseProxies", function() { return un; });
+function n(n){for(var t=arguments.length,r=Array(t>1?t-1:0),e=1;e<t;e++)r[e-1]=arguments[e];if(false){ var i, o; }throw Error("[Immer] minified error nr: "+n+(r.length?" "+r.join(","):"")+". Find the full error at: https://bit.ly/3cXEKWf")}function t(n){return!!n&&!!n[G]}function r(n){return!!n&&(function(n){if(!n||"object"!=typeof n)return!1;var t=Object.getPrototypeOf(n);return!t||t===Object.prototype}(n)||Array.isArray(n)||!!n[B]||!!n.constructor[B]||c(n)||s(n))}function e(n){if(n&&n[G])return n[G].t}function i(n,t,r){void 0===r&&(r=!1),0===o(n)?(r?Object.keys:Q)(n).forEach((function(r){return t(r,n[r],n)})):n.forEach((function(r,e){return t(e,r,n)}))}function o(n){var t=n[G];return t?t.i>3?t.i-4:t.i:Array.isArray(n)?1:c(n)?2:s(n)?3:0}function u(n,t){return 2===o(n)?n.has(t):Object.prototype.hasOwnProperty.call(n,t)}function a(n,t){return 2===o(n)?n.get(t):n[t]}function f(n,t){return n===t?0!==n||1/n==1/t:n!=n&&t!=t}function c(n){return U&&n instanceof Map}function s(n){return W&&n instanceof Set}function v(n){return n.o||n.t}function p(t,r){if(void 0===r&&(r=!1),Array.isArray(t))return t.slice();var e=Object.create(Object.getPrototypeOf(t));return i(t,(function(i){if(i!==G){var o=Object.getOwnPropertyDescriptor(t,i),u=o.value;o.get&&(r||n(1),u=o.get.call(t)),o.enumerable?e[i]=u:Object.defineProperty(e,i,{value:u,writable:!0,configurable:!0})}})),e}function d(n,e){t(n)||h(n)||!r(n)||(o(n)>1&&(n.set=n.add=n.clear=n.delete=l),Object.freeze(n),e&&i(n,(function(n,t){return d(t,!0)}),!0))}function l(){n(2)}function h(n){return null==n||"object"!=typeof n||Object.isFrozen(n)}function y(t){var r=V[t];return r||n( false?undefined:19,t),r}function b(n,t){V[n]=t}function m(){return true||false,K}function _(n,t){t&&(y("Patches"),n.u=[],n.s=[],n.v=t)}function j(n){O(n),n.p.forEach(w),n.p=null}function O(n){n===K&&(K=n.l)}function g(n){return K={p:[],l:K,h:n,m:!0,_:0}}function w(n){var t=n[G];0===t.i||1===t.i?t.j():t.O=!0}function S(t,e){e._=e.p.length;var i=e.p[0],o=void 0!==t&&t!==i;return e.h.g||y("ES5").S(e,t,o),o?(i[G].P&&(j(e),n(4)),r(t)&&(t=P(e,t),e.l||A(e,t)),e.u&&y("Patches").M(i[G],t,e.u,e.s)):t=P(e,i,[]),j(e),e.u&&e.v(e.u,e.s),t!==q?t:void 0}function P(n,t,r){if(h(t))return t;var e=t[G];if(!e)return i(t,(function(i,o){return M(n,e,t,i,o,r)}),!0),t;if(e.A!==n)return t;if(!e.P)return A(n,e.t,!0),e.t;if(!e.I){e.I=!0,e.A._--;var o=4===e.i||5===e.i?e.o=p(e.k,!0):e.o;i(o,(function(t,i){return M(n,e,o,t,i,r)})),A(n,o,!1),r&&n.u&&y("Patches").R(e,r,n.u,n.s)}return e.o}function M(e,i,c,s,v,p){if( false&&false,t(v)){var d=P(e,v,p&&i&&3!==i.i&&!u(i.D,s)?p.concat(s):void 0);if(h=s,y=d,2===(b=o(l=c))?l.set(h,y):3===b?(l.delete(h),l.add(y)):l[h]=y,!t(d))return;e.m=!1}var l,h,y,b;if((!i||!f(v,a(i.t,s)))&&r(v)){if(!e.h.N&&e._<1)return;P(e,v),i&&i.A.l||A(e,v)}}function A(n,t,r){void 0===r&&(r=!1),n.h.N&&n.m&&d(t,r)}function x(n,t){var r=n[G],e=Reflect.getOwnPropertyDescriptor(r?v(r):n,t);return e&&e.value}function z(n){if(!n.P){if(n.P=!0,0===n.i||1===n.i){var t=n.o=p(n.t);i(n.p,(function(n,r){t[n]=r})),n.p=void 0}n.l&&z(n.l)}}function I(n){n.o||(n.o=p(n.t))}function E(n,t,r){var e=c(t)?y("MapSet").T(t,r):s(t)?y("MapSet").F(t,r):n.g?function(n,t){var r=Array.isArray(n),e={i:r?1:0,A:t?t.A:m(),P:!1,I:!1,D:{},l:t,t:n,k:null,p:{},o:null,j:null,C:!1},i=e,o=Y;r&&(i=[e],o=Z);var u=Proxy.revocable(i,o),a=u.revoke,f=u.proxy;return e.k=f,e.j=a,f}(t,r):y("ES5").J(t,r);return(r?r.A:m()).p.push(e),e}function k(n,t){n.g?z(t):y("ES5").K(t)}function R(){function e(n,t){var r=n[G];if(r&&!r.$){r.$=!0;var e=n[t];return r.$=!1,e}return n[t]}function o(n){n.P||(n.P=!0,n.l&&o(n.l))}function a(n){n.o||(n.o=c(n.t))}function c(n){var t=n&&n[G];if(t){t.$=!0;var r=p(t.k,!0);return t.$=!1,r}return p(n)}function s(n){for(var t=n.length-1;t>=0;t--){var r=n[t][G];if(!r.P)switch(r.i){case 5:l(r)&&o(r);break;case 4:d(r)&&o(r)}}}function d(n){for(var t=n.t,r=n.k,e=Object.keys(r),i=e.length-1;i>=0;i--){var o=e[i],a=t[o];if(void 0===a&&!u(t,o))return!0;var c=r[o],s=c&&c[G];if(s?s.t!==a:!f(c,a))return!0}return e.length!==Object.keys(t).length}function l(n){var t=n.k;if(t.length!==n.t.length)return!0;var r=Object.getOwnPropertyDescriptor(t,t.length-1);return!(!r||r.get)}function h(t){t.O&&n(3,JSON.stringify(v(t)))}var y={};b("ES5",{J:function(n,t){var u=Array.isArray(n),s=c(n);i(s,(function(t){!function(n,t,i){var u=y[t];u?u.enumerable=i:y[t]=u={enumerable:i,get:function(){return function(n,t){h(n);var i=e(v(n),t);return n.$?i:i===e(n.t,t)&&r(i)?(a(n),n.o[t]=E(n.A.h,i,n)):i}(this[G],t)},set:function(n){!function(n,t,r){if(h(n),n.D[t]=!0,!n.P){if(f(r,e(v(n),t)))return;o(n),a(n)}n.o[t]=r}(this[G],t,n)}},Object.defineProperty(n,t,u)}(s,t,u||function(n,t){var r=Object.getOwnPropertyDescriptor(n,t);return!(!r||!r.enumerable)}(n,t))}));var p={i:u?5:4,A:t?t.A:m(),P:!1,$:!1,I:!1,D:{},l:t,t:n,k:s,o:null,O:!1,C:!1};return Object.defineProperty(s,G,{value:p,writable:!0}),s},K:o,S:function(n,r,e){n.p.forEach((function(n){n[G].$=!0})),e?t(r)&&r[G].A===n&&s(n.p):(n.u&&function n(t){if(t&&"object"==typeof t){var r=t[G];if(r){var e=r.t,a=r.k,f=r.D,c=r.i;if(4===c)i(a,(function(t){t!==G&&(void 0!==e[t]||u(e,t)?f[t]||n(a[t]):(f[t]=!0,o(r)))})),i(e,(function(n){void 0!==a[n]||u(a,n)||(f[n]=!1,o(r))}));else if(5===c){if(l(r)&&(o(r),f.length=!0),a.length<e.length)for(var s=a.length;s<e.length;s++)f[s]=!1;else for(var v=e.length;v<a.length;v++)f[v]=!0;for(var p=Math.min(a.length,e.length),d=0;d<p;d++)void 0===f[d]&&n(a[d])}}}}(n.p[0]),s(n.p))}})}function D(){function r(n){if(!n||"object"!=typeof n)return n;if(Array.isArray(n))return n.map(r);if(c(n))return new Map(Array.from(n.entries()).map((function(n){return[n[0],r(n[1])]})));if(s(n))return new Set(Array.from(n).map(r));var t=Object.create(Object.getPrototypeOf(n));for(var e in n)t[e]=r(n[e]);return t}function e(n){return t(n)?r(n):n}var f="add";b("Patches",{U:function(t,e){return e.forEach((function(e){for(var i=e.path,u=e.op,c=t,s=0;s<i.length-1;s++)"object"!=typeof(c=a(c,i[s]))&&n(15,i.join("/"));var v=o(c),p=r(e.value),d=i[i.length-1];switch(u){case"replace":switch(v){case 2:return c.set(d,p);case 3:n(16);default:return c[d]=p}case f:switch(v){case 1:return c.splice(d,0,p);case 2:return c.set(d,p);case 3:return c.add(p);default:return c[d]=p}case"remove":switch(v){case 1:return c.splice(d,1);case 2:return c.delete(d);case 3:return c.delete(e.value);default:return delete c[d]}default:n(17,u)}})),t},R:function(n,t,r,o){switch(n.i){case 0:case 4:case 2:return function(n,t,r,o){var c=n.t,s=n.o;i(n.D,(function(n,i){var v=a(c,n),p=a(s,n),d=i?u(c,n)?"replace":f:"remove";if(v!==p||"replace"!==d){var l=t.concat(n);r.push("remove"===d?{op:d,path:l}:{op:d,path:l,value:p}),o.push(d===f?{op:"remove",path:l}:"remove"===d?{op:f,path:l,value:e(v)}:{op:"replace",path:l,value:e(v)})}}))}(n,t,r,o);case 5:case 1:return function(n,t,r,i){var o=n.t,u=n.D,a=n.o;if(a.length<o.length){var c=[a,o];o=c[0],a=c[1];var s=[i,r];r=s[0],i=s[1]}for(var v=a.length-o.length,p=0;o[p]===a[p]&&p<o.length;)++p;for(var d=o.length;d>p&&o[d-1]===a[d+v-1];)--d;for(var l=p;l<d;++l)if(u[l]&&a[l]!==o[l]){var h=t.concat([l]);r.push({op:"replace",path:h,value:e(a[l])}),i.push({op:"replace",path:h,value:e(o[l])})}for(var y=r.length,b=d+v-1;b>=d;--b){var m=t.concat([b]);r[y+b-d]={op:f,path:m,value:e(a[b])},i.push({op:"remove",path:m})}}(n,t,r,o);case 3:return function(n,t,r,e){var i=n.t,o=n.o,u=0;i.forEach((function(n){if(!o.has(n)){var i=t.concat([u]);r.push({op:"remove",path:i,value:n}),e.unshift({op:f,path:i,value:n})}u++})),u=0,o.forEach((function(n){if(!i.has(n)){var o=t.concat([u]);r.push({op:f,path:o,value:n}),e.unshift({op:"remove",path:o,value:n})}u++}))}(n,t,r,o)}},M:function(n,t,r,e){r.push({op:"replace",path:[],value:t}),e.push({op:"replace",path:[],value:n.t})}})}function N(){function t(n,t){function r(){this.constructor=n}u(n,t),n.prototype=(r.prototype=t.prototype,new r)}function e(n){n.o||(n.D=new Map,n.o=new Map(n.t))}function i(n){n.o||(n.o=new Set,n.t.forEach((function(t){if(r(t)){var e=E(n.A.h,t,n);n.p.set(t,e),n.o.add(e)}else n.o.add(t)})))}function o(t){t.O&&n(3,JSON.stringify(v(t)))}var u=function(n,t){return(u=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(n,t){n.__proto__=t}||function(n,t){for(var r in t)t.hasOwnProperty(r)&&(n[r]=t[r])})(n,t)},a=function(){function n(n,t){return this[G]={i:2,l:t,A:t?t.A:m(),P:!1,I:!1,o:void 0,D:void 0,t:n,k:this,C:!1,O:!1},this}t(n,Map);var i=n.prototype;return Object.defineProperty(i,"size",{get:function(){return v(this[G]).size}}),i.has=function(n){return v(this[G]).has(n)},i.set=function(n,t){var r=this[G];return o(r),v(r).get(n)!==t&&(e(r),k(r.A.h,r),r.D.set(n,!0),r.o.set(n,t),r.D.set(n,!0)),this},i.delete=function(n){if(!this.has(n))return!1;var t=this[G];return o(t),e(t),k(t.A.h,t),t.D.set(n,!1),t.o.delete(n),!0},i.clear=function(){var n=this[G];return o(n),e(n),k(n.A.h,n),n.D=new Map,n.o.clear()},i.forEach=function(n,t){var r=this;v(this[G]).forEach((function(e,i){n.call(t,r.get(i),i,r)}))},i.get=function(n){var t=this[G];o(t);var i=v(t).get(n);if(t.I||!r(i))return i;if(i!==t.t.get(n))return i;var u=E(t.A.h,i,t);return e(t),t.o.set(n,u),u},i.keys=function(){return v(this[G]).keys()},i.values=function(){var n,t=this,r=this.keys();return(n={})[H]=function(){return t.values()},n.next=function(){var n=r.next();return n.done?n:{done:!1,value:t.get(n.value)}},n},i.entries=function(){var n,t=this,r=this.keys();return(n={})[H]=function(){return t.entries()},n.next=function(){var n=r.next();if(n.done)return n;var e=t.get(n.value);return{done:!1,value:[n.value,e]}},n},i[H]=function(){return this.entries()},n}(),f=function(){function n(n,t){return this[G]={i:3,l:t,A:t?t.A:m(),P:!1,I:!1,o:void 0,t:n,k:this,p:new Map,O:!1,C:!1},this}t(n,Set);var r=n.prototype;return Object.defineProperty(r,"size",{get:function(){return v(this[G]).size}}),r.has=function(n){var t=this[G];return o(t),t.o?!!t.o.has(n)||!(!t.p.has(n)||!t.o.has(t.p.get(n))):t.t.has(n)},r.add=function(n){var t=this[G];return o(t),this.has(n)||(i(t),k(t.A.h,t),t.o.add(n)),this},r.delete=function(n){if(!this.has(n))return!1;var t=this[G];return o(t),i(t),k(t.A.h,t),t.o.delete(n)||!!t.p.has(n)&&t.o.delete(t.p.get(n))},r.clear=function(){var n=this[G];return o(n),i(n),k(n.A.h,n),n.o.clear()},r.values=function(){var n=this[G];return o(n),i(n),n.o.values()},r.entries=function(){var n=this[G];return o(n),i(n),n.o.entries()},r.keys=function(){return this.values()},r[H]=function(){return this.values()},r.forEach=function(n,t){for(var r=this.values(),e=r.next();!e.done;)n.call(t,e.value,e.value,this),e=r.next()},n}();b("MapSet",{T:function(n,t){return new a(n,t)},F:function(n,t){return new f(n,t)}})}function T(){R(),N(),D()}function F(n){return n}function C(n){return n}var J,K,$="undefined"!=typeof Symbol&&"symbol"==typeof Symbol("x"),U="undefined"!=typeof Map,W="undefined"!=typeof Set,X="undefined"!=typeof Proxy&&void 0!==Proxy.revocable&&"undefined"!=typeof Reflect,q=$?Symbol("immer-nothing"):((J={})["immer-nothing"]=!0,J),B=$?Symbol("immer-draftable"):"__$immer_draftable",G=$?Symbol("immer-state"):"__$immer_state",H="undefined"!=typeof Symbol&&Symbol.iterator||"@@iterator",L={0:"Illegal state",1:"Immer drafts cannot have computed properties",2:"This object has been frozen and should not be mutated",3:function(n){return"Cannot use a proxy that has been revoked. Did you pass an object from inside an immer function to an async process? "+n},4:"An immer producer returned a new value *and* modified its draft. Either return a new value *or* modify the draft.",5:"Immer forbids circular references",6:"The first or second argument to `produce` must be a function",7:"The third argument to `produce` must be a function or undefined",8:"First argument to `createDraft` must be a plain object, an array, or an immerable object",9:"First argument to `finishDraft` must be a draft returned by `createDraft`",10:"The given draft is already finalized",11:"Object.defineProperty() cannot be used on an Immer draft",12:"Object.setPrototypeOf() cannot be used on an Immer draft",13:"Immer only supports deleting array indices",14:"Immer only supports setting array indices and the 'length' property",15:function(n){return"Cannot apply patch, path doesn't resolve: "+n},16:'Sets cannot have "replace" patches.',17:function(n){return"Unsupported patch operation: "+n},18:function(n){return"The plugin for '"+n+"' has not been loaded into Immer. To enable the plugin, import and call `enable"+n+"()` when initializing your application."},19:function(n){return"plugin not loaded: "+n},20:"Cannot use proxies if Proxy, Proxy.revocable or Reflect are not available"},Q="undefined"!=typeof Reflect&&Reflect.ownKeys?Reflect.ownKeys:void 0!==Object.getOwnPropertySymbols?function(n){return Object.getOwnPropertyNames(n).concat(Object.getOwnPropertySymbols(n))}:Object.getOwnPropertyNames,V={},Y={get:function(n,t){if(t===G)return n;var e=n.p;if(!n.P&&u(e,t))return e[t];var i=v(n)[t];if(n.I||!r(i))return i;if(n.P){if(i!==x(n.t,t))return i;e=n.o}return e[t]=E(n.A.h,i,n)},has:function(n,t){return t in v(n)},ownKeys:function(n){return Reflect.ownKeys(v(n))},set:function(n,t,r){if(!n.P){var e=x(n.t,t);if(r?f(e,r)||r===n.p[t]:f(e,r)&&t in n.t)return!0;I(n),z(n)}return n.D[t]=!0,n.o[t]=r,!0},deleteProperty:function(n,t){return void 0!==x(n.t,t)||t in n.t?(n.D[t]=!1,I(n),z(n)):n.D[t]&&delete n.D[t],n.o&&delete n.o[t],!0},getOwnPropertyDescriptor:function(n,t){var r=v(n),e=Reflect.getOwnPropertyDescriptor(r,t);return e&&(e.writable=!0,e.configurable=1!==n.i||"length"!==t),e},defineProperty:function(){n(11)},getPrototypeOf:function(n){return Object.getPrototypeOf(n.t)},setPrototypeOf:function(){n(12)}},Z={};i(Y,(function(n,t){Z[n]=function(){return arguments[0]=arguments[0][0],t.apply(this,arguments)}})),Z.deleteProperty=function(t,r){return false&&false,Y.deleteProperty.call(this,t[0],r)},Z.set=function(t,r,e){return false&&false,Y.set.call(this,t[0],r,e,t[0])};var nn=function(){function e(n){this.g=X,this.N="production"!=="production","boolean"==typeof(null==n?void 0:n.useProxies)&&this.setUseProxies(n.useProxies),"boolean"==typeof(null==n?void 0:n.autoFreeze)&&this.setAutoFreeze(n.autoFreeze),this.produce=this.produce.bind(this),this.produceWithPatches=this.produceWithPatches.bind(this)}var i=e.prototype;return i.produce=function(t,e,i){if("function"==typeof t&&"function"!=typeof e){var o=e;e=t;var u=this;return function(n){var t=this;void 0===n&&(n=o);for(var r=arguments.length,i=Array(r>1?r-1:0),a=1;a<r;a++)i[a-1]=arguments[a];return u.produce(n,(function(n){var r;return(r=e).call.apply(r,[t,n].concat(i))}))}}var a;if("function"!=typeof e&&n(6),void 0!==i&&"function"!=typeof i&&n(7),r(t)){var f=g(this),c=E(this,t,void 0),s=!0;try{a=e(c),s=!1}finally{s?j(f):O(f)}return"undefined"!=typeof Promise&&a instanceof Promise?a.then((function(n){return _(f,i),S(n,f)}),(function(n){throw j(f),n})):(_(f,i),S(a,f))}if((a=e(t))!==q)return void 0===a&&(a=t),this.N&&d(a,!0),a},i.produceWithPatches=function(n,t){var r,e,i=this;return"function"==typeof n?function(t){for(var r=arguments.length,e=Array(r>1?r-1:0),o=1;o<r;o++)e[o-1]=arguments[o];return i.produceWithPatches(t,(function(t){return n.apply(void 0,[t].concat(e))}))}:[this.produce(n,t,(function(n,t){r=n,e=t})),r,e]},i.createDraft=function(t){r(t)||n(8);var e=g(this),i=E(this,t,void 0);return i[G].C=!0,O(e),i},i.finishDraft=function(t,r){var e=t&&t[G]; false&&(false);var i=e.A;return _(i,r),S(void 0,i)},i.setAutoFreeze=function(n){this.N=n},i.setUseProxies=function(t){X||n(20),this.g=t},i.applyPatches=function(n,r){var e;for(e=r.length-1;e>=0;e--){var i=r[e];if(0===i.path.length&&"replace"===i.op){n=i.value;break}}var o=y("Patches").U;return t(n)?o(n,r):this.produce(n,(function(n){return o(n,r.slice(e+1))}))},e}(),tn=new nn,rn=tn.produce,en=tn.produceWithPatches.bind(tn),on=tn.setAutoFreeze.bind(tn),un=tn.setUseProxies.bind(tn),an=tn.applyPatches.bind(tn),fn=tn.createDraft.bind(tn),cn=tn.finishDraft.bind(tn);/* harmony default export */ __webpack_exports__["default"] = (rn);
+//# sourceMappingURL=immer.esm.js.map
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Mrpas = (function () {
+    function Mrpas(mapWidth, mapHeight, isTransparent) {
+        this.mapWidth = mapWidth;
+        this.mapHeight = mapHeight;
+        this.isTransparent = isTransparent;
+    }
+    Mrpas.prototype.computeOctantY = function (deltaX, deltaY, data) {
+        var startSlopes = [];
+        var endSlopes = [];
+        var iteration = 1;
+        var totalObstacles = 0;
+        var obstaclesInLastLine = 0;
+        var minSlope = 0;
+        var x;
+        var y;
+        var halfSlope;
+        var processedCell;
+        var visible;
+        var extended;
+        var centreSlope;
+        var startSlope;
+        var endSlope;
+        var previousEndSlope;
+        for (y = data.originY + deltaY; y >= data.minY && y <= data.maxY; y += deltaY, obstaclesInLastLine = totalObstacles, ++iteration) {
+            halfSlope = 0.5 / iteration;
+            previousEndSlope = -1;
+            for (processedCell = Math.floor(minSlope * iteration + 0.5), x = data.originX + (processedCell * deltaX); processedCell <= iteration && x >= data.minX && x <= data.maxX; x += deltaX, ++processedCell, previousEndSlope = endSlope) {
+                visible = true;
+                extended = false;
+                centreSlope = processedCell / iteration;
+                startSlope = previousEndSlope;
+                endSlope = centreSlope + halfSlope;
+                if (obstaclesInLastLine > 0) {
+                    if (!(data.isVisible(x, y - deltaY) &&
+                        this.isTransparent(x, y - deltaY)) &&
+                        !(data.isVisible(x - deltaX, y - deltaY) &&
+                            this.isTransparent(x - deltaX, y - deltaY))) {
+                        visible = false;
+                    }
+                    else {
+                        for (var idx = 0; idx < obstaclesInLastLine && visible; ++idx) {
+                            if (startSlope <= endSlopes[idx] && endSlope >= startSlopes[idx]) {
+                                if (this.isTransparent(x, y)) {
+                                    if (centreSlope > startSlopes[idx] && centreSlope < endSlopes[idx]) {
+                                        visible = false;
+                                        break;
+                                    }
+                                }
+                                else {
+                                    if (startSlope >= startSlopes[idx] && endSlope <= endSlopes[idx]) {
+                                        visible = false;
+                                        break;
+                                    }
+                                    else {
+                                        startSlopes[idx] = Math.min(startSlopes[idx], startSlope);
+                                        endSlopes[idx] = Math.max(endSlopes[idx], endSlope);
+                                        extended = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (visible) {
+                    data.setVisible(x, y);
+                    if (!this.isTransparent(x, y)) {
+                        if (minSlope >= startSlope) {
+                            minSlope = endSlope;
+                        }
+                        else if (!extended) {
+                            startSlopes[totalObstacles] = startSlope;
+                            endSlopes[totalObstacles++] = endSlope;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Mrpas.prototype.computeOctantX = function (deltaX, deltaY, data) {
+        var startSlopes = [];
+        var endSlopes = [];
+        var iteration = 1;
+        var totalObstacles = 0;
+        var obstaclesInLastLine = 0;
+        var minSlope = 0;
+        var x;
+        var y;
+        var halfSlope;
+        var processedCell;
+        var visible;
+        var extended;
+        var centreSlope;
+        var startSlope;
+        var endSlope;
+        var previousEndSlope;
+        for (x = data.originX + deltaX; x >= data.minX && x <= data.maxX; x += deltaX, obstaclesInLastLine = totalObstacles, ++iteration) {
+            halfSlope = 0.5 / iteration;
+            previousEndSlope = -1;
+            for (processedCell = Math.floor(minSlope * iteration + 0.5), y = data.originY + (processedCell * deltaY); processedCell <= iteration && y >= data.minY && y <= data.maxY; y += deltaY, ++processedCell, previousEndSlope = endSlope) {
+                visible = true;
+                extended = false;
+                centreSlope = processedCell / iteration;
+                startSlope = previousEndSlope;
+                endSlope = centreSlope + halfSlope;
+                if (obstaclesInLastLine > 0) {
+                    if (!(data.isVisible(x - deltaX, y) &&
+                        this.isTransparent(x - deltaX, y)) &&
+                        !(data.isVisible(x - deltaX, y - deltaY) &&
+                            this.isTransparent(x - deltaX, y - deltaY))) {
+                        visible = false;
+                    }
+                    else {
+                        for (var idx = 0; idx < obstaclesInLastLine && visible; ++idx) {
+                            if (startSlope <= endSlopes[idx] && endSlope >= startSlopes[idx]) {
+                                if (this.isTransparent(x, y)) {
+                                    if (centreSlope > startSlopes[idx] && centreSlope < endSlopes[idx]) {
+                                        visible = false;
+                                        break;
+                                    }
+                                }
+                                else {
+                                    if (startSlope >= startSlopes[idx] && endSlope <= endSlopes[idx]) {
+                                        visible = false;
+                                        break;
+                                    }
+                                    else {
+                                        startSlopes[idx] = Math.min(startSlopes[idx], startSlope);
+                                        endSlopes[idx] = Math.max(endSlopes[idx], endSlope);
+                                        extended = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (visible) {
+                    data.setVisible(x, y);
+                    if (!this.isTransparent(x, y)) {
+                        if (minSlope >= startSlope) {
+                            minSlope = endSlope;
+                        }
+                        else if (!extended) {
+                            startSlopes[totalObstacles] = startSlope;
+                            endSlopes[totalObstacles++] = endSlope;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Mrpas.prototype.setMapDimensions = function (mapWidth, mapHeight) {
+        this.mapWidth = mapWidth;
+        this.mapHeight = mapHeight;
+    };
+    Mrpas.prototype.compute = function (originX, originY, radius, isVisible, setVisible) {
+        setVisible(originX, originY);
+        var data = {
+            minX: Math.max(0, originX - radius),
+            minY: Math.max(0, originY - radius),
+            maxX: Math.min(this.mapWidth - 1, originX + radius),
+            maxY: Math.min(this.mapHeight - 1, originY + radius),
+            originX: originX,
+            originY: originY,
+            radius: radius,
+            isVisible: isVisible,
+            setVisible: setVisible
+        };
+        this.computeOctantY(1, 1, data);
+        this.computeOctantX(1, 1, data);
+        this.computeOctantY(1, -1, data);
+        this.computeOctantX(1, -1, data);
+        this.computeOctantY(-1, 1, data);
+        this.computeOctantX(-1, 1, data);
+        this.computeOctantY(-1, -1, data);
+        this.computeOctantX(-1, -1, data);
+    };
+    return Mrpas;
+}());
+exports.Mrpas = Mrpas;
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getWallGlyphForMask = exports.normalizeScore = void 0;
+exports.normalizeScore = (score) => {
+    let normalizedScore = score;
+    const masks = {
+        NW: 0b00000001,
+        N: 0b00000010,
+        NE: 0b00000100,
+        W: 0b00001000,
+        E: 0b00010000,
+        SW: 0b00100000,
+        S: 0b01000000,
+        SE: 0b10000000,
+    };
+    if ((normalizedScore & masks.NW) != 0) {
+        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.W) == 0) {
+            normalizedScore &= ~masks.NW;
+        }
+    }
+    if ((normalizedScore & masks.NE) != 0) {
+        if ((normalizedScore & masks.N) == 0 || (normalizedScore & masks.E) == 0) {
+            normalizedScore &= ~masks.NE;
+        }
+    }
+    if ((normalizedScore & masks.SW) != 0) {
+        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.W) == 0) {
+            normalizedScore &= ~masks.SW;
+        }
+    }
+    if ((normalizedScore & masks.SE) != 0) {
+        if ((normalizedScore & masks.S) == 0 || (normalizedScore & masks.E) == 0) {
+            normalizedScore &= ~masks.SE;
+        }
+    }
+    return normalizedScore;
+};
+exports.getWallGlyphForMask = (score) => {
+    let normalizedScore = exports.normalizeScore(score);
+    const pillar = '○';
+    const wallN = '║';
+    const wallE = '═';
+    const wallS = '║';
+    const wallW = '═';
+    const tiles = [
+        ' ', wallN, wallW, '╝', '╝', wallE, '╚', '╚',
+        '═', '╩', '╩', '╩', '═', wallS, '║', '╗',
+        '╣', '╣', '╔', '╠', '╠', '╦', '╬', '╬',
+        '╬', '╦', '╗', '╣', '║', '╦', '╬', '╠',
+        '╬', '╔', '╔', '╠', '║', '╦', '╬', '╬',
+        '╣', '╗', '═', '╩', '╚', '╝', ' ', pillar
+    ];
+    const scoreLookup = {
+        0: 47,
+        2: 1,
+        8: 2,
+        10: 3,
+        11: 4,
+        16: 5,
+        18: 6,
+        22: 7,
+        24: 8,
+        26: 9,
+        27: 10,
+        30: 11,
+        31: 12,
+        64: 13,
+        66: 14,
+        72: 15,
+        74: 16,
+        75: 17,
+        80: 18,
+        82: 19,
+        86: 20,
+        88: 21,
+        90: 22,
+        91: 23,
+        94: 24,
+        95: 25,
+        104: 26,
+        106: 27,
+        107: 28,
+        120: 29,
+        122: 30,
+        123: 31,
+        126: 32,
+        127: 33,
+        208: 34,
+        210: 35,
+        214: 36,
+        216: 37,
+        218: 38,
+        219: 39,
+        222: 40,
+        223: 41,
+        248: 42,
+        250: 43,
+        251: 44,
+        254: 45,
+        255: 46
+    };
+    const idx = scoreLookup[normalizedScore];
+    if (!idx) {
+        return ' ';
+    }
+    return tiles[idx];
+};
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDamageTrigger = exports.createExitTrigger = exports.createWeightTrigger = exports.createItem = exports.createKey = exports.createKobold = exports.createPlayer = void 0;
+const _1 = __importDefault(__webpack_require__(4));
+const components_1 = __webpack_require__(5);
+exports.createPlayer = ({ x, y }) => {
+    const player = _1.default.world.createEntity();
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Player
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Position,
+        x: x,
+        y: y,
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Glyph,
+        glyph: '@',
+        fg: '#fa0',
+        bg: '#000',
+        z: 2
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Viewshed,
+        range: 24,
+        exploredCells: new Set(),
+        visibleCells: new Set(),
+        dirty: true,
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Body,
+        weight: 3,
+        solid: true,
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Camera,
+        active: true,
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.MeleeCombat,
+        damage: '1d3',
+        verb: 'punch|punches'
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Health,
+        health: 5,
+        maxHealth: 5,
+        dead: false
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Name,
+        name: 'you'
+    });
+    _1.default.world.registerComponent(player, {
+        _type: components_1.Inventory,
+        capacity: 3,
+        contents: [],
+    });
+    _1.default.map.setEntityLocation(player, _1.default.map.getIdx(x, y));
+    return player;
+};
+exports.createKobold = ({ x, y }) => {
+    const kobold = _1.default.world.createEntity();
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Position,
+        x,
+        y,
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Glyph,
+        glyph: 'k',
+        fg: '#666',
+        bg: '#000',
+        z: 1
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.AI,
+        ai: [
+            'RETALIATE',
+            'AVOID_PLAYER',
+            'RANDOM_WALK'
+        ]
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Viewshed,
+        range: 5,
+        exploredCells: new Set(),
+        visibleCells: new Set(),
+        dirty: true,
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Body,
+        solid: true,
+        weight: 4,
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.MeleeCombat,
+        damage: '1d2',
+        verb: 'claw|claws'
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Health,
+        health: 5,
+        maxHealth: 5,
+        dead: false
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Name,
+        name: 'kobold'
+    });
+    _1.default.world.registerComponent(kobold, {
+        _type: components_1.Inventory,
+        capacity: 1,
+        contents: [],
+    });
+    _1.default.map.setEntityLocation(kobold, _1.default.map.getIdx(x, y));
+    return kobold;
+};
+exports.createKey = (params) => {
+    const { x, y, owner, doorIdx } = params;
+    const item = _1.default.world.createEntity();
+    let X = x, Y = y;
+    if (owner) {
+        const ownerCmp = _1.default.world.getComponentMap(owner);
+        const inventory = ownerCmp.get(components_1.Inventory);
+        inventory.contents.push(item);
+        const pos = ownerCmp.get(components_1.Position);
+        X = pos.x;
+        Y = pos.y;
+    }
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Item,
+        weight: 1,
+        owner: owner || null,
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Glyph,
+        glyph: '-',
+        fg: '#aa0',
+        bg: '#000',
+        z: 0
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Name,
+        name: 'key'
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Position,
+        x: X,
+        y: Y,
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Key,
+        doorIdx,
+    });
+    _1.default.map.setEntityLocation(item, _1.default.map.getIdx(X, Y));
+    return item;
+};
+exports.createItem = (params) => {
+    const { x, y, glyph, fg, bg, name, weight } = params;
+    const item = _1.default.world.createEntity();
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Item,
+        weight,
+        owner: null,
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Glyph,
+        glyph,
+        fg,
+        bg,
+        z: 0
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Name,
+        name,
+    });
+    _1.default.world.registerComponent(item, {
+        _type: components_1.Position,
+        x,
+        y,
+    });
+    _1.default.map.setEntityLocation(item, _1.default.map.getIdx(x, y));
+    return item;
+};
+exports.createWeightTrigger = ({ x, y, weight, idx, newType, oldType, triggered, messages }) => {
+    const trigger = _1.default.world.createEntity();
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Position,
+        x,
+        y,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Glyph,
+        glyph: '≡',
+        fg: '#333',
+        bg: 'black',
+        z: 0,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Name,
+        name: 'altar',
+        article: 'an'
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Item,
+        weight: 10,
+        owner: null,
+        static: true,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Trigger,
+        triggered,
+        messages,
+        condition: {
+            type: 'WEIGHT',
+            amount: weight,
+        },
+        event: {
+            type: 'CHANGE_CELL',
+            idx,
+            newType,
+            oldType,
+        },
+        repeat: 'TOGGLE'
+    });
+    _1.default.map.setEntityLocation(trigger, _1.default.map.getIdx(x, y));
+};
+exports.createExitTrigger = ({ x, y, message, }) => {
+    const trigger = _1.default.world.createEntity();
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Position,
+        x,
+        y,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Trigger,
+        triggered: false,
+        messages: {
+            trigger: message
+        },
+        condition: {
+            type: 'ENTER'
+        },
+        event: null,
+        repeat: 'ONCE'
+    });
+    _1.default.map.setEntityLocation(trigger, _1.default.map.getIdx(x, y));
+    return trigger;
+};
+exports.createDamageTrigger = ({ x, y, message, damage, }) => {
+    const trigger = _1.default.world.createEntity();
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Position,
+        x,
+        y,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Item,
+        weight: 5,
+        owner: null,
+        static: true,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Name,
+        name: 'campfire',
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Glyph,
+        glyph: '^',
+        fg: '#f70',
+        bg: 'black',
+        z: 0,
+    });
+    _1.default.world.registerComponent(trigger, {
+        _type: components_1.Trigger,
+        triggered: false,
+        messages: {
+            trigger: message
+        },
+        condition: {
+            type: 'ENTER'
+        },
+        event: {
+            type: 'DEAL_DAMAGE',
+            amount: damage,
+        },
+        repeat: 'REPEAT'
+    });
+    _1.default.map.setEntityLocation(trigger, _1.default.map.getIdx(x, y));
+    return trigger;
+};
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isPosition = exports.Position = void 0;
+exports.Position = 'Position';
+exports.isPosition = (cmp) => {
+    return cmp._type === exports.Position;
+};
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isGlyph = exports.Glyph = void 0;
+exports.Glyph = 'Glyph';
+exports.isGlyph = (cmp) => {
+    return cmp._type === exports.Glyph;
+};
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isIntentOfType = exports.isIntent = exports.Intent = void 0;
+exports.Intent = 'Intent';
+exports.isIntent = (cmp) => {
+    return cmp._type === exports.Intent;
+};
+exports.isIntentOfType = (intent) => (cmp) => {
+    return exports.isIntent(cmp) && cmp.intent === intent;
+};
+
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isAIOfType = exports.isAI = exports.AI = void 0;
+exports.AI = 'AI';
+exports.isAI = (cmp) => {
+    return cmp._type === exports.AI;
+};
+exports.isAIOfType = (ai) => (cmp) => {
+    return exports.isAI(cmp) && cmp.ai.includes(ai);
+};
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isPlayer = exports.Player = void 0;
+exports.Player = 'Player';
+exports.isPlayer = (cmp) => {
+    return cmp._type === exports.Player;
+};
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isViewshed = exports.Viewshed = void 0;
+exports.Viewshed = 'Viewshed';
+exports.isViewshed = (cmp) => {
+    return cmp._type === exports.Viewshed;
+};
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isBody = exports.Body = void 0;
+exports.Body = 'Body';
+exports.isBody = (cmp) => {
+    return cmp._type === exports.Body;
+};
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isCamera = exports.Camera = void 0;
+exports.Camera = 'Camera';
+exports.isCamera = (cmp) => {
+    return cmp._type === exports.Camera;
+};
+
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isMeleeCombat = exports.MeleeCombat = void 0;
+exports.MeleeCombat = 'MeleeCombat';
+exports.isMeleeCombat = (cmp) => {
+    return cmp._type === exports.MeleeCombat;
+};
+
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isHealth = exports.Health = void 0;
+exports.Health = 'Health';
+exports.isHealth = (cmp) => {
+    return cmp._type === exports.Health;
+};
+
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isName = exports.Name = void 0;
+exports.Name = 'Name';
+exports.isName = (cmp) => {
+    return cmp._type === exports.Name;
+};
+
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isInventory = exports.Inventory = void 0;
+exports.Inventory = 'Inventory';
+exports.isInventory = (cmp) => {
+    return cmp._type === exports.Inventory;
+};
+
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isItem = exports.Item = void 0;
+exports.Item = 'Item';
+exports.isItem = (cmp) => {
+    return cmp._type === exports.Item;
+};
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isKey = exports.Key = void 0;
+exports.Key = 'Key';
+exports.isKey = (cmp) => {
+    return cmp._type === exports.Key;
+};
+
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isTrigger = exports.Trigger = void 0;
+exports.Trigger = 'Trigger';
+exports.isTrigger = (cmp) => {
+    return cmp._type === exports.Trigger;
+};
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderingSystem = void 0;
+const ecs_machina_1 = __webpack_require__(9);
+const __1 = __importDefault(__webpack_require__(4));
+const constants_1 = __webpack_require__(10);
+const gui_1 = __webpack_require__(62);
+const components_1 = __webpack_require__(5);
+class RenderingSystem extends ecs_machina_1.System {
+    constructor() {
+        super(...arguments);
+        this.requiredComponents = [components_1.Glyph, components_1.Position];
+    }
+    beforeDraw() {
+    }
+    draw({ layer }) {
+        if (layer === 'map') {
+            __1.default.display.clear();
+            this.drawMap();
+        }
+        else if (layer === 'entities') {
+            Array.from(__1.default.world.entities)
+                .filter(([e]) => __1.default.world.getComponentMap(e).get(components_1.Glyph))
+                .sort((a, b) => a[1].find(components_1.isGlyph).z - b[1].find(components_1.isGlyph).z).forEach(([entity, components]) => {
+                this.drawEntity(entity, components);
+            });
+        }
+        else if (layer === 'gui') {
+            gui_1.drawGUI();
+        }
+    }
+    drawMap() {
+        const { map, camera } = __1.default;
+        const { width, height } = map;
+        const [cameraX, cameraY] = camera;
+        const cameraBounds = [
+            ~~(cameraX - constants_1.WIDTH / 2),
+            ~~(cameraY - constants_1.HEIGHT / 2),
+            ~~(cameraX + constants_1.WIDTH / 2),
+            ~~(cameraY + constants_1.HEIGHT / 2)
+        ];
+        const viewshed = __1.default.world.getComponentMap(__1.default.getState().player).get(components_1.Viewshed);
+        const { visibleCells, exploredCells } = viewshed || {};
+        for (let x = cameraBounds[0]; x < cameraBounds[2]; x++) {
+            for (let y = cameraBounds[1]; y < cameraBounds[3]; y++) {
+                const idx = __1.default.map.getIdx(x, y);
+                if (idx != null && (!visibleCells || visibleCells.has(idx))) {
+                    __1.default.display.draw(x - cameraBounds[0], y - cameraBounds[1], __1.default.map.getCellGlyph(x, y), __1.default.map.getCellColor(x, y), 'black');
+                }
+                else if (idx != null && exploredCells.has(idx)) {
+                    __1.default.display.draw(x - cameraBounds[0], y - cameraBounds[1], __1.default.map.getCellGlyph(x, y), '#111', 'black');
+                }
+            }
+        }
+    }
+    drawEntity(entity, components) {
+        const position = components.find(components_1.isPosition);
+        const item = components.find(components_1.isItem);
+        if (item && item.owner) {
+            return;
+        }
+        const { x, y } = position;
+        if (x < 0 || x >= __1.default.map.width || y < 0 || y >= __1.default.map.height) {
+            return;
+        }
+        const { camera } = __1.default;
+        const [cameraX, cameraY] = camera;
+        const cameraBounds = [
+            ~~(cameraX - constants_1.WIDTH / 2),
+            ~~(cameraY - constants_1.HEIGHT / 2),
+            ~~(cameraX + constants_1.WIDTH / 2),
+            ~~(cameraY + constants_1.HEIGHT / 2)
+        ];
+        const viewshed = __1.default.world.getComponentMap(__1.default.getState().player).get(components_1.Viewshed);
+        const { visibleCells } = viewshed || {};
+        const glyph = components.find(components_1.isGlyph);
+        const idx = __1.default.map.getIdx(position.x, position.y);
+        if (idx != null && (!visibleCells || visibleCells.has(idx))) {
+            __1.default.display.draw(position.x - cameraBounds[0], position.y - cameraBounds[1], glyph.glyph, glyph.fg, glyph.bg);
+        }
+    }
+}
+exports.RenderingSystem = RenderingSystem;
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.drawGUI = void 0;
+const state_1 = __importDefault(__webpack_require__(4));
+const constants_1 = __webpack_require__(10);
+const fsm_1 = __webpack_require__(17);
+const components_1 = __webpack_require__(5);
+exports.drawGUI = () => {
+    drawBorders();
+    drawLog();
+    drawStats();
+    drawInventory(state_1.default.getState().runState);
+};
+const drawBorders = () => {
+    const fg = '#333';
+    const bg = 'black';
+    for (let x = 1; x < constants_1.WIDTH - 1; x++) {
+        state_1.default.display.draw(x, 0, '─', fg, bg);
+        state_1.default.display.draw(x, constants_1.HEIGHT - 1, '═', fg, bg);
+        state_1.default.display.draw(x, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '═', fg, bg);
+        state_1.default.display.draw(x, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '─', fg, bg);
+    }
+    for (let y = 1; y < constants_1.HEIGHT + constants_1.STATS_HEIGHT + constants_1.LOG_HEIGHT - 1; y++) {
+        state_1.default.display.draw(0, y, '│', fg, bg);
+        state_1.default.display.draw(constants_1.WIDTH - 1, y, '│', fg, bg);
+    }
+    state_1.default.display.draw(0, 0, '┌', fg, bg);
+    state_1.default.display.draw(0, constants_1.HEIGHT - 1, '╞', fg, bg);
+    state_1.default.display.draw(0, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '╞', fg, bg);
+    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT - 1, '╡', fg, bg);
+    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT + constants_1.STATS_HEIGHT - 1, '╡', fg, bg);
+    state_1.default.display.draw(constants_1.WIDTH - 1, 0, '┐', fg, bg);
+    state_1.default.display.draw(0, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '└', fg, bg);
+    state_1.default.display.draw(constants_1.WIDTH - 1, constants_1.HEIGHT + constants_1.LOG_HEIGHT + constants_1.STATS_HEIGHT - 1, '┘', fg, bg);
+};
+const drawLog = () => {
+    const log = state_1.default.getState().log;
+    if (!state_1.default.display) {
+        return;
+    }
+    const N = constants_1.LOG_HEIGHT - 1;
+    const colorOffset = Math.max(N - log.length, 0);
+    const lastLines = (log.length <= N ? [...log] : [...log].slice(log.length - N)).reverse();
+    for (let i = 0; i < lastLines.length; i++) {
+        const line = lastLines[lastLines.length - i - 1];
+        const chars = '4579bdf'.split('');
+        const lineColor = `#${(new Array(3)).fill(chars[i + colorOffset]).join('')}`;
+        state_1.default.display.drawText(2, constants_1.HEIGHT + constants_1.STATS_HEIGHT + i, `%c{${lineColor}}${line}`);
+    }
+};
+const drawStats = () => {
+    if (!state_1.default.display) {
+        return;
+    }
+    const cmp = state_1.default.world.getComponentMap(state_1.default.getState().player);
+    const { health, maxHealth, dead } = cmp.get(components_1.Health) || {};
+    const { damage } = cmp.get(components_1.MeleeCombat) || {};
+    let text;
+    if (!health || dead) {
+        text = `%c{#333}HP: %c{#666}DEAD`;
+    }
+    else {
+        text = `%c{#333}HP: %c{#666}${health}%c{#333}/%c{#666}${maxHealth}  %c{#333}DMG: %c{#666}${damage}`;
+    }
+    const inventory = cmp.get(components_1.Inventory);
+    if (inventory && inventory.contents.length > 0) {
+        const weight = getWeight(inventory);
+        const capacity = inventory.capacity;
+        text += `  %c{#333}Weight: %c{#666}${weight}%c{#333}/%c{#666}${capacity}`;
+    }
+    state_1.default.display.drawText(2, constants_1.HEIGHT, text);
+};
+const getWeight = (inventory) => {
+    return inventory.contents.reduce((sum, e) => {
+        const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
+        if (!item) {
+            return sum;
+        }
+        return sum + item.weight;
+    }, 0);
+};
+const drawInventory = (runState) => {
+    const states = [
+        fsm_1.RunState.GUI_INVENTORY,
+        fsm_1.RunState.GUI_INVENTORY_DROP,
+        fsm_1.RunState.GUI_INVENTORY_GET,
+    ];
+    if (!states.includes(runState)) {
+        return;
+    }
+    const player = state_1.default.getState().player;
+    const playerCmp = state_1.default.world.getComponentMap(player);
+    const inventory = playerCmp.get(components_1.Inventory);
+    if (!inventory) {
+        return;
+    }
+    const weight = getWeight(inventory);
+    const fg = '#333';
+    const bg = 'black';
+    const hPad = 10;
+    const vPad = 4;
+    for (let x = hPad; x < constants_1.WIDTH - hPad; x++) {
+        for (let y = vPad; y < constants_1.HEIGHT - vPad; y++) {
+            if (x === hPad && y === vPad) {
+                state_1.default.display.draw(x, y, '┌', fg, bg);
+            }
+            else if (x === constants_1.WIDTH - hPad - 1 && y === vPad) {
+                state_1.default.display.draw(x, y, '┐', fg, bg);
+            }
+            else if (x === hPad && y === constants_1.HEIGHT - vPad - 1) {
+                state_1.default.display.draw(x, y, '└', fg, bg);
+            }
+            else if (x === constants_1.WIDTH - hPad - 1 && y === constants_1.HEIGHT - vPad - 1) {
+                state_1.default.display.draw(x, y, '┘', fg, bg);
+            }
+            else if (y === vPad + 2) {
+                if (x === hPad) {
+                    state_1.default.display.draw(x, y, '├', fg, bg);
+                }
+                else if (x === constants_1.WIDTH - hPad - 1) {
+                    state_1.default.display.draw(x, y, '┤', fg, bg);
+                }
+                else {
+                    state_1.default.display.draw(x, y, '─', fg, bg);
+                }
+            }
+            else if (x === hPad || x === constants_1.WIDTH - hPad - 1) {
+                state_1.default.display.draw(x, y, '│', fg, bg);
+            }
+            else if (y === vPad || y === constants_1.HEIGHT - vPad - 1) {
+                state_1.default.display.draw(x, y, '─', fg, bg);
+            }
+            else {
+                state_1.default.display.draw(x, y, ' ', fg, bg);
+            }
+        }
+    }
+    if (runState === fsm_1.RunState.GUI_INVENTORY) {
+        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Inventory: %c{#666}${weight}/${inventory.capacity}`);
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
+        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Drop which item?`);
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
+        state_1.default.display.drawText(hPad + 2, vPad + 1, `%c{#333}Pick up which item?`);
+    }
+    const offset = vPad + 4;
+    const keys = 'ASDFGHJKL'.split('');
+    let names = [];
+    if (runState === fsm_1.RunState.GUI_INVENTORY_GET) {
+        const pos = playerCmp.get(components_1.Position);
+        names = (state_1.default.map.entities.get(state_1.default.map.getIdx(pos.x, pos.y)) || [])
+            .filter(e => {
+            const item = state_1.default.world.getComponentMap(e).get(components_1.Item);
+            return !!item && !item.owner && !item.static;
+        })
+            .map(item => {
+            const name = state_1.default.world.getComponentMap(item).get(components_1.Name);
+            return name ? name.name : 'something';
+        });
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY_DROP) {
+        const inventory = playerCmp.get(components_1.Inventory);
+        names = inventory.contents.map(e => {
+            const cmps = state_1.default.world.getComponentMap(e);
+            const name = cmps.get(components_1.Name);
+            return name ? name.name : 'something';
+        });
+    }
+    else if (runState === fsm_1.RunState.GUI_INVENTORY) {
+        const inventory = playerCmp.get(components_1.Inventory);
+        names = inventory.contents.map(e => {
+            const cmps = state_1.default.world.getComponentMap(e);
+            const name = cmps.get(components_1.Name);
+            return name ? name.name : 'something';
+        });
+    }
+    for (let idx = 0; idx < names.length; idx++) {
+        const name = names[idx];
+        let prefix = '';
+        if ([
+            fsm_1.RunState.GUI_INVENTORY_DROP,
+            fsm_1.RunState.GUI_INVENTORY_GET
+        ].includes(runState)) {
+            prefix = `${keys[idx]}) `;
+        }
+        state_1.default.display.drawText(hPad + 2, offset + idx, prefix + name);
+    }
+};
+
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AISystem = void 0;
+const ecs_machina_1 = __webpack_require__(9);
+const __1 = __importDefault(__webpack_require__(4));
+const components_1 = __webpack_require__(5);
+class AISystem extends ecs_machina_1.System {
+    constructor() {
+        super(...arguments);
+        this.requiredComponents = [components_1.AI, components_1.Viewshed];
+        this.updateEntity = (entity, components) => {
+            const ai = components.find(components_1.isAI);
+            const intents = ai.ai.map(type => {
+                switch (type) {
+                    case 'AGGRESS':
+                        return handleAggress(entity, components);
+                    case 'RETALIATE':
+                        return handleRetaliate(entity, components);
+                    case 'AVOID_PLAYER':
+                        return handleAvoidPlayer(entity, components);
+                    case 'RANDOM_WALK':
+                        return handleRandomWalk(entity, components);
+                    default:
+                        return null;
+                }
+            });
+            for (let intent of intents) {
+                if (intent) {
+                    this.world.registerComponent(entity, intent);
+                    break;
+                }
+            }
+        };
+    }
+}
+exports.AISystem = AISystem;
+const handleAvoidPlayer = (entity, components) => {
+    const viewshed = components.find(components_1.isViewshed);
+    const range = 5;
+    const playerID = __1.default.getState().player;
+    const playerPos = __1.default.world.getComponents(playerID).find(components_1.isPosition);
+    const playerIdx = __1.default.map.getIdx(playerPos.x, playerPos.y);
+    if (viewshed.visibleCells.has(playerIdx)) {
+        const entityPos = __1.default.world.getComponents(entity).find(components_1.isPosition);
+        const dx = playerPos.x - entityPos.x;
+        const dy = playerPos.y - entityPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= range) {
+            const vector = [dx ? -dx / Math.abs(dx) : 0, dy ? -dy / Math.abs(dy) : 0];
+            return {
+                _type: components_1.Intent,
+                intent: 'MOVE',
+                payload: {
+                    dx: vector[0],
+                    dy: vector[1],
+                }
+            };
+        }
+    }
+};
+const handleRandomWalk = (entity, components) => {
+    const rng = __1.default.world.rng;
+    if (Math.abs(rng()) > 0.75) {
+        const dx = [-1, 0, 1][Math.round(rng() * 2)];
+        const dy = [-1, 0, 1][Math.round(rng() * 2)];
+        if (dx === 0 && dy === 0) {
+            return;
+        }
+        return {
+            _type: components_1.Intent,
+            intent: 'MOVE',
+            payload: {
+                dx, dy
+            }
+        };
+    }
+};
+const handleRetaliate = (entity, components) => {
+    const health = components.find(components_1.isHealth);
+    if (!health || !health.lastAttacker) {
+        return;
+    }
+    const attacker = health.lastAttacker;
+    const position = components.find(components_1.isPosition);
+    const viewshed = components.find(components_1.isViewshed);
+    const attackerPosition = __1.default.world.getComponents(attacker).find(components_1.isPosition);
+    const inRange = Math.abs(attackerPosition.x - position.x) <= 1 && Math.abs(attackerPosition.y - position.y) <= 1;
+    if (!inRange || !viewshed || !viewshed.visibleCells.has(__1.default.map.getIdx(position.x, position.y))) {
+        return;
+    }
+    return {
+        _type: components_1.Intent,
+        intent: 'ATTACK',
+        payload: {
+            target: attacker
+        }
+    };
+};
+const handleAggress = (entity, components) => {
+    const target = __1.default.getState().player;
+    const position = components.find(components_1.isPosition);
+    const viewshed = components.find(components_1.isViewshed);
+    const targetPos = __1.default.world.getComponents(target).find(components_1.isPosition);
+    const inRange = Math.abs(targetPos.x - position.x) <= 1 && Math.abs(targetPos.y - position.y) <= 1;
+    if (!inRange || !viewshed || !viewshed.visibleCells.has(__1.default.map.getEntityLocation(target))) {
+        return;
+    }
+    return {
+        _type: components_1.Intent,
+        intent: 'ATTACK',
+        payload: {
+            target: target
+        }
+    };
+};
+
+
+/***/ }),
 /* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4988,7 +5080,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VisibilitySystem = void 0;
 const ecs_machina_1 = __webpack_require__(9);
 const __1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
+const components_1 = __webpack_require__(5);
 class VisibilitySystem extends ecs_machina_1.System {
     constructor() {
         super(...arguments);
@@ -5028,7 +5120,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CameraSystem = void 0;
 const ecs_machina_1 = __webpack_require__(9);
 const __1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
+const components_1 = __webpack_require__(5);
 class CameraSystem extends ecs_machina_1.System {
     constructor() {
         super(...arguments);
@@ -5059,7 +5151,8 @@ exports.TriggerSystem = void 0;
 const ecs_machina_1 = __webpack_require__(9);
 const egna_1 = __webpack_require__(12);
 const __1 = __importDefault(__webpack_require__(4));
-const components_1 = __webpack_require__(6);
+const components_1 = __webpack_require__(5);
+const intent_1 = __webpack_require__(22);
 class TriggerSystem extends ecs_machina_1.System {
     constructor() {
         super(...arguments);
@@ -5067,7 +5160,7 @@ class TriggerSystem extends ecs_machina_1.System {
     }
     updateEntity(entity, components) {
         const player = __1.default.getState().player;
-        const isTriggered = checkForCondition(entity, components);
+        const [isTriggered, entities] = checkForCondition(entity, components);
         const triggerComponent = components.find(components_1.isTrigger);
         const position = components.find(components_1.isPosition);
         const event = triggerComponent.event;
@@ -5078,8 +5171,12 @@ class TriggerSystem extends ecs_machina_1.System {
                     __1.default.log(triggerComponent.messages.trigger);
                 }
             }
-            triggerComponent.triggered = true;
-            applyTriggerEvent(event);
+            if (triggerComponent.repeat !== 'REPEAT') {
+                triggerComponent.triggered = true;
+            }
+            if (event) {
+                applyTriggerEvent(event, entities);
+            }
         }
         else if (triggerComponent.triggered && !isTriggered && triggerComponent.repeat === 'TOGGLE') {
             if (triggerComponent.messages && triggerComponent.messages.revert) {
@@ -5089,33 +5186,36 @@ class TriggerSystem extends ecs_machina_1.System {
                 }
             }
             triggerComponent.triggered = false;
-            revertTriggerEvent(event);
+            if (event) {
+                revertTriggerEvent(event, entities);
+            }
         }
     }
 }
 exports.TriggerSystem = TriggerSystem;
 const checkForCondition = (entity, components) => {
     const triggerComponent = components.find(components_1.isTrigger);
-    const checker = egna_1.match({ type: 'ENTER' }, (condition) => () => { }, { type: 'EXIT' }, (condition) => () => { }, { type: 'WEIGHT' }, checkWeightCondition)(triggerComponent.condition);
+    const checker = egna_1.match({ type: 'ENTER' }, checkEnterCondition, { type: 'WEIGHT' }, checkWeightCondition)(triggerComponent.condition);
     if (checker) {
         return checker(entity, components);
     }
-    return false;
+    return [false, []];
 };
 const checkWeightCondition = (condition) => (entity, components) => {
     const pos = components.find(components_1.isPosition);
     if (!pos) {
-        return false;
+        return [false, []];
     }
     const idx = __1.default.map.getIdx(pos.x, pos.y);
     const entities = __1.default.map.entities.get(idx);
     if (!entities || entities.length === 0) {
-        return false;
+        return [false, []];
     }
-    const totalWeight = entities
+    const applicableEntities = entities
         .filter(e => e !== entity)
         .map(e => __1.default.world.getComponentMap(e))
-        .filter(m => m.has(components_1.Body) || m.has(components_1.Item))
+        .filter(m => m.has(components_1.Body) || m.has(components_1.Item));
+    const totalWeight = applicableEntities
         .reduce((sum, m) => {
         const body = m.get(components_1.Body);
         const item = m.get(components_1.Item);
@@ -5127,16 +5227,43 @@ const checkWeightCondition = (condition) => (entity, components) => {
         }
         return sum;
     }, 0);
-    return condition.amount <= totalWeight;
+    const triggered = condition.amount <= totalWeight;
+    return [triggered, triggered ? applicableEntities : []];
 };
-const applyTriggerEvent = event => {
+const checkEnterCondition = (condition) => (entity, components) => {
+    const pos = components.find(components_1.isPosition);
+    if (!pos) {
+        return [false, []];
+    }
+    const idx = __1.default.map.getIdx(pos.x, pos.y);
+    const entities = __1.default.map.entities.get(idx);
+    if (!entities || entities.length === 0) {
+        return [false, []];
+    }
+    const e = entities.filter(e => {
+        const body = __1.default.world.getComponentMap(e).get(components_1.Body);
+        return !!body;
+    });
+    const triggered = e.length > 0;
+    return [triggered, triggered ? e : []];
+};
+const applyTriggerEvent = (event, entities) => {
     if (event.type === 'CHANGE_CELL') {
         __1.default.map.setCell(event.idx, event.newType);
     }
     else if (event.type === 'DEAL_DAMAGE') {
+        entities.forEach(e => {
+            const health = __1.default.world.getComponentMap(e).get(components_1.Health);
+            if (health) {
+                health.health -= event.amount;
+                if (health.health <= 0) {
+                    intent_1.handleDeath(e);
+                }
+            }
+        });
     }
 };
-const revertTriggerEvent = event => {
+const revertTriggerEvent = (event, entities) => {
     if (event.type === 'CHANGE_CELL') {
         __1.default.map.setCell(event.idx, event.oldType);
     }
@@ -28008,7 +28135,7 @@ class canvas_Canvas extends backend["a" /* default */] {
 }
 
 // EXTERNAL MODULE: ./node_modules/rot-js/lib/util.js
-var util = __webpack_require__(5);
+var util = __webpack_require__(6);
 
 // CONCATENATED MODULE: ./node_modules/rot-js/lib/display/hex.js
 

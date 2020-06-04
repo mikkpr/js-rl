@@ -7,11 +7,12 @@ import {
   createDamageTrigger,
   createExitTrigger,
   createWeightTrigger,
-  createStash,
+  createItem,
   createPlayer,
   createKobold,
   createKey
 } from './spawner';
+import { Key } from './components';
 import { MAPWIDTH, MAPHEIGHT } from '../constants';
 import {
   CameraSystem,
@@ -133,7 +134,18 @@ export const setupEntities = (): {
 
   const key = createKey({ owner: kobold, doorIdx: 74 });
 
-  const stash = createStash({ x: 9, y: 8, owner: null });
+  const stash = createItem({
+    x: 9, y: 8,
+    glyph: '$',
+    fg: '#ff0',
+    bg: 'black',
+    weight: 2,
+    name: 'stash of coins'
+  });
+  state.world.registerComponent(stash, {
+    _type: Key,
+    doorIdx: 14,
+  } as Key)
 
   const trigger = createWeightTrigger({
     x: 5,
@@ -149,10 +161,25 @@ export const setupEntities = (): {
     }
   });
 
+  const boulder = createItem({
+    x: 6, y: 1,
+    glyph: '○',
+    fg: '#666',
+    bg: 'black',
+    weight: 3,
+    name: 'boulder'
+  });
+
   const exitTrigger = createExitTrigger({
     x: 5,
     y: 2,
-    message: 'You have found a secret area!'
+    message: 'You have found a secret passage!'
+  });
+
+  const exitTrigger2 = createExitTrigger({
+    x: 3,
+    y: 1,
+    message: 'You take your treasures and leave.'
   });
 
   const fire = createDamageTrigger({

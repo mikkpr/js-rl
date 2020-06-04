@@ -184,45 +184,39 @@ export const createKey = (params: {
   return item;
 }
 
-export const createStash = (params: {
+export const createItem = (params: {
   x?: number;
   y?: number;
-  owner?: string | null;
+  glyph: string;
+  fg: string;
+  bg: string;
+  name: string;
+  weight: number;
 }) => {
-  const { x, y, owner } = params;
+  const { x, y, glyph, fg, bg, name, weight } = params;
   const item = state.world.createEntity();
-  let X = x,
-      Y = y;
-  if (owner) {
-    const ownerCmp = state.world.getComponentMap!(owner);
-    const inventory = ownerCmp.get(Inventory) as Inventory;
-    inventory.contents.push(item);
-    const pos = ownerCmp.get(Position) as Position;
-    X = pos.x;
-    Y = pos.y;
-  }
   state.world.registerComponent(item, {
     _type: Item,
-    weight: 2,
-    owner: owner || null,
+    weight,
+    owner: null,
   } as Item);
   state.world.registerComponent(item, {
     _type: Glyph,
-    glyph: '$',
-    fg: '#ff0',
-    bg: '#000',
+    glyph,
+    fg,
+    bg,
     z: 0
   } as Glyph);
   state.world.registerComponent(item, {
     _type: Name,
-    name: 'stash of coins'
+    name,
   } as Name);
   state.world.registerComponent(item, {
     _type: Position,
-    x: X,
-    y: Y,
+    x,
+    y,
   } as Position); 
-  state.map.setEntityLocation(item, state.map.getIdx(X!, Y!)!);
+  state.map.setEntityLocation(item, state.map.getIdx(x, y)!);
   return item;
 }
 
