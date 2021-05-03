@@ -25,6 +25,7 @@ export class Move extends Component {
   static properties = {
     x: 0,
     y: 0,
+    relative: true,
   }
 };
 
@@ -41,3 +42,28 @@ export class IsInFov extends Component { }
 export class IsOpaque extends Component { }
 
 export class IsRevealed extends Component { }
+
+export class Description extends Component {
+  static properties = { name: 'No Name' };
+}
+
+export class Ai extends Component { }
+
+export class Defense extends Component {
+  static properties = { max: 1, current: 1 };
+}
+
+export class Health extends Component {
+  static properties = { max: 10, current: 10 };
+
+  onTakeDamage(evt) {
+    this.current -= evt.data.amount;
+    evt.handle();
+  }
+}
+
+export class Power extends Component {
+  static properties = { max: 5, current: 5 };
+}
+
+export class IsDead extends Component { }
