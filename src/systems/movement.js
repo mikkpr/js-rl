@@ -1,4 +1,4 @@
-import ecs from '../state/ecs';
+import ecs, { addLog } from '../state/ecs';
 import {
   addCacheSet,
   deleteCacheSet,
@@ -22,16 +22,17 @@ const movableEntities = ecs.createQuery({
 
 const attack = (entity, target) => {
   const damage = entity.power.current - target.defense.current;
+
   target.fireEvent('take-damage', { amount: damage });
 
   if (target.health.current <= 0) {
     kill(target);
 
-    return console.log(
+    return addLog(
       `${entity.description.name} kicked a ${target.description.name} for ${damage} damage and killed it!`
     );
   }
-  console.log(`${entity.description.name} kicked a ${target.description.name} for ${damage} damage!`);
+  addLog(`${entity.description.name} kicked a ${target.description.name} for ${damage} damage!`);
 }
 
 const kill = entity => {
@@ -74,7 +75,7 @@ export const movement = () => {
         if (target.has(Health) && target.has(Defense)) {
           attack(entity, target);
         } else {
-          console.log(`${entity.description.name} bumped into a ${target.description.name}`);
+          addLog(`${entity.description.name} bumped into a ${target.description.name}`);
         }
       });
       entity.remove(entity.move);

@@ -3,7 +3,7 @@ const canvas = document.querySelector('.main');
 const ctx = canvas.getContext('2d');
 
 export const grid = {
-  width: 100,
+  width: 79,
   height: 34,
 
   map: {
@@ -11,13 +11,37 @@ export const grid = {
     height: 29,
     x: 21,
     y: 3,
+  },
+
+  messageLog: {
+    width: 79,
+    height: 3,
+    x: 21,
+    y: 0,
+  },
+
+  playerHud: {
+    width: 20,
+    height: 34,
+    x: 0,
+    y: 0,
+  },
+
+  infoBar: {
+    width: 79,
+    height: 3,
+    x: 21,
+    y: 32,
   }
 };
 
-const lineHeight = 1.2;
+const lineHeight = 1.4;
 
-let calculatedFontSize = 12;
-//let calculatedFontSize = window.innerWidth / grid.width;
+let calculatedFontSize = 13;
+// let calculatedFontSize = Math.min(
+//   window.innerWidth / grid.width,
+//   window.innerHeight / grid.height
+// );
 let cellWidth = calculatedFontSize * pixelRatio;
 let cellHeight = calculatedFontSize * pixelRatio * lineHeight;
 let fontSize = calculatedFontSize * pixelRatio;
@@ -29,6 +53,30 @@ canvas.height = cellHeight * grid.height;
 ctx.font = `normal ${fontSize}px 'Fira Code'`;
 ctx.textAlign = `center`;
 ctx.textBaseLine = `middle`;
+
+export const drawText = template => {
+  const textToRender = template.text;
+
+  textToRender.split('').forEach((char, index) => {
+    const options = { ...template };
+    const character = {
+      appearance: {
+        char,
+        background: options.background,
+        color: options.color,
+      },
+      position: {
+        x: index + options.x,
+        y: options.y,
+      }
+    };
+
+    delete options.x;
+    delete options.y;
+
+    drawCell(character, options);
+  });
+}
 
 export const drawChar = ({ char, color, position }) => {
   ctx.fillStyle = color;

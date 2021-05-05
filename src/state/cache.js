@@ -1,3 +1,5 @@
+const EMPTY_SET = new Set();
+
 export const cache = {
   entitiesAtLocation: {},
 };
@@ -25,6 +27,8 @@ export const readCacheSet = (name, key, value) => {
 
     return cache[name][key];
   }
+
+  return EMPTY_SET;
 };
 
 export default cache;
