@@ -3,18 +3,18 @@ const canvas = document.querySelector('.main');
 const ctx = canvas.getContext('2d');
 
 export const grid = {
-  width: 59,
-  height: 29,
+  width: 60,
+  height: 30,
 
   map: {
-    width: 39,
-    height: 23,
+    width: 40,
+    height: 24,
     x: 21,
     y: 3,
   },
 
   messageLog: {
-    width: 59,
+    width: 60,
     height: 3,
     x: 21,
     y: 0,
@@ -22,26 +22,22 @@ export const grid = {
 
   playerHud: {
     width: 20,
-    height: 29,
+    height: 27,
     x: 0,
     y: 0,
   },
 
   infoBar: {
-    width: 59,
+    width: 60,
     height: 3,
     x: 21,
-    y: 26,
+    y: 27,
   }
 };
 
 const lineHeight = 1.3;
 
-//let calculatedFontSize = 13;
-let calculatedFontSize = Math.min(
-  window.innerWidth / grid.width,
-  window.innerHeight / grid.height
-);
+let calculatedFontSize = Math.floor((window.innerHeight - 30) / grid.height / lineHeight);
 let cellWidth = calculatedFontSize * pixelRatio;
 let cellHeight = calculatedFontSize * pixelRatio * lineHeight;
 let fontSize = calculatedFontSize * pixelRatio;
