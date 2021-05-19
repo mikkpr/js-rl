@@ -21,6 +21,16 @@ export const Being = {
   ]
 };
 
+export const Item = {
+  name: 'Item',
+  components: [
+    { type: 'Appearance' },
+    { type: 'Description' },
+    { type: 'Layer300' },
+    { type: 'IsPickup' },
+  ]
+};
+
 // complex
 export const Wall = {
   name: 'Wall',
@@ -66,6 +76,13 @@ export const Player = {
       type: "Description",
       properties: { name: "You" },
     },
+    {
+      type: "Health",
+      properties: { current: 20, max: 20 },
+    },
+    {
+      type: "Inventory",
+    }
   ],
 };
 
@@ -85,8 +102,25 @@ export const Goblin = {
   ],
 };
 
-const Base = [Tile, Being];
-const Complex = [Wall, Floor, Goblin, Player];
+export const HealthPotion = {
+  name: 'HealthPotion',
+  inherit: ['Item'],
+  components: [
+    {
+      type: 'Appearance',
+      properties: { char: '!', color: '#DAA520' },
+    }, {
+      type: 'Description',
+      properties: { name: 'health potion' },
+    }, {
+      type: 'Effects',
+      properties: { component: 'health', delta: 5 },
+    }
+  ]
+}
+
+const Base = [Tile, Being, Item];
+const Complex = [Wall, Floor, Goblin, Player, HealthPotion];
 
 export {
   Base,

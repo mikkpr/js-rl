@@ -1,5 +1,7 @@
+import { Entity } from 'geotic';
+import remove from 'lodash/remove';
 import { Component } from 'geotic';
-import { addCacheSet } from './cache';
+import { addCacheSet, deleteCacheSet } from './cache';
 
 export class Appearance extends Component {
   static properties = {
@@ -17,7 +19,14 @@ export class Position extends Component {
 
   onAttached() {
     const locId = `${this.entity.position.x},${this.entity.position.y}`;
+    console.log('onAttached', locId);
     addCacheSet("entitiesAtLocation", locId, this.entity.id);
+  }
+
+  onDestroyed() {
+    const locId = `${this.x},${this.y}`;
+    console.log('onDestroyed', locId);
+    deleteCacheSet("entitiesAtLocation", locId, this.entity.id);
   }
 }
 
@@ -67,3 +76,42 @@ export class Power extends Component {
 }
 
 export class IsDead extends Component { }
+
+export class IsPickup extends Component { }
+
+export class Inventory extends Component {
+  static properties = {
+    list: new Set(),
+  };
+
+  onPickUp(evt) {
+    this.list.add(evt.data.id);
+
+    if (evt.data.position) {
+      evt.data.remove(evt.data.position);
+    }
+  }
+
+  onDrop(evt) {
+    if (this.list.has(evt.data.id)) {
+      this.list.delete(evt.data.id);
+      evt.data.add(Position, this.entity.position);
+    }
+  }
+
+  onConsume(evt) {
+    if (this.list.has(evt.data.id)) {
+      this.list.delete(evt.data.id);
+    }
+  }
+}
+
+export class ActiveEffects extends Component {
+  static allowMultiple = true;
+  static properties = { component: '', delta: '' };
+}
+
+export class Effects extends Component {
+  static allowMultiple = true;
+  static properties = { component: '', delta: '' };
+}

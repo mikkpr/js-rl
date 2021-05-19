@@ -1,3 +1,4 @@
+import { rectangle } from './grid';
 const pixelRatio = window.devicePixelRatio || 1;
 const canvas = document.querySelector('.main');
 const ctx = canvas.getContext('2d');
@@ -32,7 +33,14 @@ export const grid = {
     height: 3,
     x: 21,
     y: 27,
-  }
+  },
+
+  inventory: {
+    width: 20,
+    height: 22,
+    x: 21,
+    y: 4,
+  },
 };
 
 const lineHeight = 1.3;
@@ -119,3 +127,10 @@ export const pxToCell = (ev) => {
 
   return [colPos, rowPos];
 }
+
+export const drawRect = (x, y, width, height, color) => {
+  const rect = rectangle({ x, y, width, height });
+  Object.values(rect.tiles).forEach(position => {
+    drawBackground({ color, position });
+  });
+};

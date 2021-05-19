@@ -9,11 +9,14 @@ import { createDungeon } from './lib/dungeon';
 import { fov } from './systems/fov';
 import { ai } from './systems/ai';
 import { movement } from './systems/movement';
+import { effects } from './systems/effects';
 import { render } from './systems/render';
-import ecs from './state/ecs';
+import ecs, { addLog } from './state/ecs';
 import {
   Move,
   Position,
+  ActiveEffects,
+  Effects,
 } from './state/components';
 
 const dungeon = createDungeon({
@@ -40,50 +43,140 @@ times(5, () => {
     .add(Position, { x: tile.x, y: tile.y });
 });
 
+times(5, () => {
+  const tile = sample(openTiles);
+  ecs.createPrefab('HealthPotion')
+    .add(Position, { x: tile.x, y: tile.y });
+});
+
 fov(player);
 render(player);
 
 let userInput = null;
 let playerTurn = true;
+export let gameState = "GAME";
+export let selectedInventoryIndex = 0;
 document.addEventListener('keydown', event => {
   userInput = event.key;
 });
 
 const processUserInput = () => {
-  if (userInput == "k") {
-    player.add(Move, { x: 0, y: -1 });
+  if (gameState === 'GAME') {
+    if (userInput == "k") {
+      player.add(Move, { x: 0, y: -1 });
+    }
+
+    if (userInput == "j") {
+      player.add(Move, { x: 0, y: 1 });
+    }
+
+    if (userInput == "h") {
+      player.add(Move, { x: -1, y: 0 });
+    }
+
+    if (userInput == "l") {
+      player.add(Move, { x: 1, y: 0 });
+    }
+
+    if (userInput === "g") {
+      let pickupFound = false;
+      readCacheSet("entitiesAtLocation", toLocId(player.position)).forEach(
+        (eId) => {
+          const entity = ecs.getEntity(eId);
+          if (!pickupFound && entity.isPickup) {
+            pickupFound = true;
+            player.fireEvent("pick-up", entity);
+            addLog(`You pickup a ${entity.description.name}`);
+          }
+        }
+      );
+      if (!pickupFound) {
+        addLog("There is nothing to pick up here");
+      }
+    }
+
+    if (userInput === 'i') {
+      gameState = 'INVENTORY';
+    }
+
+    userInput = null;
   }
 
-  if (userInput == "j") {
-    player.add(Move, { x: 0, y: 1 });
-  }
+  if (gameState === 'INVENTORY') {
+    if (userInput === 'i' || userInput === 'Escape') {
+      gameState = 'GAME';
+    }
 
-  if (userInput == "h") {
-    player.add(Move, { x: -1, y: 0 });
-  }
+    if (userInput === 'k') {
+      selectedInventoryIndex -= 1;
+      if (selectedInventoryIndex < 0) selectedInventoryIndex = 0;
+    }
 
-  if (userInput == "l") {
-    player.add(Move, { x: 1, y: 0 });
-  }
+    if (userInput === 'j') {
+      selectedInventoryIndex += 1;
+      if (selectedInventoryIndex > player.inventory.list.size - 1) {
+        selectedInventoryIndex = Math.max(0, player.inventory.list.size - 1);
+      }
+    }
 
-  userInput = null;
+    if (userInput === 'c') {
+      const entity = ecs.getEntity(Array.from(player.inventory.list.keys())[selectedInventoryIndex]);
+      if (entity) {
+        if (entity.has(Effects)) {
+          entity
+            .effects
+            .forEach(x => player.add(ActiveEffects, { ...x.serialize() }));
+        }
+
+        addLog(`You consume a ${entity.description.name}`);
+        player.fireEvent('consume', entity);
+        entity.destroy();
+
+        if (selectedInventoryIndex > player.inventory.list.size - 1) {
+          selectedInventoryIndex = Math.max(0, player.inventory.list.size - 1);
+        }
+      }
+
+    }
+
+    if (userInput === "d") {
+      if (player.inventory.list.size) {
+        const entity = ecs.getEntity(Array.from(player.inventory.list.keys())[selectedInventoryIndex]);
+        player.fireEvent("drop", entity);
+        addLog(`You drop a ${entity.description.name}`);
+      }
+    }
+
+    userInput = null;
+  }
 };
 
 const update = () => {
   if (player.isDead) {
     return;
   }
-  if (playerTurn && userInput) {
+  if (playerTurn && userInput && gameState === 'INVENTORY') {
     processUserInput();
+    effects();
+    render(player);
+    playerTurn = true;
+  }
+
+  if (playerTurn && userInput && gameState === 'GAME') {
+    processUserInput();
+    effects();
     movement();
     fov(player);
     render(player);
 
-    playerTurn = false;
+    if (gameState === 'GAME') {
+      playerTurn = false;
+    }
   }
 
   if (!playerTurn) {
     ai(player);
+    effects();
     movement();
     fov(player);
     render(player);

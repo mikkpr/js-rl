@@ -1,3 +1,7 @@
+## Unnamed JS Roguelike
+
+Based on the tutorial at https://github.com/luetkemj/jsrlt
+
 ## Scripts
 
 `npm start` Run the app local with webpack dev server on port 8080.
