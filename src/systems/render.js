@@ -161,7 +161,7 @@ export const render = (player) => {
 
 const clearInfoBar = () =>
   drawText({
-    text: ` `.repeat(grid.infoBar.width),
+    text: `█`.repeat(grid.infoBar.width),
     x: grid.infoBar.x,
     y: grid.infoBar.y,
     background: 'black',

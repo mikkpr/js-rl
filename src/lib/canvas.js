@@ -43,9 +43,12 @@ export const grid = {
   },
 };
 
-const lineHeight = 1.3;
+const lineHeight = 1.5;
 
-let calculatedFontSize = Math.floor((window.innerHeight - 30) / grid.height / lineHeight);
+let calculatedFontSize = Math.min(
+  Math.floor((window.innerHeight - 30) / grid.height / lineHeight),
+  Math.floor((window.innerWidth - 5) / grid.width)
+);
 let cellWidth = calculatedFontSize * pixelRatio;
 let cellHeight = calculatedFontSize * pixelRatio * lineHeight;
 let fontSize = calculatedFontSize * pixelRatio;

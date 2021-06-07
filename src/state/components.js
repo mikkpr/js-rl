@@ -19,13 +19,11 @@ export class Position extends Component {
 
   onAttached() {
     const locId = `${this.entity.position.x},${this.entity.position.y}`;
-    console.log('onAttached', locId);
     addCacheSet("entitiesAtLocation", locId, this.entity.id);
   }
 
   onDestroyed() {
     const locId = `${this.x},${this.y}`;
-    console.log('onDestroyed', locId);
     deleteCacheSet("entitiesAtLocation", locId, this.entity.id);
   }
 }
